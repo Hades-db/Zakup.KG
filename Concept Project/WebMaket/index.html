@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="phone-shell">
+      <div class="phone">
+        <div class="page-header">
+          <h1 id="page-title">Регистрация</h1>
+        </div>
+
+        <div class="brand-wrap">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="bracket bracket-left"></span>
+            <span class="bracket bracket-right"></span>
+          </div>
+          <div class="brand-name">Zakup<span>.KG</span></div>
+        </div>
+
+        <p class="welcome" id="welcome-message">Добро пожаловать в B2B платформу!</p>
+
+        <div class="role-toggle" role="tablist" aria-label="Тип аккаунта">
+          <button class="role-btn active" id="shop-tab" type="button" role="tab" aria-selected="true" data-account-type="shop">Магазин</button>
+          <button class="role-btn" id="supplier-tab" type="button" role="tab" aria-selected="false" data-account-type="supplier">Поставщик</button>
+        </div>
+
+        <form class="registration-form">
+          <input type="hidden" name="accountType" value="shop" />
+          <label class="field" aria-label="Название магазина">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M3.5 11 6 5.5h16L24.5 11" />
+                <path d="M3.5 11c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4" />
+                <path d="M5.5 13.2v9.3h17v-9.3M8 22.5v-6.8h5.5v6.8M17 16.2h3v3h-3z" />
+              </svg>
+            </span>
+            <input type="text" placeholder="Название магазина" required />
+          </label>
+
+          <label class="field" aria-label="ИНН / ПИН">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.5h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2zm0 2v9h10v-9H7zm2 2h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
+            </span>
+            <input
+              type="text"
+              placeholder="ИНН / ПИН"
+              inputmode="numeric"
+              pattern="[0-9]{14}"
+              data-digits-only
+              data-max-digits="14"
+              data-exact-digits="14"
+              required
+            />
+          </label>
+
+          <label class="field" aria-label="Адрес магазина / доставки">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7.5 7.5 0 0 1 7.5 7.5c0 5.63-7.5 11.5-7.5 11.5S4.5 15.63 4.5 10A7.5 7.5 0 0 1 12 2.5zm0 2.2a5.3 5.3 0 0 0-5.3 5.3c0 3.42 4.1 7.48 5.3 8.52 1.2-1.04 5.3-5.1 5.3-8.52A5.3 5.3 0 0 0 12 4.7zm0 2.3a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
+            </span>
+            <input type="text" placeholder="Адрес магазина / доставки" required />
+          </label>
+
+          <label class="field" aria-label="Номер телефона">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M8.2 3.8 4.8 6.3c-.9.7-1.3 1.9-.9 3 2.2 7.3 7.5 12.6 14.8 14.8 1.1.3 2.3 0 3-.9l2.5-3.4-5.6-4.1-3 2.3a16.2 16.2 0 0 1-5.4-5.4l2.3-3-4.3-5.8Z" />
+              </svg>
+            </span>
+            <span class="country-code">+996</span>
+            <input
+              type="text"
+              placeholder="Номер телефона"
+              inputmode="numeric"
+              pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
+              maxlength="11"
+              data-phone-format
+              data-max-digits="9"
+              required
+            />
+          </label>
+
+          <label class="field" aria-label="Придумайте пароль">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v10h14V9h-2zm-8 0V7a3 3 0 1 1 6 0v2H9zm7 8H8v-6h8v6z"/></svg>
+            </span>
+            <input id="registration-password" type="password" placeholder="Придумайте пароль" minlength="8" required />
+          </label>
+
+          <label class="field field--password" aria-label="Повторите пароль">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v10h14V9h-2zm-8 0V7a3 3 0 1 1 6 0v2H9zm7 8H8v-6h8v6z"/></svg>
+            </span>
+            <input id="registration-password-confirm" type="password" placeholder="Повторите пароль" minlength="8" required />
+            <button class="eye-btn" type="button" aria-label="Показать оба пароля" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2 9.6 2 12c0 2.4 4.5 7 10 7s10-4.6 10-7c0-2.4-4.5-7-10-7zm0 2.1c3.89 0 6.97 3.39 8.16 4.9-1.19 1.51-4.27 4.9-8.16 4.9-3.89 0-6.97-3.39-8.16-4.9C5.03 10.49 8.11 7.1 12 7.1zm0 2.4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            </button>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" required />
+            <span>Согласен с условиями использования</span>
+          </label>
+
+          <button class="primary-btn" type="submit">Войти</button>
+        </form>
+
+        <form class="login-panel" aria-label="Вход" hidden>
+          <label class="field" aria-label="Номер телефона">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M8.2 3.8 4.8 6.3c-.9.7-1.3 1.9-.9 3 2.2 7.3 7.5 12.6 14.8 14.8 1.1.3 2.3 0 3-.9l2.5-3.4-5.6-4.1-3 2.3a16.2 16.2 0 0 1-5.4-5.4l2.3-3-4.3-5.8Z" />
+              </svg>
+            </span>
+            <span class="country-code">+996</span>
+            <input
+              type="text"
+              placeholder="Номер телефона"
+              inputmode="numeric"
+              pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
+              maxlength="11"
+              data-phone-format
+              data-max-digits="9"
+              required
+            />
+          </label>
+
+          <label class="field field--password" aria-label="Пароль">
+            <input type="password" placeholder="Пароль" minlength="8" required />
+            <button class="eye-btn login-eye" type="button" aria-label="Показать пароль" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2 9.6 2 12c0 2.4 4.5 7 10 7s10-4.6 10-7c0-2.4-4.5-7-10-7zm0 2.1c3.89 0 6.97 3.39 8.16 4.9-1.19 1.51-4.27 4.9-8.16 4.9-3.89 0-6.97-3.39-8.16-4.9C5.03 10.49 8.11 7.1 12 7.1zm0 2.4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            </button>
+          </label>
+
+          <div class="login-actions">
+            <button class="forgot-password-link" type="button">Забыли пароль?</button>
+            <button class="login-register-button" type="button">Зарегистрироваться</button>
+          </div>
+          <button class="primary-btn" type="submit">Войти</button>
+        </form>
+
+        <p class="form-status" role="status" aria-live="polite"></p>
+
+        <div class="login-link">
+          <span>Уже есть аккаунт ?</span>
+          <a href="#">Войти</a>
+        </div>
+      </div>
+    </div>
+    <script>
+      const password = document.getElementById("registration-password");
+      const passwordConfirm = document.getElementById("registration-password-confirm");
+
+      document.querySelectorAll("[data-digits-only]").forEach((input) => {
+        input.addEventListener("input", () => {
+          const maxDigits = Number(input.dataset.maxDigits);
+          input.value = input.value.replace(/\D/g, "").slice(0, maxDigits);
+          const exactDigits = Number(input.dataset.exactDigits);
+          input.setCustomValidity(
+            input.value.length > 0 && input.value.length !== exactDigits
+              ? `Введите ровно ${exactDigits} цифр`
+              : "",
+          );
+        });
+      });
+
+      document.querySelectorAll("[data-phone-format]").forEach((phoneInput) => {
+        phoneInput.addEventListener("input", () => {
+          const caret = phoneInput.selectionStart;
+          const digitsBeforeCaret = phoneInput.value.slice(0, caret).replace(/\D/g, "").length;
+          const digits = phoneInput.value.replace(/\D/g, "").slice(0, 9);
+          phoneInput.value = digits.replace(/(\d{3})(?=\d)/g, "$1 ");
+          const formattedCaret = phoneInput.value
+            .split("")
+            .reduce((position, character, index) => {
+              if (/\d/.test(character) && position.digits < digitsBeforeCaret) {
+                return { digits: position.digits + 1, index: index + 1 };
+              }
+              return position;
+            }, { digits: 0, index: 0 }).index;
+          phoneInput.setSelectionRange(formattedCaret, formattedCaret);
+          phoneInput.setCustomValidity(
+            digits.length > 0 && digits.length !== 9 ? "Введите ровно 9 цифр" : "",
+          );
+        });
+
+        phoneInput.addEventListener("blur", () => {
+          if (phoneInput.value) {
+            phoneInput.value = phoneInput.value.replace(/\D/g, "").replace(/(\d{3})(?=\d)/g, "$1 ");
+          }
+        });
+      });
+
+      document.querySelector(".registration-form .eye-btn").addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const isVisible = password.type === "text";
+        [password, passwordConfirm].forEach((input) => {
+          input.type = isVisible ? "password" : "text";
+        });
+        button.setAttribute("aria-pressed", String(!isVisible));
+        button.setAttribute("aria-label", isVisible ? "Показать оба пароля" : "Скрыть оба пароля");
+        button.classList.toggle("is-visible", !isVisible);
+      });
+
+      const form = document.querySelector(".registration-form");
+      const loginPanel = document.querySelector(".login-panel");
+      const formStatus = document.querySelector(".form-status");
+      const pageTitle = document.getElementById("page-title");
+      const welcomeMessage = document.getElementById("welcome-message");
+      const shopName = form.querySelector('[placeholder="Название магазина"]');
+      const address = form.querySelector('[placeholder="Адрес магазина / доставки"]');
+      const accountType = form.querySelector('[name="accountType"]');
+
+      const showRegistration = () => {
+        document.querySelector(".phone").classList.remove("is-login");
+        form.hidden = false;
+        loginPanel.hidden = true;
+        document.querySelector(".role-toggle").hidden = false;
+        document.querySelector(".login-link").hidden = false;
+        pageTitle.textContent = "Регистрация";
+        welcomeMessage.textContent = "Добро пожаловать в B2B платформу!";
+        formStatus.textContent = "";
+      };
+
+      const showLogin = () => {
+        document.querySelector(".phone").classList.add("is-login");
+        form.hidden = true;
+        loginPanel.hidden = false;
+        document.querySelector(".role-toggle").hidden = false;
+        document.querySelector(".login-link").hidden = true;
+        pageTitle.textContent = "Вход";
+        welcomeMessage.textContent = "Добро пожаловать!";
+        formStatus.textContent = "";
+      };
+
+      document.querySelector(".login-link a").addEventListener("click", (event) => {
+        event.preventDefault();
+        showLogin();
+      });
+      document.querySelector(".login-register-button").addEventListener("click", showRegistration);
+      document.querySelector(".login-eye").addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const input = loginPanel.querySelector('[placeholder="Пароль"]');
+        const isVisible = input.type === "text";
+        input.type = isVisible ? "password" : "text";
+        button.setAttribute("aria-pressed", String(!isVisible));
+        button.setAttribute("aria-label", isVisible ? "Показать пароль" : "Скрыть пароль");
+        button.classList.toggle("is-visible", !isVisible);
+      });
+      document.querySelector(".forgot-password-link").addEventListener("click", () => {
+        formStatus.textContent = "Восстановление пароля пока не подключено.";
+      });
+
+      document.querySelectorAll("[data-account-type]").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const isShop = tab.dataset.accountType === "shop";
+          document.querySelectorAll("[data-account-type]").forEach((item) => {
+            const isSelected = item === tab;
+            item.classList.toggle("active", isSelected);
+            item.setAttribute("aria-selected", String(isSelected));
+          });
+          accountType.value = tab.dataset.accountType;
+          shopName.placeholder = isShop ? "Название магазина" : "Название поставщика";
+          shopName.parentElement.setAttribute(
+            "aria-label",
+            isShop ? "Название магазина" : "Название поставщика",
+          );
+          address.placeholder = isShop
+            ? "Адрес магазина / доставки"
+            : "Адрес склада / доставки";
+          address.parentElement.setAttribute(
+            "aria-label",
+            isShop ? "Адрес магазина / доставки" : "Адрес склада / доставки",
+          );
+          formStatus.textContent = "";
+        });
+      });
+
+      const validatePasswordConfirm = () => {
+        passwordConfirm.setCustomValidity(
+          passwordConfirm.value && passwordConfirm.value !== password.value
+            ? "Пароли не совпадают"
+            : "",
+        );
+      };
+
+      password.addEventListener("input", validatePasswordConfirm);
+      passwordConfirm.addEventListener("input", validatePasswordConfirm);
+
+      form.addEventListener("input", () => {
+        formStatus.textContent = "";
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        form.classList.add("was-validated");
+        validatePasswordConfirm();
+        if (!form.reportValidity()) {
+          formStatus.textContent = "";
+          return;
+        }
+        formStatus.textContent =
+          "Данные проверены. Отправка регистрации пока не подключена.";
+      });
+
+      loginPanel.addEventListener("input", () => {
+        formStatus.textContent = "";
+      });
+
+      loginPanel.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!loginPanel.reportValidity()) {
+          formStatus.textContent = "";
+          return;
+        }
+        formStatus.textContent = "Данные проверены. Авторизация пока не подключена.";
+      });
+    </script>
+  </body>
+</html>

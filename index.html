@@ -913,7 +913,6 @@ button.toggle::after{transition:right .2s}
       </div>
     </header>
     <div class="body">
-      <div class="seg rise" id="agent-mode" role="radiogroup" aria-label="Как работаю"><button type="button" class="on" data-self="0">От компании</button><button type="button" data-self="1">Сам, как ИП</button></div>
       <div class="grid2 rise" style="gap:10px">
         <div class="stat"><b class="a-store-n">5</b><span>Магазинов</span></div>
         <div class="stat green"><b>41</b><span>Заказ за месяц</span></div>
@@ -923,7 +922,6 @@ button.toggle::after{transition:right .2s}
         <div class="between small"><span class="muted">Телефон</span><span class="bold">+996 [номер]</span></div>
         <div class="between small"><span class="muted">Район</span><span class="bold">Октябрьский</span></div>
         <div class="between small" data-company><span class="muted">Руководитель</span><span class="bold">[Имя], +996 [номер]</span></div>
-        <div class="between small" data-ip hidden><span class="muted">ИНН</span><span class="bold">[14 цифр]</span></div>
       </div>
       <div class="list rise">
         <button class="list-item" data-go="a-invoices"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><svg class="ic chev"><use href="#i-next"/></svg></button>
@@ -1441,8 +1439,7 @@ button.toggle::after{transition:right .2s}
     const [r, n] = b.dataset.invoice.split(':'), o = find(r, n);
     pendingInv = {
       n: o.n, date: DATE_OF[o.ago] || '14.11.2026', shop: o.shop, addr: o.addr + ', ' + o.area, items: o.items,
-      releasedBy: r === 'agent' ? (agentSelf ? 'Азамат' : 'Торговый агент Азамат') : 'Склад / экспедитор',
-      supplier: r === 'agent' && agentSelf ? { name: 'ИП Азамат [Фамилия]', details: 'ИНН [14 цифр] · г. Бишкек' } : null
+      releasedBy: r === 'agent' ? 'Торговый агент Азамат' : 'Склад / экспедитор'
     };
     go('s-invoice', 'push');
   });
@@ -1686,18 +1683,6 @@ button.toggle::after{transition:right .2s}
     }
     toast('Магазин добавлен');
     go(history.pop() || homeOf[role], 'back');
-  });
-
-  // Агент работает от компании или сам, как ИП: от этого зависит поставщик в накладной
-  let agentSelf = false;
-  $('#agent-mode').addEventListener('click', e => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    agentSelf = b.dataset.self === '1';
-    $$('#agent-mode button').forEach(x => x.classList.toggle('on', x === b));
-    $$('.agent-sub').forEach(x => x.textContent = agentSelf ? 'Индивидуальный предприниматель' : 'Торговый агент · ОсОО «Дистрибьютор»');
-    $$('[data-company]').forEach(x => x.hidden = agentSelf);
-    $$('[data-ip]').forEach(x => x.hidden = !agentSelf);
   });
 
   // Профиль: язык

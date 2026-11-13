@@ -267,6 +267,10 @@ body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:
 .stepper.sm{gap:6px}
 .stepper.sm button{width:38px;height:38px;font-size:20px}
 .stepper.sm .num{min-width:26px;text-align:center;font-weight:800}
+.qin{width:60px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--card);text-align:center;font-size:18px;font-weight:800;padding:0;-moz-appearance:textfield;appearance:textfield}
+.qin::-webkit-inner-spin-button,.qin::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.qin:focus{outline:none;border-color:var(--green)}
+.stepper.sm .qin{width:48px;height:38px;font-size:16px}
 .stepper button:disabled,.btn:disabled{opacity:.4}
 /* Накладная */
 .inv{gap:10px;font-size:13px;border:1px solid var(--line)}
@@ -464,7 +468,7 @@ button.toggle::after{transition:right .2s}
         <span class="name">Количество</span>
         <div class="stepper">
           <button id="qty-minus" aria-label="Меньше">−</button>
-          <span id="qty" class="num" style="font-size:18px;font-weight:800;min-width:28px;text-align:center">20</span>
+          <input id="qty" class="qin" type="number" inputmode="numeric" min="1" value="20" aria-label="Количество">
           <button id="qty-plus" aria-label="Больше">+</button>
         </div>
       </div>
@@ -1323,7 +1327,7 @@ button.toggle::after{transition:right .2s}
   let qty = 20, price = 72, sup = $('.supplier.on');
   function bump(el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
   function renderTotal() {
-    $('#qty').textContent = qty; bump($('#qty'));
+    if (document.activeElement !== $('#qty')) $('#qty').value = qty;
     $('#total').textContent = fmt(qty * price); bump($('#total'));
   }
   $$('.supplier').forEach(b => b.addEventListener('click', () => {
@@ -1332,6 +1336,9 @@ button.toggle::after{transition:right .2s}
   }));
   $('#qty-minus').addEventListener('click', () => { if (qty > 1) { qty--; renderTotal(); } });
   $('#qty-plus').addEventListener('click', () => { qty++; renderTotal(); });
+  // Количество можно ввести руками
+  $('#qty').addEventListener('input', () => { const v = parseInt($('#qty').value, 10); if (v >= 1) { qty = v; renderTotal(); } });
+  $('#qty').addEventListener('change', () => { $('#qty').value = qty; });
 
   // Оформление заказа
   $('#place-order').addEventListener('click', () => {
@@ -1483,7 +1490,7 @@ button.toggle::after{transition:right .2s}
     const head = '<div class="row" style="gap:10px">' + pic(i.img, 'sm') + '<span class="grow"><span class="name" style="font-size:14px">' + i.name + '</span>';
     if (o.st === 'new' && !declining) {
       return head + '<span class="xs muted">' + i.p + ' сом × ' + i.q + ' = ' + fmt(i.q * i.p) + ' сом</span></span><span class="stepper sm">' +
-        '<button type="button" data-step="' + k + ':-1" aria-label="Меньше"' + (i.q ? '' : ' disabled') + '>−</button><span class="num">' + i.q + '</span>' +
+        '<button type="button" data-step="' + k + ':-1" aria-label="Меньше"' + (i.q ? '' : ' disabled') + '>−</button><input class="qin" type="number" inputmode="numeric" min="0" max="' + i.q0 + '" value="' + i.q + '" data-qk="' + k + '" aria-label="Количество">' +
         '<button type="button" data-step="' + k + ':1" aria-label="Больше"' + (i.q < i.q0 ? '' : ' disabled') + '>+</button></span></div>';
     }
     if (!i.q) return '';
@@ -1610,7 +1617,7 @@ button.toggle::after{transition:right .2s}
   function renderCart() {
     $('#cart-list').innerHTML = cart.length ? cart.map((c, k) => '<div class="row" style="gap:10px">' + pic(c.x.img, 'sm') +
       '<span class="grow"><span class="name" style="font-size:14px">' + c.x.name + '</span><span class="xs muted">' + c.x.p + ' сом × ' + c.q + ' = ' + fmt(c.x.p * c.q) + ' сом</span></span>' +
-      '<span class="stepper sm"><button type="button" data-cq="' + k + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><span class="num">' + c.q + '</span>' +
+      '<span class="stepper sm"><button type="button" data-cq="' + k + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><input class="qin" type="number" inputmode="numeric" min="1" value="' + c.q + '" data-cin="' + k + '" aria-label="Количество">' +
       '<button type="button" data-cq="' + k + ':1" aria-label="Больше">+</button></span>' +
       '<button type="button" class="eye" data-cdel="' + k + '" aria-label="Убрать из заказа"><svg class="ic"><use href="#i-trash"/></svg></button></div>').join('')
       : '<span class="small muted">Корзина пуста</span>';
@@ -1631,6 +1638,10 @@ button.toggle::after{transition:right .2s}
     const st = e.target.closest('[data-cq]'), del = e.target.closest('[data-cdel]');
     if (st) { const [k, d] = st.dataset.cq.split(':'); cart[+k].q = Math.max(1, cart[+k].q + (+d)); renderCart(); }
     if (del) { cart.splice(+del.dataset.cdel, 1); renderCart(); }
+  });
+  $('#cart-list').addEventListener('change', e => {
+    const inp = e.target.closest('[data-cin]');
+    if (inp) { cart[+inp.dataset.cin].q = Math.max(1, parseInt(inp.value, 10) || 1); renderCart(); }
   });
   $('#cart-send').addEventListener('click', () => {
     cart.forEach(c => c.x.ordered = true);
@@ -1770,6 +1781,15 @@ button.toggle::after{transition:right .2s}
     renderDetail(r);
     go(detailId[r], 'push');
   });
+
+  // Ввод количества руками в новом заказе (не больше, чем заказал магазин)
+  ['agent', 'dist'].forEach(r => $('#' + detailId[r]).addEventListener('change', e => {
+    const inp = e.target.closest('[data-qk]');
+    if (!inp) return;
+    const i = find(r, open[r]).items[+inp.dataset.qk];
+    i.q = Math.max(0, Math.min(i.q0, parseInt(inp.value, 10) || 0));
+    renderDetail(r, true);
+  }));
 
   // Действия внутри карточки заказа
   ['agent', 'dist'].forEach(r => {

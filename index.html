@@ -305,7 +305,7 @@ button.toggle::after{transition:right .2s}
 
       <form id="login-form" class="col" style="display:flex;flex-direction:column;gap:12px" novalidate>
         <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" placeholder="Номер телефона" inputmode="numeric" pattern="[0-9]{3} [0-9]{3} [0-9]{3}" data-phone required></label>
-        <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Пароль" minlength="8" data-pw required><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+        <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Пароль" data-pw required><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
         <button type="button" class="linkbtn" data-toast="Восстановление пароля — в следующей версии">Забыли пароль?</button>
         <button type="submit" class="btn lg">Войти</button>
       </form>
@@ -1572,7 +1572,14 @@ button.toggle::after{transition:right .2s}
     setRole(accType === 'shop' ? 'shop' : 'dist');
     toast(msg);
   };
-  $('#login-form').addEventListener('submit', e => { e.preventDefault(); enter(e.target, 'Добро пожаловать!'); });
+  // Тестовый аккаунт для входа (только прототип)
+  const TEST = { phone: '500991620', pw: '1234' };
+  $('#login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const fm = e.target, ph = $('[data-phone]', fm).value.replace(/\D/g, ''), pw = $('[data-pw]', fm).value;
+    if (fm.checkValidity() && (ph !== TEST.phone || pw !== TEST.pw)) { toast('Неверный номер или пароль'); return; }
+    enter(fm, 'Добро пожаловать!');
+  });
   $('#reg-form').addEventListener('submit', e => { e.preventDefault(); checkPw2(); enter(e.target, 'Регистрация прошла успешно'); });
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-logout]')) return;

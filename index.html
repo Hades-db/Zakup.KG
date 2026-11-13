@@ -1425,9 +1425,9 @@ button.toggle::after{transition:right .2s}
   // Карточка заказа в списке: нажатие открывает заказ; новые — с зелёным оттенком
   function orderButton(r, o) {
     return '<button class="card rise order-open' + (o.st === 'new' ? ' is-new' : '') + '" data-open="' + r + ':' + o.n + '">' +
-      '<span class="between"><span class="bold" style="font-size:15px">' + o.shop + '</span><span class="bold" style="font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums">' + fmt(total(o)) + ' сом</span></span>' +
-      '<span class="between"><span class="small muted">№ ' + o.n + ' · ' + o.area + ' · ' + o.ago + '</span>' + pill(o.st) + '</span>' +
-      '<span class="small o-sum">' + summary(o) + '</span></button>';
+      '<span class="between"><span class="bold" style="font-size:15px">' + o.shop + '</span>' + pill(o.st) + '</span>' +
+      '<span class="small muted">№ ' + o.n + ' · ' + o.area + ' · ' + o.ago + '</span>' +
+      '<span class="between"><span class="small o-sum">' + summary(o) + '</span><span class="bold" style="font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums">' + fmt(total(o)) + ' сом</span></span></button>';
   }
 
   function renderList(r) {

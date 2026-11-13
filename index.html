@@ -845,11 +845,7 @@ button.toggle::after{transition:right .2s}
       <div class="list rise">
         <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-globe"/></svg><span class="grow">Язык</span>
           <div class="seg lang-seg" role="radiogroup" aria-label="Язык" style="width:150px;padding:3px"><button type="button" class="on" style="height:34px;font-size:13px">Рус</button><button type="button" style="height:34px;font-size:13px">Кыр</button></div>
-        </div>
-        <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-bell"/></svg><span class="grow">Уведомления о новых заказах</span>
-          <button type="button" class="toggle" data-switch role="switch" aria-checked="true" aria-label="Уведомления о новых заказах"></button>
-        </div>
-      </div>
+        </div>      </div>
       <div class="list rise">
         <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
@@ -888,11 +884,7 @@ button.toggle::after{transition:right .2s}
       <div class="list rise">
         <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-globe"/></svg><span class="grow">Язык</span>
           <div class="seg lang-seg" role="radiogroup" aria-label="Язык" style="width:150px;padding:3px"><button type="button" class="on" style="height:34px;font-size:13px">Рус</button><button type="button" style="height:34px;font-size:13px">Кыр</button></div>
-        </div>
-        <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-bell"/></svg><span class="grow">Уведомления о новых заказах</span>
-          <button type="button" class="toggle" data-switch role="switch" aria-checked="true" aria-label="Уведомления о новых заказах"></button>
-        </div>
-      </div>
+        </div>      </div>
       <div class="list rise">
         <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
@@ -1366,11 +1358,7 @@ button.toggle::after{transition:right .2s}
     go(history.pop() || 'd-catalog', 'back');
   });
 
-  // Профиль: переключатели и язык
-  $$('[data-switch]').forEach(t => t.addEventListener('click', () => {
-    const on = t.classList.toggle('off') === false;
-    t.setAttribute('aria-checked', on);
-  }));
+  // Профиль: язык
   $$('.lang-seg').forEach(g => g.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b || b.classList.contains('on')) return;

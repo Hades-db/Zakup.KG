@@ -76,7 +76,6 @@
               placeholder="Номер телефона"
               inputmode="numeric"
               pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
-              maxlength="11"
               data-phone-format
               data-max-digits="9"
               required
@@ -100,12 +99,14 @@
             </button>
           </label>
 
-          <label class="checkbox-row">
-            <input type="checkbox" required />
-            <span>Согласен с условиями использования</span>
-          </label>
+          <div class="checkbox-row">
+            <input type="checkbox" aria-label="Согласен со всеми условиями" required />
+            <button class="agreement-open" type="button" aria-haspopup="dialog">
+              Согласен со всеми условиями
+            </button>
+          </div>
 
-          <button class="primary-btn" type="submit">Войти</button>
+          <button class="primary-btn" type="submit">Зарегистрироваться</button>
         </form>
 
         <form class="login-panel" aria-label="Вход" hidden>
@@ -121,7 +122,6 @@
               placeholder="Номер телефона"
               inputmode="numeric"
               pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
-              maxlength="11"
               data-phone-format
               data-max-digits="9"
               required
@@ -143,6 +143,57 @@
         </form>
 
         <p class="form-status" role="status" aria-live="polite"></p>
+
+        <section
+          class="agreement-sheet"
+          id="agreement-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agreement-title"
+          hidden
+        >
+          <div class="agreement-handle" aria-hidden="true"></div>
+          <h2 id="agreement-title">Условие, Оферта и Политика конфиденциальности</h2>
+          <div class="agreement-tabs" role="tablist" aria-label="Документы">
+            <button
+              class="agreement-tab active"
+              id="agreement-tab-terms"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="agreement-content"
+              data-document="terms"
+            >Услов.Исполь</button>
+            <button
+              class="agreement-tab"
+              id="agreement-tab-offer"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="agreement-content"
+              data-document="offer"
+            >Публ.Оферта</button>
+            <button
+              class="agreement-tab"
+              id="agreement-tab-privacy"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="agreement-content"
+              data-document="privacy"
+            >Полит.Конф</button>
+          </div>
+          <div
+            class="agreement-content"
+            id="agreement-content"
+            role="tabpanel"
+            aria-labelledby="agreement-tab-terms"
+            aria-live="polite"
+            tabindex="0"
+          ></div>
+          <button class="agreement-accept" type="button">Принять и продолжить</button>
+          <p class="agreement-note">Я уже ознакомился с условиями</p>
+        </section>
 
         <div class="login-link">
           <span>Уже есть аккаунт ?</span>
@@ -213,6 +264,88 @@
       const shopName = form.querySelector('[placeholder="Название магазина"]');
       const address = form.querySelector('[placeholder="Адрес магазина / доставки"]');
       const accountType = form.querySelector('[name="accountType"]');
+      const agreementCheckbox = form.querySelector('.checkbox-row input[type="checkbox"]');
+      const agreementSheet = document.getElementById("agreement-sheet");
+      const agreementContent = document.getElementById("agreement-content");
+      const agreementTabs = [...document.querySelectorAll(".agreement-tab")];
+      const agreementAcceptButton = document.querySelector(".agreement-accept");
+      const agreementDocuments = {
+        terms: "../../Documents/user_agreement_zakup_kg.md",
+        offer: "../../Documents/oferta.md",
+        privacy: "../../Documents/privacy.md",
+      };
+      let agreementReturnFocus = null;
+      let agreementLoadId = 0;
+
+      const loadAgreementDocument = async (documentType) => {
+        const loadId = ++agreementLoadId;
+        agreementAcceptButton.disabled = true;
+        agreementContent.setAttribute("aria-busy", "true");
+        agreementContent.textContent = "Загрузка документа…";
+        try {
+          const response = await fetch(agreementDocuments[documentType]);
+          if (!response.ok) {
+            throw new Error(`Ошибка загрузки: ${response.status}`);
+          }
+          const text = await response.text();
+          if (loadId === agreementLoadId) {
+            agreementContent.textContent = text;
+            agreementContent.setAttribute("aria-busy", "false");
+            agreementContent.scrollTop = 0;
+            agreementAcceptButton.disabled = false;
+          }
+        } catch (error) {
+          if (loadId === agreementLoadId) {
+            agreementContent.textContent =
+              `Не удалось загрузить документ. ${error.message}`;
+            agreementContent.setAttribute("aria-busy", "false");
+          }
+        }
+      };
+
+      const closeAgreementSheet = () => {
+        agreementSheet.hidden = true;
+        agreementReturnFocus?.focus();
+      };
+
+      const openAgreementSheet = (trigger) => {
+        agreementReturnFocus = trigger;
+        agreementSheet.hidden = false;
+        agreementTabs[0].focus();
+        loadAgreementDocument(agreementTabs[0].dataset.document);
+      };
+
+      form.querySelector(".agreement-open").addEventListener("click", (event) => {
+        openAgreementSheet(event.currentTarget);
+      });
+      agreementCheckbox.addEventListener("click", (event) => {
+        if (agreementCheckbox.checked) {
+          event.preventDefault();
+          openAgreementSheet(agreementCheckbox);
+        }
+      });
+      agreementTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          agreementTabs.forEach((item) => {
+            const selected = item === tab;
+            item.classList.toggle("active", selected);
+            item.setAttribute("aria-selected", String(selected));
+          });
+          agreementContent.setAttribute("aria-labelledby", tab.id);
+          loadAgreementDocument(tab.dataset.document);
+        });
+      });
+      agreementAcceptButton.addEventListener("click", () => {
+        agreementCheckbox.checked = true;
+        agreementCheckbox.dispatchEvent(new Event("input", { bubbles: true }));
+        agreementCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+        closeAgreementSheet();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !agreementSheet.hidden) {
+          closeAgreementSheet();
+        }
+      });
 
       const showRegistration = () => {
         document.querySelector(".phone").classList.remove("is-login");

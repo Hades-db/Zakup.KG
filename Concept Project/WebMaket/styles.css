@@ -293,8 +293,8 @@ input {
   border-left: 2px solid #0d1018;
   border-bottom: 2px solid #0d1018;
   transform: rotate(-45deg);
-  left: 4px;
-  top: 14px;
+  left: 5px;
+  top: 5px;
 }
 
 .primary-btn {
@@ -813,4 +813,131 @@ body {
     width: 100vw;
     height: 100vh;
   }
+}
+
+.checkbox-row {
+  align-items: center;
+}
+
+.agreement-open {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agreement-open:focus-visible,
+.agreement-tab:focus-visible,
+.agreement-accept:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.agreement-sheet {
+  position: absolute;
+  z-index: 5;
+  top: max(26.5%, 232px);
+  right: 5px;
+  bottom: 0;
+  left: 5px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px 25px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  background: #141a27;
+  color: #f5f6f8;
+}
+
+.agreement-handle {
+  width: 88px;
+  height: 5px;
+  flex: 0 0 5px;
+  margin: 0 auto 10px;
+  border-radius: 5px;
+  background: #898c96;
+}
+
+.agreement-sheet h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.agreement-tabs {
+  display: flex;
+  flex: 0 0 46px;
+  padding: 3px;
+  border: 1px solid #00ff92;
+  border-radius: 24px;
+}
+
+.agreement-tab {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  border-radius: 20px;
+  padding: 0 3px;
+  background: transparent;
+  color: #8d929c;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agreement-tab.active {
+  background: #00ff92;
+  color: #071514;
+  box-shadow: 0 0 11px rgba(0, 255, 146, 0.75);
+}
+
+.agreement-content {
+  min-height: 0;
+  flex: 1;
+  margin: 18px 0 12px;
+  overflow: auto;
+  color: #f1f2f5;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  scrollbar-color: #8d929c transparent;
+  scrollbar-width: thin;
+}
+
+.agreement-content:focus-visible {
+  outline: 2px solid #00ff92;
+  outline-offset: 2px;
+}
+
+.agreement-accept {
+  width: 100%;
+  height: 46px;
+  flex: 0 0 46px;
+  border: 0;
+  border-radius: 24px;
+  background: #00ff92;
+  color: #071514;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.agreement-accept:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.agreement-note {
+  margin: 22px 0 0;
+  color: #858b96;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
 }

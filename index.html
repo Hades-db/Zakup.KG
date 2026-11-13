@@ -216,6 +216,10 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+.stepper.sm{gap:6px}
+.stepper.sm button{width:38px;height:38px;font-size:20px}
+.stepper.sm .num{min-width:26px;text-align:center;font-weight:800}
+.stepper button:disabled,.btn:disabled{opacity:.4}
 /* Накладная */
 .inv{gap:10px;font-size:13px;border:1px solid var(--line)}
 .inv-party{display:flex;flex-direction:column;gap:2px}
@@ -620,7 +624,7 @@ button.toggle::after{transition:right .2s}
   <!-- ========== АГЕНТ: ЗАКАЗЫ ========== -->
   <section class="screen" id="a-orders" data-role="agent" hidden>
     <header class="top">
-      <div class="grow"><span class="small muted">Агент Азамат · ОсОО «Дистрибьютор»</span><span class="h1">Заказы</span></div>
+      <div class="grow"><span class="small muted agent-who">Агент Азамат · ОсОО «Дистрибьютор»</span><span class="h1">Заказы</span></div>
       <div class="chips scroll filter" data-role-list="agent">
         <button type="button" class="chip on" data-f="all">Все</button>
         <button type="button" class="chip" data-f="new">Новые · <span class="agent-new-n">2</span></button>
@@ -654,7 +658,7 @@ button.toggle::after{transition:right .2s}
       <span class="h1">Мои магазины</span>
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск магазина" placeholder="Название или адрес"></label>
     </header>
-    <div class="body" style="gap:10px">
+    <div class="body" style="gap:10px" id="a-store-list">
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">ул. [Адрес] · заказ сегодня</span></span>
@@ -675,6 +679,7 @@ button.toggle::after{transition:right .2s}
         <span class="thumb" style="width:44px;height:44px;background:var(--warn-bg);color:var(--warn)"><svg class="ic"><use href="#i-store"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small warn">Не заказывал 12 дней</span></span>
       </div>
+      <button type="button" class="btn lg ghost" data-add-store><svg class="ic"><use href="#i-plus"/></svg>Добавить магазин</button>
     </div>
     <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
@@ -853,7 +858,7 @@ button.toggle::after{transition:right .2s}
     <header class="top">
       <div class="grow"><span class="small muted">Филиал Бишкек · 4 района</span><span class="h1">Магазины</span></div>
       <div class="chips scroll" id="district-filter">
-        <button type="button" class="chip on" data-d="all">Все · 8</button>
+        <button type="button" class="chip on" data-d="all">Все · <span id="d-store-n">8</span></button>
         <button type="button" class="chip" data-d="Октябрьский">Октябрьский</button>
         <button type="button" class="chip" data-d="Свердловский">Свердловский</button>
         <button type="button" class="chip" data-d="Первомайский">Первомайский</button>
@@ -869,24 +874,49 @@ button.toggle::after{transition:right .2s}
     </nav>
   </section>
 
+  <!-- ========== НОВЫЙ МАГАЗИН (агент и дистрибьютор) ========== -->
+  <section class="screen" id="store-new" data-role="agent" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800">Новый магазин</span>
+    </header>
+    <form class="body" id="store-form">
+      <div class="field"><label for="ns-name">Название</label><input id="ns-name" type="text"></div>
+      <div class="field"><label for="ns-addr">Адрес</label><input id="ns-addr" type="text"></div>
+      <div class="field"><label for="ns-phone">Телефон</label><input id="ns-phone" type="tel" placeholder="+996"></div>
+      <div class="field" id="ns-district">
+        <span class="label">Район</span>
+        <div class="chips">
+          <button type="button" class="chip on" data-d="Октябрьский">Октябрьский</button>
+          <button type="button" class="chip" data-d="Свердловский">Свердловский</button>
+          <button type="button" class="chip" data-d="Первомайский">Первомайский</button>
+          <button type="button" class="chip" data-d="Ленинский">Ленинский</button>
+        </div>
+      </div>
+      <button type="submit" class="btn lg">Добавить магазин</button>
+    </form>
+  </section>
+
   <!-- ========== АГЕНТ: ПРОФИЛЬ ========== -->
   <section class="screen" id="a-profile" data-role="agent" hidden>
     <header class="top">
       <div class="row">
         <div class="avatar">А</div>
-        <div class="grow"><span class="h1" style="font-size:20px">Азамат</span><span class="small muted">Торговый агент · ОсОО «Дистрибьютор»</span></div>
+        <div class="grow"><span class="h1" style="font-size:20px">Азамат</span><span class="small muted agent-sub">Торговый агент · ОсОО «Дистрибьютор»</span></div>
       </div>
     </header>
     <div class="body">
+      <div class="seg rise" id="agent-mode" role="radiogroup" aria-label="Как работаю"><button type="button" class="on" data-self="0">От компании</button><button type="button" data-self="1">Сам, как ИП</button></div>
       <div class="grid2 rise" style="gap:10px">
-        <div class="stat"><b>5</b><span>Магазинов</span></div>
+        <div class="stat"><b class="a-store-n">5</b><span>Магазинов</span></div>
         <div class="stat green"><b>41</b><span>Заказ за месяц</span></div>
       </div>
       <div class="card rise" style="gap:10px">
         <span class="h2">Контакты</span>
         <div class="between small"><span class="muted">Телефон</span><span class="bold">+996 [номер]</span></div>
         <div class="between small"><span class="muted">Район</span><span class="bold">Октябрьский</span></div>
-        <div class="between small"><span class="muted">Руководитель</span><span class="bold">[Имя], +996 [номер]</span></div>
+        <div class="between small" data-company><span class="muted">Руководитель</span><span class="bold">[Имя], +996 [номер]</span></div>
+        <div class="between small" data-ip hidden><span class="muted">ИНН</span><span class="bold">[14 цифр]</span></div>
       </div>
       <div class="list rise">
         <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-globe"/></svg><span class="grow">Язык</span>
@@ -1097,17 +1127,17 @@ button.toggle::after{transition:right .2s}
   let pendingInv = null;   // накладная, которую открыли из карточки заказа агента или дистрибьютора
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function renderInvoice(inv) {
-    const sum = inv.items.reduce((s, i) => s + i.q * i.p, 0);
+    const sum = inv.items.reduce((s, i) => s + i.q * i.p, 0), from = inv.supplier || SUPPLIER;
     $('#invoice-title').textContent = 'Накладная № ' + inv.n;
     $('#invoice-paper').innerHTML =
       '<div class="card rise inv">' +
       '<div class="between" style="align-items:flex-start"><span style="font-size:16px;font-weight:800">ТОВАРНАЯ НАКЛАДНАЯ</span>' +
       '<span class="xs muted" style="text-align:right">№ ' + inv.n + '<br>от ' + inv.date + '</span></div>' +
       '<div class="divider"></div>' +
-      '<div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + SUPPLIER.name + '</span><span class="xs muted">' + SUPPLIER.details + '</span></div>' +
+      '<div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + from.name + '</span><span class="xs muted">' + from.details + '</span></div>' +
       '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + esc(inv.shop) + '</span><span class="xs muted">' + esc(inv.addr) + '</span></div>' +
       '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
-      inv.items.map((i, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(i.name) + '</td><td class="r">' + i.q + ' шт</td><td class="r">' + i.p + '</td><td class="r">' + fmt(i.q * i.p) + '</td></tr>').join('') +
+      inv.items.filter(i => i.q > 0).map((i, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(i.name) + '</td><td class="r">' + i.q + ' шт</td><td class="r">' + i.p + '</td><td class="r">' + fmt(i.q * i.p) + '</td></tr>').join('') +
       '</tbody></table>' +
       '<div class="divider"></div>' +
       '<div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(sum) + ' сом</span></div>' +
@@ -1130,7 +1160,7 @@ button.toggle::after{transition:right .2s}
   };
   const REASONS = ['Нет товара', 'Не доставляем в этот район', 'Меньше минимального заказа', 'Другое'];
 
-  const it = (name, q, p, img) => ({ name, q, p, img });
+  const it = (name, q, p, img) => ({ name, q, p, img, q0: q });   // q0 — сколько заказал магазин
   const pic = (key, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '"><svg viewBox="0 0 64 64"><use href="#p-' + key + '"/></svg></span>';
   const orders = {
     agent: [
@@ -1166,7 +1196,8 @@ button.toggle::after{transition:right .2s}
   let declining = false, reason = REASONS[0];
 
   const total = o => o.items.reduce((s, i) => s + i.q * i.p, 0);
-  const summary = o => o.items.map(i => i.name.split(', ')[0] + ' × ' + i.q).join(', ');
+  const changed = o => o.items.some(i => i.q !== i.q0);
+  const summary = o => o.items.filter(i => i.q > 0).map(i => i.name.split(', ')[0] + ' × ' + i.q).join(', ');
   const find = (r, n) => orders[r].find(o => o.n === n);
   const pill = st => '<span class="pill ' + ST[st][0] + '">' + ST[st][1] + '</span>';
   const inFilter = (f, o) => f === 'all' || (f === 'new' && o.st === 'new') ||
@@ -1204,7 +1235,20 @@ button.toggle::after{transition:right .2s}
 
   function renderAll() { renderList('agent'); renderList('dist'); renderRoute(); }
 
-  function renderDetail(r) {
+  // Строка товара в заказе. В новом заказе количество можно уменьшить (товара меньше, чем заказали).
+  function itemRow(o, i, k) {
+    const head = '<div class="row" style="gap:10px">' + pic(i.img, 'sm') + '<span class="grow"><span class="name" style="font-size:14px">' + i.name + '</span>';
+    if (o.st === 'new' && !declining) {
+      return head + '<span class="xs muted">' + i.p + ' сом × ' + i.q + ' = ' + fmt(i.q * i.p) + ' сом</span></span><span class="stepper sm">' +
+        '<button type="button" data-step="' + k + ':-1" aria-label="Меньше"' + (i.q ? '' : ' disabled') + '>−</button><span class="num">' + i.q + '</span>' +
+        '<button type="button" data-step="' + k + ':1" aria-label="Больше"' + (i.q < i.q0 ? '' : ' disabled') + '>+</button></span></div>';
+    }
+    if (!i.q) return '';
+    return head + '<span class="xs muted">' + i.q + ' шт × ' + i.p + ' сом' + (i.q < i.q0 ? ' · заказано ' + i.q0 : '') + '</span></span>' +
+      '<span class="bold" style="font-variant-numeric:tabular-nums">' + fmt(i.q * i.p) + ' сом</span></div>';
+  }
+
+  function renderDetail(r, still) {
     const o = find(r, open[r]), scr = $('#' + detailId[r]);
     $('.order-title', scr).textContent = 'Заказ № ' + o.n;
     let html =
@@ -1212,9 +1256,7 @@ button.toggle::after{transition:right .2s}
       '<span class="h2">' + o.shop + '</span><span class="small muted">' + o.addr + ' · ' + o.area + '</span></div>' + pill(o.st) + '</div>' +
       '<button type="button" class="btn ghost" data-toast="Звоним в ' + o.shop.replace(/"/g, '') + '" style="height:44px">Позвонить в магазин</button></div>' +
       '<div class="card rise"><span class="h2">Товары</span>' +
-      o.items.map(i => '<div class="row" style="gap:10px">' + pic(i.img, 'sm') + '<span class="grow"><span class="name" style="font-size:14px">' + i.name + '</span>' +
-        '<span class="xs muted">' + i.q + ' шт × ' + i.p + ' сом</span></span><span class="bold" style="font-variant-numeric:tabular-nums">' +
-        fmt(i.q * i.p) + ' сом</span></div>').join('') +
+      o.items.map((i, k) => itemRow(o, i, k)).join('') +
       '<div class="divider"></div>' +
       '<div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price" style="font-size:20px">' + fmt(total(o)) + ' сом</span></div>' +
       '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
@@ -1231,12 +1273,13 @@ button.toggle::after{transition:right .2s}
         REASONS.map(x => '<button type="button" class="chip' + (x === reason ? ' on' : '') + '" data-reason="' + x + '">' + x + '</button>').join('') +
         '</div></div>';
     }
-    $('.order-body', scr).innerHTML = html;
+    $('.order-body', scr).innerHTML = still ? html.replace(/ rise/g, '') : html;
 
     const bar = $('.order-bar', scr);
     if (o.st === 'new' && !declining) {
       bar.innerHTML = '<button class="btn lg ghost" data-act="decline" style="flex:1;width:auto">Отклонить</button>' +
-                      '<button class="btn lg" data-act="accept" style="flex:1.4;width:auto">Принять заказ</button>';
+                      '<button class="btn lg" data-act="accept" style="flex:1.4;width:auto"' + (total(o) ? '' : ' disabled') + '>' +
+                      (changed(o) ? 'Принять с изменениями' : 'Принять заказ') + '</button>';
     } else if (o.st === 'new') {
       bar.innerHTML = '<button class="btn lg ghost" data-act="cancel-decline" style="flex:1;width:auto">Назад</button>' +
                       '<button class="btn lg danger" data-act="confirm-decline" style="flex:1.4;width:auto">Отклонить заказ</button>';
@@ -1256,7 +1299,8 @@ button.toggle::after{transition:right .2s}
     const [r, n] = b.dataset.invoice.split(':'), o = find(r, n);
     pendingInv = {
       n: o.n, date: DATE_OF[o.ago] || '14.11.2026', shop: o.shop, addr: o.addr + ', ' + o.area, items: o.items,
-      releasedBy: r === 'agent' ? 'Торговый агент Азамат' : 'Склад / экспедитор'
+      releasedBy: r === 'agent' ? (agentSelf ? 'Азамат' : 'Торговый агент Азамат') : 'Склад / экспедитор',
+      supplier: r === 'agent' && agentSelf ? { name: 'ИП Азамат [Фамилия]', details: 'ИНН [14 цифр] · г. Бишкек' } : null
     };
     go('s-invoice', 'push');
   });
@@ -1275,14 +1319,20 @@ button.toggle::after{transition:right .2s}
   ['agent', 'dist'].forEach(r => {
     const scr = $('#' + detailId[r]);
     scr.addEventListener('click', e => {
+      const stp = e.target.closest('[data-step]');
+      if (stp) {
+        const [k, d] = stp.dataset.step.split(':'), i = find(r, open[r]).items[+k];
+        i.q = Math.max(0, Math.min(i.q0, i.q + (+d)));
+        renderDetail(r, true); return;
+      }
       const rs = e.target.closest('[data-reason]');
-      if (rs) { reason = rs.dataset.reason; renderDetail(r); return; }
+      if (rs) { reason = rs.dataset.reason; renderDetail(r, true); return; }
       const a = e.target.closest('[data-act]');
       if (!a) return;
       const o = find(r, open[r]);
       if (a.dataset.act === 'accept') {
         o.st = 'confirmed';
-        toast('Заказ № ' + o.n + ' принят · магазин получил уведомление');
+        toast('Заказ № ' + o.n + (changed(o) ? ' принят с изменениями' : ' принят') + ' · магазин получил уведомление');
         renderAll(); go(history.pop() || homeOf[role], 'back');
       } else if (a.dataset.act === 'decline') {
         declining = true; renderDetail(r);
@@ -1320,6 +1370,7 @@ button.toggle::after{transition:right .2s}
     ['Магазин «Ынтымак»', 'Ленинский', 'не заказывал 12 дней']
   ];
   let district = 'all';
+  const ADD_STORE = '<button type="button" class="btn lg ghost" data-add-store><svg class="ic"><use href="#i-plus"/></svg>Добавить магазин</button>';
   function renderStores() {
     const groups = {};
     stores.filter(s => district === 'all' || s[1] === district).forEach(s => (groups[s[1]] = groups[s[1]] || []).push(s));
@@ -1329,8 +1380,9 @@ button.toggle::after{transition:right .2s}
         const late = s[2].startsWith('не');
         return '<div class="card row rise" style="flex-direction:row;padding:14px">' +
           '<span class="thumb" style="width:44px;height:44px;background:' + (late ? 'var(--warn-bg);color:var(--warn)' : 'var(--soft)') + '"><svg class="ic"><use href="#i-store"/></svg></span>' +
-          '<span class="grow"><span class="bold" style="font-size:15px">' + s[0] + '</span><span class="small ' + (late ? 'warn' : 'muted') + '">ул. [Адрес] · ' + s[2] + '</span></span></div>';
-      }).join('')).join('');
+          '<span class="grow"><span class="bold" style="font-size:15px">' + esc(s[0]) + '</span><span class="small ' + (late ? 'warn' : 'muted') + '">' + esc(s[3] || 'ул. [Адрес]') + ' · ' + s[2] + '</span></span></div>';
+      }).join('')).join('') + ADD_STORE;
+    $('#d-store-n').textContent = stores.length;
   }
   $('#district-filter').addEventListener('click', e => {
     const c = e.target.closest('[data-d]');
@@ -1405,6 +1457,45 @@ button.toggle::after{transition:right .2s}
       toast('Сохранено · магазины увидят изменения сразу');
     }
     go(history.pop() || 'd-catalog', 'back');
+  });
+
+  // Новый магазин: одна форма для агента и дистрибьютора
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-add-store]')) return;
+    $('#store-form').reset();
+    $('#ns-district').hidden = role !== 'dist';
+    go('store-new', 'push');
+  });
+  $('#store-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#ns-name').value.trim(), addr = $('#ns-addr').value.trim() || 'ул. [Адрес]';
+    if (!name) { toast('Укажите название магазина'); return; }
+    if (role === 'dist') {
+      stores.push([name, $('#ns-district .chip.on').dataset.d, 'новый', addr]);
+      renderStores();
+    } else {
+      const c = document.createElement('div');
+      c.className = 'card row'; c.style.cssText = 'flex-direction:row;padding:14px';
+      c.innerHTML = '<span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-store"/></svg></span>' +
+        '<span class="grow"><span class="bold" style="font-size:15px">' + esc(name) + '</span><span class="small muted">' + esc(addr) + ' · новый</span></span>';
+      $('#a-store-list [data-add-store]').before(c);
+      $$('.a-store-n').forEach(x => x.textContent = $$('#a-store-list .card').length);
+    }
+    toast('Магазин добавлен');
+    go(history.pop() || homeOf[role], 'back');
+  });
+
+  // Агент работает от компании или сам, как ИП: от этого зависит поставщик в накладной
+  let agentSelf = false;
+  $('#agent-mode').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    agentSelf = b.dataset.self === '1';
+    $$('#agent-mode button').forEach(x => x.classList.toggle('on', x === b));
+    $$('.agent-who').forEach(x => x.textContent = agentSelf ? 'ИП Азамат' : 'Агент Азамат · ОсОО «Дистрибьютор»');
+    $$('.agent-sub').forEach(x => x.textContent = agentSelf ? 'Индивидуальный предприниматель' : 'Торговый агент · ОсОО «Дистрибьютор»');
+    $$('[data-company]').forEach(x => x.hidden = agentSelf);
+    $$('[data-ip]').forEach(x => x.hidden = !agentSelf);
   });
 
   // Профиль: язык

@@ -629,10 +629,11 @@ button.toggle::after{transition:right .2s}
       </div>
     </header>
     <div class="body" style="gap:10px" id="agent-order-list"></div>
-    <nav class="tabbar" aria-label="Меню агента">
+    <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab on" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab" data-tab="a-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
       <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
       <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
   </section>
@@ -675,10 +676,11 @@ button.toggle::after{transition:right .2s}
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small warn">Не заказывал 12 дней</span></span>
       </div>
     </div>
-    <nav class="tabbar" aria-label="Меню агента">
+    <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab" data-tab="a-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
       <button class="tab on" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
       <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
   </section>
@@ -693,10 +695,11 @@ button.toggle::after{transition:right .2s}
       </div>
     </header>
     <div class="body" style="gap:10px" id="route-list"></div>
-    <nav class="tabbar" aria-label="Меню агента">
+    <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab" data-tab="a-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
       <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab on" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
+      <button class="tab on" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
       <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
   </section>
@@ -770,6 +773,49 @@ button.toggle::after{transition:right .2s}
       <button class="tab on" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
       <button class="tab" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
       <button class="tab" data-tab="d-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
+    </nav>
+  </section>
+
+  <!-- ========== АГЕНТ: МОИ ТОВАРЫ (агент сам ведёт товары и цены) ========== -->
+  <section class="screen" id="a-catalog" data-role="agent" hidden>
+    <header class="top">
+      <div class="grow"><span class="small muted">Свои цены для магазинов</span><span class="h1">Мои товары</span></div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название товара"></label>
+    </header>
+    <div class="body" style="gap:10px" id="a-product-list">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
+        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
+        <span class="grow"><span class="name p-name">Молоко «Белая река» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">72</span> сом</span>
+      </button>
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
+        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-kefir"/></svg></span>
+        <span class="grow"><span class="name p-name">Кефир 2,5%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">65</span> сом</span>
+      </button>
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
+        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-butter"/></svg></span>
+        <span class="grow"><span class="name p-name">Масло сливочное 82%, 200 г</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">145</span> сом</span>
+      </button>
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
+        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-juice"/></svg></span>
+        <span class="grow"><span class="name p-name">Сок яблочный, 1 л</span><span class="small p-meta muted">от <span class="p-min">12</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">95</span> сом</span>
+      </button>
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
+        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-sugar"/></svg></span>
+        <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
+        <span class="price muted"><span class="p-price">82</span> сом</span>
+      </button>
+      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
+    </div>
+    <nav class="tabbar five" aria-label="Меню агента">
+      <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab on" data-tab="a-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
+      <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
+      <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
   </section>
 
@@ -850,10 +896,11 @@ button.toggle::after{transition:right .2s}
         <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
     </div>
-    <nav class="tabbar" aria-label="Меню агента">
+    <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab" data-tab="a-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
       <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
       <button class="tab on" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
   </section>
@@ -1316,9 +1363,11 @@ button.toggle::after{transition:right .2s}
     $('.p-meta', b).classList.toggle('warn', !on); $('.p-meta', b).classList.toggle('muted', on);
     $('.price', b).classList.toggle('muted', !on);
   }
-  $('#d-product-list').addEventListener('click', e => {
+  let editList = null;  // список, из которого открыли редактор (агента или дистрибьютора)
+  $$('#d-product-list, #a-product-list').forEach(list => list.addEventListener('click', e => {
     const b = e.target.closest('[data-edit],[data-new]');
     if (!b) return;
+    editList = list;
     editing = b.hasAttribute('data-edit') ? b : null;
     $('#d-product-title').textContent = editing ? 'Изменить товар' : 'Новый товар';
     $('#d-name').value = editing ? $('.p-name', b).textContent : '';
@@ -1332,7 +1381,7 @@ button.toggle::after{transition:right .2s}
       showPhoto(src.includes('<img') ? src : src.replace('<svg ', '<svg class="pk" '));
     } else showPhoto(NO_PHOTO);
     go('d-product', 'push');
-  });
+  }));
   $('#d-avail').addEventListener('click', () => setAvail($('#d-avail').classList.contains('off')));
   $('#d-price-form').addEventListener('submit', e => {
     e.preventDefault();
@@ -1346,7 +1395,7 @@ button.toggle::after{transition:right .2s}
       b.innerHTML = '<span class="pimg"><svg class="ic"><use href="#i-box"/></svg></span>' +
         '<span class="grow"><span class="name p-name"></span><span class="small p-meta">от <span class="p-min"></span> шт · <span class="p-avail"></span></span></span>' +
         '<span class="price"><span class="p-price"></span> сом</span>';
-      $('#d-product-list [data-new]').before(b);
+      $('[data-new]', editList).before(b);
       writeProduct(b, name, p, m, on);
       if (newPhoto) $('.pimg', b).innerHTML = '<img alt="" src="' + newPhoto + '">';
       toast(newPhoto ? 'Товар с фото добавлен · магазины уже видят его' : 'Товар добавлен без фото');

@@ -220,6 +220,10 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+body.lite [data-full],body:not(.lite) [data-lite]{display:none!important}
+body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ver{display:flex;flex-direction:column;gap:6px;padding:18px;border-radius:18px;border:2px solid var(--line);background:var(--card);text-align:left;width:100%}
+.ver:active{transform:scale(.98)}.ver .h2{display:flex;align-items:center;gap:8px}
 /* Вход и регистрация */
 .auth{gap:12px;padding:24px 20px}
 .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin:22px 0 6px}
@@ -304,8 +308,18 @@ button.toggle::after{transition:right .2s}
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
 
+  <!-- ========== ВЫБОР ВЕРСИИ (для показа) ========== -->
+  <section class="screen" id="version" data-role="auth">
+    <div class="body auth">
+      <div class="brand" aria-label="Zakup.KG"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="brand-name">Zakup<b>.KG</b></span></div>
+      <div class="auth-head"><span class="h1">Выберите версию</span></div>
+      <button type="button" class="ver" data-ver="full"><span class="h2"><span class="pill green">1</span>Полная</span><span class="small muted">Каталог и сравнение поставщиков</span></button>
+      <button type="button" class="ver" data-ver="lite"><span class="h2"><span class="pill green">2</span>Один поставщик</span><span class="small muted">Без каталога и без других поставщиков на главной</span></button>
+    </div>
+  </section>
+
   <!-- ========== ВХОД И РЕГИСТРАЦИЯ (логика из ветки Hades) ========== -->
-  <section class="screen" id="auth" data-role="auth">
+  <section class="screen" id="auth" data-role="auth" hidden>
     <div class="body auth">
       <div class="brand" aria-label="Zakup.KG"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="brand-name">Zakup<b>.KG</b></span></div>
       <div class="auth-head"><span class="h1" id="auth-title">Вход</span><span class="small muted" id="auth-sub">Добро пожаловать!</span></div>
@@ -330,6 +344,7 @@ button.toggle::after{transition:right .2s}
       </form>
 
       <p class="auth-switch"><span id="to-reg">Нет аккаунта? <button type="button" class="linkbtn" data-auth="reg">Зарегистрироваться</button></span><span id="to-login" hidden>Уже есть аккаунт? <button type="button" class="linkbtn" data-auth="login">Войти</button></span></p>
+      <button type="button" class="linkbtn" id="ver-change" style="align-self:center;color:var(--muted);font-weight:600">Версия: <span id="ver-name">полная</span> · сменить</button>
     </div>
 
     <div class="sheet-bg" id="agree-sheet" role="dialog" aria-modal="true" aria-label="Документы" hidden>
@@ -376,8 +391,8 @@ button.toggle::after{transition:right .2s}
           <button class="btn" data-go="s-product">Заказать</button>
         </div>
       </div>
-      <div class="between rise"><span class="h2">Новинки от агентов</span><button class="small bold" data-tab="s-catalog" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
-      <div class="grid2 rise">
+      <div class="between rise" data-full><span class="h2">Новинки от агентов</span><button class="small bold" data-tab="s-catalog" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
+      <div class="grid2 rise" data-full>
         <button class="product" data-go="s-novelty">
           <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-juice"/></svg><span class="badge">NEW</span></span>
           <span class="name" style="font-size:14px">Сок яблочный, 1 л</span>
@@ -394,7 +409,7 @@ button.toggle::after{transition:right .2s}
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
       <button class="tab on" data-tab="s-home"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
-      <button class="tab" data-tab="s-catalog"><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
+      <button class="tab" data-tab="s-catalog" data-full><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
       <button class="tab" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n" id="shop-badge" hidden>1</span></button>
       <button class="tab" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
@@ -415,21 +430,21 @@ button.toggle::after{transition:right .2s}
       </div>
     </header>
     <div class="body" style="gap:12px">
-      <span class="h2 rise">Выберите поставщика</span>
+      <span class="h2 rise" data-full>Выберите поставщика</span><span class="h2 rise" data-lite>Поставщик</span>
       <button class="supplier on rise" data-price="72" data-name="Агент Азамат" data-when="завтра до 12:00">
         <span class="radio"></span>
         <span class="grow" style="gap:3px">
-          <span class="row" style="gap:6px"><span class="bold" style="font-size:15px">Агент Азамат</span><span class="pill green" style="font-size:11px;padding:2px 8px">Дешевле</span></span>
+          <span class="row" style="gap:6px"><span class="bold" style="font-size:15px">Агент Азамат</span><span data-full class="pill green" style="font-size:11px;padding:2px 8px">Дешевле</span></span>
           <span class="small muted">Доставка завтра до 12:00 · от 10 шт</span>
         </span>
         <span class="price">72 сом</span>
       </button>
-      <button class="supplier rise" data-price="75" data-name="Агент Нурлан" data-when="сегодня до 18:00">
+      <button class="supplier rise" data-full data-price="75" data-name="Агент Нурлан" data-when="сегодня до 18:00">
         <span class="radio"></span>
         <span class="grow" style="gap:3px"><span class="bold" style="font-size:15px">Агент Нурлан</span><span class="small muted">Доставка сегодня до 18:00 · от 20 шт</span></span>
         <span class="price">75 сом</span>
       </button>
-      <button class="supplier rise" data-price="77" data-name="Агент Айгерим" data-when="завтра">
+      <button class="supplier rise" data-full data-price="77" data-name="Агент Айгерим" data-when="завтра">
         <span class="radio"></span>
         <span class="grow" style="gap:3px"><span class="bold" style="font-size:15px">Агент Айгерим</span><span class="small muted">Доставка завтра · отсрочка 7 дней</span></span>
         <span class="price">77 сом</span>
@@ -503,7 +518,7 @@ button.toggle::after{transition:right .2s}
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
       <button class="tab" data-tab="s-home"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
-      <button class="tab" data-tab="s-catalog"><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
+      <button class="tab" data-tab="s-catalog" data-full><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
       <button class="tab on" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
       <button class="tab" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
@@ -569,7 +584,7 @@ button.toggle::after{transition:right .2s}
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
       <button class="tab" data-tab="s-home"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
-      <button class="tab on" data-tab="s-catalog"><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
+      <button class="tab on" data-tab="s-catalog" data-full><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
       <button class="tab" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
       <button class="tab" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
@@ -599,7 +614,7 @@ button.toggle::after{transition:right .2s}
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
       <button class="tab" data-tab="s-home"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
-      <button class="tab" data-tab="s-catalog"><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
+      <button class="tab" data-tab="s-catalog" data-full><svg class="ic"><use href="#i-grid"/></svg>Каталог</button>
       <button class="tab" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
       <button class="tab on" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
@@ -641,7 +656,7 @@ button.toggle::after{transition:right .2s}
         <span class="pimg sm"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:14px">Молоко 3,2% заканчивается</span><span class="small muted">Осталось 4 шт · 10 мин назад</span></span>
       </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
+      <div data-full class="card row rise" style="flex-direction:row;padding:14px">
         <span class="pimg sm"><svg viewBox="0 0 64 64"><use href="#p-juice"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:14px">Новинка от агента Нурлана</span><span class="small muted">Сок яблочный, 1 л · 1 ч назад</span></span>
       </div>
@@ -1230,7 +1245,7 @@ button.toggle::after{transition:right .2s}
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const fmt = n => n.toLocaleString('ru-RU');
 
-  let current_id = 'auth';
+  let current_id = 'version';
   const history = [];
   const lastScreen = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
   const homeOf = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
@@ -1520,6 +1535,16 @@ button.toggle::after{transition:right .2s}
     go('s-invoice', 'push');
   });
 
+
+  // ===== Выбор версии для показа =====
+  $$('[data-ver]').forEach(b => b.addEventListener('click', () => {
+    const lite = b.dataset.ver === 'lite';
+    document.body.classList.toggle('lite', lite);
+    $('#ver-name').textContent = lite ? 'один поставщик' : 'полная';
+    lastScreen.shop = 's-home';
+    go('auth', 'fade');
+  }));
+  $('#ver-change').addEventListener('click', () => go('version', 'fade'));
 
   // ===== Вход и регистрация (логика из ветки Hades, дизайн наш) =====
   let accType = 'shop';

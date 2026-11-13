@@ -216,6 +216,16 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+/* Накладная */
+.inv{gap:10px;font-size:13px;border:1px solid var(--line)}
+.inv-party{display:flex;flex-direction:column;gap:2px}
+.inv-t{width:100%;border-collapse:collapse;font-size:12px}
+.inv-t th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;padding:4px 4px 6px}
+.inv-t td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:top;font-variant-numeric:tabular-nums}
+.inv-t .r{text-align:right;white-space:nowrap}
+.inv-sign{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:12px}
+.inv-sign div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.inv-sign .line{height:24px;border-bottom:1px solid var(--text)}
 button.toggle{border:none;padding:0;transition:background .2s}
 button.toggle::after{transition:right .2s}
 .toggle.off{background:#C9CCD0}
@@ -592,23 +602,10 @@ button.toggle::after{transition:right .2s}
   <section class="screen" id="s-invoice" data-role="shop" hidden>
     <header class="top" style="flex-direction:row;align-items:center;gap:8px">
       <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Накладная № 0001</span>
+      <span style="font-size:18px;font-weight:800" id="invoice-title">Накладная</span>
     </header>
-    <div class="body">
-      <div class="card rise" style="gap:10px;font-size:13px;border:1px solid var(--line)">
-        <div class="between"><span style="font-size:16px;font-weight:800">ТОВАРНАЯ НАКЛАДНАЯ</span><span class="muted">№ 0001</span></div>
-        <div class="divider"></div>
-        <div class="between"><span class="muted">Поставщик</span><span class="bold sup-name">Агент Азамат</span></div>
-        <div class="between"><span class="muted">Получатель</span><span class="bold">Магазин «[Название]»</span></div>
-        <div class="between"><span class="muted">Дата</span><span class="bold">10.11.2026</span></div>
-        <div class="divider"></div>
-        <div class="between muted xs bold"><span>Наименование</span><span>Кол-во × цена</span></div>
-        <div class="between"><span>Молоко «Белая река» 3,2%, 1 л</span><span class="bold"><span class="sum-qty">20</span> × <span class="sum-price">72</span></span></div>
-        <div class="divider"></div>
-        <div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price"><span class="sum-total">1 440</span> сом</span></div>
-        <div class="between" style="padding-top:12px"><span class="muted">Отпустил: ________</span><span class="muted">Принял: ________</span></div>
-      </div>
-    </div>
+    <!-- Заполняется из заказа: renderInvoice() -->
+    <div class="body" id="invoice-paper"></div>
     <div class="bottom-bar">
       <button class="btn lg" id="share-invoice">Поделиться PDF</button>
     </div>
@@ -881,6 +878,7 @@ button.toggle::after{transition:right .2s}
   function go(id, dir) {
     if (id === current_id) return;
     const from = $('#' + current_id), to = $('#' + id);
+    if (id === 's-invoice') { renderInvoice(pendingInv || shopInv); pendingInv = null; }
     if (dir === 'push') { history.push(current_id); animateOut(from, 'out-left'); animateIn(to, 'in-right'); }
     else if (dir === 'back') { animateOut(from, 'out-right'); animateIn(to, 'in-left'); }
     else { history.length = 0; from.hidden = true; animateIn(to, 'fade-in'); }
@@ -942,6 +940,7 @@ button.toggle::after{transition:right .2s}
       $$('.sum-qty').forEach(e => e.textContent = qty);
       $$('.sum-price').forEach(e => e.textContent = price);
       $$('.sum-total').forEach(e => e.textContent = fmt(qty * price));
+      shopInv.items[0].q = qty; shopInv.items[0].p = price; shopInv.releasedBy = sup.dataset.name;
       b.textContent = 'Заказать';
       const badge = $('#shop-badge'); badge.hidden = false; badge.classList.add('pop');
       go('s-success', 'push');
@@ -959,6 +958,36 @@ button.toggle::after{transition:right .2s}
     go(history.pop() || 's-home', 'back');
   });
   $('#share-invoice').addEventListener('click', () => toast('PDF накладной готов к отправке'));
+
+  // ===== Накладная: одна на все роли, собирается из заказа =====
+  // Поставщик в накладной — юрлицо дистрибьютора; агент или склад — только «Отпустил».
+  const SUPPLIER = { name: 'ОсОО «[Дистрибьютор]»', details: 'ИНН [14 цифр] · г. Бишкек, [Адрес склада]' };
+  const shopInv = {
+    n: '0001', date: '14.11.2026', shop: 'Магазин «[Название]»', addr: 'ул. [Адрес]', releasedBy: 'Агент Азамат',
+    items: [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: 20, p: 72 }]
+  };
+  let pendingInv = null;   // накладная, которую открыли из карточки заказа агента или дистрибьютора
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderInvoice(inv) {
+    const sum = inv.items.reduce((s, i) => s + i.q * i.p, 0);
+    $('#invoice-title').textContent = 'Накладная № ' + inv.n;
+    $('#invoice-paper').innerHTML =
+      '<div class="card rise inv">' +
+      '<div class="between" style="align-items:flex-start"><span style="font-size:16px;font-weight:800">ТОВАРНАЯ НАКЛАДНАЯ</span>' +
+      '<span class="xs muted" style="text-align:right">№ ' + inv.n + '<br>от ' + inv.date + '</span></div>' +
+      '<div class="divider"></div>' +
+      '<div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + SUPPLIER.name + '</span><span class="xs muted">' + SUPPLIER.details + '</span></div>' +
+      '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + esc(inv.shop) + '</span><span class="xs muted">' + esc(inv.addr) + '</span></div>' +
+      '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
+      inv.items.map((i, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(i.name) + '</td><td class="r">' + i.q + ' шт</td><td class="r">' + i.p + '</td><td class="r">' + fmt(i.q * i.p) + '</td></tr>').join('') +
+      '</tbody></table>' +
+      '<div class="divider"></div>' +
+      '<div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(sum) + ' сом</span></div>' +
+      '<div class="between xs"><span class="muted">Оплата</span><span class="bold">при получении</span></div>' +
+      '<div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">' + esc(inv.releasedBy) + '</span><span class="line"></span></div>' +
+      '<div><span class="xs muted">Принял</span><span class="small bold">Представитель магазина</span><span class="line"></span></div></div>' +
+      '</div>';
+  }
 
   // ===== Заказы: общая логика для агента и дистрибьютора =====
   // Статусы: new → confirmed → delivering → delivered; отдельно rejected
@@ -1063,7 +1092,7 @@ button.toggle::after{transition:right .2s}
       '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
       '<div class="between small"><span class="muted">Доставка</span><span class="bold">' + o.when + '</span></div></div>';
     if (o.st !== 'new' && o.st !== 'rejected') {
-      html += '<button class="card row rise" data-go="s-invoice" style="flex-direction:row;padding:14px 16px;border:none;text-align:left">' +
+      html += '<button class="card row rise" data-invoice="' + r + ':' + o.n + '" style="flex-direction:row;padding:14px 16px;border:none;text-align:left">' +
         '<span class="thumb" style="width:44px;height:44px;background:#FDECEC;color:#B42318"><svg class="ic"><use href="#i-pdf"/></svg></span>' +
         '<span class="grow"><span class="bold" style="font-size:15px">Накладная № ' + o.n + '.pdf</span><span class="small muted">Открыть или отправить магазину</span></span>' +
         '<svg class="ic" style="color:var(--muted);width:20px;height:20px"><use href="#i-next"/></svg></button>';
@@ -1090,6 +1119,19 @@ button.toggle::after{transition:right .2s}
     }
     bar.hidden = !bar.innerHTML;
   }
+
+  // Открыть накладную по заказу агента или дистрибьютора
+  const DATE_OF = { 'вчера': '13.11.2026', '3 дня назад': '11.11.2026' };
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-invoice]');
+    if (!b) return;
+    const [r, n] = b.dataset.invoice.split(':'), o = find(r, n);
+    pendingInv = {
+      n: o.n, date: DATE_OF[o.ago] || '14.11.2026', shop: o.shop, addr: o.addr + ', ' + o.area, items: o.items,
+      releasedBy: r === 'agent' ? 'Торговый агент Азамат' : 'Склад / экспедитор'
+    };
+    go('s-invoice', 'push');
+  });
 
   // Открыть заказ из списка
   document.addEventListener('click', e => {

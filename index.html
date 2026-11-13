@@ -216,6 +216,31 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+/* Вход и регистрация */
+.auth{gap:12px;padding:24px 20px}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin:22px 0 6px}
+.brand-mark{position:relative;width:36px;height:30px;flex-shrink:0}
+.brand-mark i{position:absolute;top:0;width:12px;height:30px;border:5px solid var(--green)}
+.brand-mark i:first-child{left:0;border-right:0}.brand-mark i:last-child{right:0;border-left:0}
+.brand-name{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1}.brand-name b{color:var(--green)}
+.auth-head{text-align:center;display:flex;flex-direction:column;gap:2px;margin-bottom:4px}
+.inp{display:flex;align-items:center;gap:10px;height:52px;padding:0 14px;border:1px solid var(--border);border-radius:14px;background:var(--card)}
+.inp:focus-within{border-color:var(--green)}
+.inp .ic{color:var(--muted);width:20px;height:20px}
+.inp input{flex:1;border:none;background:none;height:100%;font-size:16px;min-width:0;outline:none;padding:0}
+.inp .cc{font-weight:700;font-size:16px}
+.eye{border:none;background:none;color:var(--muted);padding:4px;display:flex}.eye.on{color:var(--green)}
+.check{display:flex;gap:10px;align-items:center;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
+.linkbtn{border:none;background:none;color:var(--green);font-weight:700;font-size:14px;padding:0;text-align:left}
+.auth-switch{text-align:center;font-size:14px;color:var(--muted);margin-top:4px}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:40;display:flex;align-items:flex-end}
+.sheet{background:var(--bg);border-radius:22px 22px 0 0;padding:10px 16px 16px;width:100%;max-height:88%;display:flex;flex-direction:column;gap:12px}
+.sheet .handle{width:40px;height:4px;border-radius:2px;background:var(--border);align-self:center}
+.sheet .doc{overflow-y:auto;flex:1;min-height:0}
+.sheet .btn,.sheet .seg{flex-shrink:0}
+.seg.three{grid-template-columns:repeat(3,1fr)}.seg.three button{font-size:13px}
+
 .sugg-wrap{position:relative}
 .sugg{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:20;overflow:hidden;display:flex;flex-direction:column}
 .sugg .list-item{padding:11px 14px}
@@ -270,8 +295,47 @@ button.toggle::after{transition:right .2s}
 
   <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
 
+  <!-- ========== ВХОД И РЕГИСТРАЦИЯ (логика из ветки Hades) ========== -->
+  <section class="screen" id="auth" data-role="auth">
+    <div class="body auth">
+      <div class="brand" aria-label="Zakup.KG"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="brand-name">Zakup<b>.KG</b></span></div>
+      <div class="auth-head"><span class="h1" id="auth-title">Вход</span><span class="small muted" id="auth-sub">Добро пожаловать!</span></div>
+      <div class="seg" id="auth-type" role="radiogroup" aria-label="Тип аккаунта"><button type="button" class="on" data-acc="shop">Магазин</button><button type="button" data-acc="supplier">Поставщик</button></div>
+
+      <form id="login-form" class="col" style="display:flex;flex-direction:column;gap:12px" novalidate>
+        <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" placeholder="Номер телефона" inputmode="numeric" pattern="[0-9]{3} [0-9]{3} [0-9]{3}" data-phone required></label>
+        <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Пароль" minlength="8" data-pw required><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+        <button type="button" class="linkbtn" data-toast="Восстановление пароля — в следующей версии">Забыли пароль?</button>
+        <button type="submit" class="btn lg">Войти</button>
+      </form>
+
+      <form id="reg-form" style="display:flex;flex-direction:column;gap:12px" hidden novalidate>
+        <label class="inp"><svg class="ic"><use href="#i-store"/></svg><input type="text" id="reg-name" placeholder="Название магазина" required></label>
+        <label class="inp"><svg class="ic"><use href="#i-doc"/></svg><input type="text" placeholder="ИНН / ПИН" inputmode="numeric" pattern="[0-9]{14}" data-digits="14" required></label>
+        <label class="inp"><svg class="ic"><use href="#i-pin"/></svg><input type="text" id="reg-addr" placeholder="Адрес магазина / доставки" required></label>
+        <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" placeholder="Номер телефона" inputmode="numeric" pattern="[0-9]{3} [0-9]{3} [0-9]{3}" data-phone required></label>
+        <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="reg-pw" placeholder="Придумайте пароль" minlength="8" data-pw required></label>
+        <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="reg-pw2" placeholder="Повторите пароль" minlength="8" data-pw required><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+        <label class="check"><input type="checkbox" id="reg-agree" required><span>Согласен с <button type="button" class="linkbtn" data-agree-open>условиями, офертой и политикой</button></span></label>
+        <button type="submit" class="btn lg">Зарегистрироваться</button>
+      </form>
+
+      <p class="auth-switch"><span id="to-reg">Нет аккаунта? <button type="button" class="linkbtn" data-auth="reg">Зарегистрироваться</button></span><span id="to-login" hidden>Уже есть аккаунт? <button type="button" class="linkbtn" data-auth="login">Войти</button></span></p>
+    </div>
+
+    <div class="sheet-bg" id="agree-sheet" role="dialog" aria-modal="true" aria-label="Документы" hidden>
+      <div class="sheet">
+        <span class="handle" aria-hidden="true"></span>
+        <span class="h2">Условия, оферта и политика</span>
+        <div class="seg three" id="agree-tabs" role="tablist"><button type="button" class="on" data-agr="user_agreement_zakup_kg">Соглашение</button><button type="button" data-agr="oferta">Оферта</button><button type="button" data-agr="privacy">Политика</button></div>
+        <div class="card doc" id="agree-body" tabindex="0"></div>
+        <button type="button" class="btn lg" id="agree-accept">Принять и продолжить</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ========== МАГАЗИН: ГЛАВНАЯ ========== -->
-  <section class="screen" id="s-home" data-role="shop">
+  <section class="screen" id="s-home" data-role="shop" hidden>
     <header class="top">
       <div class="between">
         <div class="grow">
@@ -521,7 +585,7 @@ button.toggle::after{transition:right .2s}
         <button class="list-item" data-go="docs"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Договоры и правила</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
       <div class="list rise">
-        <button class="list-item" style="color:#B42318"><span class="grow">Выйти</span></button>
+        <button class="list-item" data-logout style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
@@ -929,7 +993,7 @@ button.toggle::after{transition:right .2s}
         <button class="list-item" data-toast="Чат поддержки — в следующей версии"><svg class="ic"><use href="#i-bell"/></svg><span class="grow">Поддержка</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
       <div class="list rise">
-        <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
+        <button class="list-item" data-logout style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
     </div>
     <nav class="tabbar five" aria-label="Меню агента">
@@ -1101,7 +1165,7 @@ button.toggle::after{transition:right .2s}
         <button class="list-item" data-go="docs"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Договоры и правила</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
       <div class="list rise">
-        <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
+        <button class="list-item" data-logout style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
     </div>
     <nav class="tabbar" aria-label="Меню дистрибьютора">
@@ -1143,6 +1207,10 @@ button.toggle::after{transition:right .2s}
   <symbol id="p-juice" viewBox="0 0 64 64"><path d="M40 4l-3 9" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/><path d="M18 14l4-4h20l4 4v42a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2z" fill="#FEF3C7" stroke="#B45309" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="36" r="9" fill="#DC2626"/><path d="M32 27c0-3 2-5 5-5-0.5 3-2.5 5-5 5z" fill="#15803D"/><path d="M28 33a3 3 0 0 1 3-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></symbol>
   <symbol id="p-sugar" viewBox="0 0 64 64"><path d="M16 12h32l-2 6 3 36a2 2 0 0 1-2 2H17a2 2 0 0 1-2-2l3-36z" fill="#fff" stroke="#6B7280" stroke-width="2" stroke-linejoin="round"/><path d="M18 18h28" stroke="#6B7280" stroke-width="2"/><rect x="20" y="28" width="24" height="16" rx="2" fill="#2563EB"/><rect x="25" y="32" width="6" height="6" rx="1" fill="#fff"/><rect x="33" y="32" width="6" height="6" rx="1" fill="#fff"/></symbol>
   <symbol id="p-smetana" viewBox="0 0 64 64"><ellipse cx="32" cy="18" rx="20" ry="5" fill="#7C3AED"/><path d="M12 18l4 34a3 3 0 0 0 3 3h26a3 3 0 0 0 3-3l4-34" fill="#fff" stroke="#7C3AED" stroke-width="2" stroke-linejoin="round"/><rect x="17" y="30" width="30" height="12" fill="#7C3AED"/><path d="M24 36h16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11.5a7 7 0 0 1 14 0C19 15 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
   <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></symbol>
 </svg>
@@ -1153,7 +1221,7 @@ button.toggle::after{transition:right .2s}
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const fmt = n => n.toLocaleString('ru-RU');
 
-  let current_id = 's-home';
+  let current_id = 'auth';
   const history = [];
   const lastScreen = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
   const homeOf = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
@@ -1443,6 +1511,73 @@ button.toggle::after{transition:right .2s}
       releasedBy: r === 'agent' ? 'Торговый агент Азамат' : 'Склад / экспедитор'
     };
     go('s-invoice', 'push');
+  });
+
+
+  // ===== Вход и регистрация (логика из ветки Hades, дизайн наш) =====
+  let accType = 'shop';
+  function authMode(reg) {
+    $('#login-form').hidden = reg; $('#reg-form').hidden = !reg;
+    $('#to-reg').hidden = reg; $('#to-login').hidden = !reg;
+    $('#auth-title').textContent = reg ? 'Регистрация' : 'Вход';
+    $('#auth-sub').textContent = reg ? 'Добро пожаловать в B2B-платформу!' : 'Добро пожаловать!';
+  }
+  $$('[data-auth]').forEach(b => b.addEventListener('click', () => authMode(b.dataset.auth === 'reg')));
+  $('#auth-type').addEventListener('click', e => {
+    const b = e.target.closest('[data-acc]');
+    if (!b) return;
+    accType = b.dataset.acc;
+    $$('#auth-type button').forEach(x => x.classList.toggle('on', x === b));
+    const shop = accType === 'shop';
+    $('#reg-name').placeholder = shop ? 'Название магазина' : 'Название поставщика';
+    $('#reg-addr').placeholder = shop ? 'Адрес магазина / доставки' : 'Адрес склада';
+  });
+  // ИНН: только цифры, ровно 14
+  $$('[data-digits]').forEach(i => i.addEventListener('input', () => {
+    const n = +i.dataset.digits;
+    i.value = i.value.replace(/\D/g, '').slice(0, n);
+    i.setCustomValidity(i.value && i.value.length !== n ? 'Введите ровно ' + n + ' цифр' : '');
+  }));
+  // Телефон: 9 цифр, формат 555 123 456
+  $$('[data-phone]').forEach(i => i.addEventListener('input', () => {
+    const d = i.value.replace(/\D/g, '').slice(0, 9);
+    i.value = d.replace(/(\d{3})(?=\d)/g, '$1 ');
+    i.setCustomValidity(d && d.length !== 9 ? 'Введите ровно 9 цифр' : '');
+  }));
+  // Глаз: показать все пароли формы
+  $$('[data-eye]').forEach(b => b.addEventListener('click', () => {
+    const show = b.getAttribute('aria-pressed') !== 'true';
+    $$('[data-pw]', b.closest('form')).forEach(i => i.type = show ? 'text' : 'password');
+    b.setAttribute('aria-pressed', show); b.classList.toggle('on', show);
+    b.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+  }));
+  const checkPw2 = () => $('#reg-pw2').setCustomValidity($('#reg-pw2').value && $('#reg-pw2').value !== $('#reg-pw').value ? 'Пароли не совпадают' : '');
+  $('#reg-pw').addEventListener('input', checkPw2); $('#reg-pw2').addEventListener('input', checkPw2);
+  // Согласие: перед галочкой — показать документы
+  const showAgr = k => {
+    $$('#agree-tabs button').forEach(x => x.classList.toggle('on', x.dataset.agr === k));
+    $('#agree-body').replaceChildren($('#doc-' + k).content.cloneNode(true));
+    $('#agree-body').scrollTop = 0;
+  };
+  const openAgree = () => { showAgr('user_agreement_zakup_kg'); $('#agree-sheet').hidden = false; };
+  $('#reg-agree').addEventListener('click', e => { if ($('#reg-agree').checked) { e.preventDefault(); openAgree(); } });
+  $('[data-agree-open]').addEventListener('click', openAgree);
+  $('#agree-tabs').addEventListener('click', e => { const b = e.target.closest('[data-agr]'); if (b) showAgr(b.dataset.agr); });
+  $('#agree-accept').addEventListener('click', () => { $('#reg-agree').checked = true; $('#agree-sheet').hidden = true; });
+  $('#agree-sheet').addEventListener('click', e => { if (e.target.id === 'agree-sheet') $('#agree-sheet').hidden = true; });
+  // Вход: магазин → кабинет магазина, поставщик → кабинет дистрибьютора
+  const enter = (fm, msg) => {
+    if (!fm.reportValidity()) return;
+    setRole(accType === 'shop' ? 'shop' : 'dist');
+    toast(msg);
+  };
+  $('#login-form').addEventListener('submit', e => { e.preventDefault(); enter(e.target, 'Добро пожаловать!'); });
+  $('#reg-form').addEventListener('submit', e => { e.preventDefault(); checkPw2(); enter(e.target, 'Регистрация прошла успешно'); });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-logout]')) return;
+    $$('#auth form').forEach(fm => fm.reset());
+    authMode(false);
+    go('auth', 'fade');
   });
 
   // Профиль агента: список накладных по принятым заказам

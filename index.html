@@ -142,6 +142,8 @@ button{cursor:pointer}
 .field input,.field textarea{border-radius:14px;border:1px solid var(--border);background:var(--card);padding:0 14px;height:48px;font-size:16px;min-width:0;width:100%}
 .field textarea{height:auto;padding:12px 14px;font-size:15px;line-height:1.4;resize:none}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 7px;margin-left:8px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:800;vertical-align:middle}
+.chip.on .cnt{background:rgba(255,255,255,.22);color:#fff}
 .chip{height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);font-size:14px;font-weight:600;transition:background .2s,color .2s,transform .12s}
 .chip.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
 .upload{height:120px;border-radius:18px;border:2px dashed #A3A8AE;background:var(--card);color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:700;transition:all .3s}
@@ -730,7 +732,7 @@ button.toggle::after{transition:right .2s}
       <div class="grow"><span class="h1">Заказы</span></div>
       <div class="chips scroll filter" data-role-list="agent">
         <button type="button" class="chip on" data-f="all">Все</button>
-        <button type="button" class="chip" data-f="new">Новые · <span class="agent-new-n">2</span></button>
+        <button type="button" class="chip" data-f="new">Новые<span class="cnt agent-new-n">2</span></button>
         <button type="button" class="chip" data-f="work">В работе</button>
         <button type="button" class="chip" data-f="done">Завершены</button>
       </div>
@@ -818,7 +820,7 @@ button.toggle::after{transition:right .2s}
       <div class="grow"><span class="h1">Заказы</span></div>
       <div class="chips scroll filter" data-role-list="dist">
         <button type="button" class="chip on" data-f="all">Все</button>
-        <button type="button" class="chip" data-f="new">Новые · <span class="dist-new-n">3</span></button>
+        <button type="button" class="chip" data-f="new">Новые<span class="cnt dist-new-n">3</span></button>
         <button type="button" class="chip" data-f="work">В работе</button>
         <button type="button" class="chip" data-f="done">Завершены</button>
       </div>
@@ -961,7 +963,7 @@ button.toggle::after{transition:right .2s}
     <header class="top">
       <div class="grow"><span class="h1">Магазины</span></div>
       <div class="chips scroll" id="district-filter">
-        <button type="button" class="chip on" data-d="all">Все · <span id="d-store-n">8</span></button>
+        <button type="button" class="chip on" data-d="all">Все<span class="cnt" id="d-store-n">8</span></button>
         <button type="button" class="chip" data-d="Октябрьский">Октябрьский</button>
         <button type="button" class="chip" data-d="Свердловский">Свердловский</button>
         <button type="button" class="chip" data-d="Первомайский">Первомайский</button>
@@ -1576,7 +1578,7 @@ button.toggle::after{transition:right .2s}
     const fn = SF.find(f => f[0] === stockF)[2], q = ($('#stock-search').value || '').trim().toLowerCase();
     const list = STOCK.filter(fn).sort((a, b) => a.left - b.left);
     $$('.stock-filter').forEach(c => c.innerHTML = SF.map(([k, t, f]) =>
-      '<button type="button" class="chip' + (k === stockF ? ' on' : '') + '" data-sf="' + k + '">' + t + ' · ' + STOCK.filter(f).length + '</button>').join(''));
+      '<button type="button" class="chip' + (k === stockF ? ' on' : '') + '" data-sf="' + k + '">' + t + '<span class="cnt">' + STOCK.filter(f).length + '</span></button>').join(''));
     $$('.stock-list').forEach(el => {
       const lim = +el.dataset.limit || 0, rows = lim ? list.slice(0, lim) : list.filter(x => !q || x.name.toLowerCase().includes(q));
       el.innerHTML = rows.length ? rows.map(stockRow).join('') : '<span class="small muted">Ничего не найдено</span>';

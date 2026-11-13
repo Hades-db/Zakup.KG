@@ -306,6 +306,15 @@ button.toggle::after{transition:right .2s}
     <div class="sheet"><span class="handle" aria-hidden="true"></span><span class="h2" style="text-align:center">Выйти из аккаунта?</span>
       <button type="button" class="btn lg danger" id="logout-yes">Выйти</button><button type="button" class="btn lg ghost" id="logout-no">Отмена</button></div>
   </div>
+  <div class="sheet-bg" id="cart-sheet" role="dialog" aria-modal="true" aria-label="Заказ" hidden>
+    <div class="sheet">
+      <span class="handle" aria-hidden="true"></span>
+      <span class="h2" id="cart-title"></span>
+      <div class="card" id="cart-list" style="gap:10px;overflow-y:auto;min-height:0"></div>
+      <div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price" id="cart-total"></span></div>
+      <button type="button" class="btn lg" id="cart-send">Отправить заказ</button>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
 
   <!-- ========== ВЫБОР ВЕРСИИ (для показа) ========== -->
@@ -370,27 +379,14 @@ button.toggle::after{transition:right .2s}
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="search" type="search" aria-label="Поиск товаров" placeholder="Молоко, хлеб, масло…"></label>
     </header>
     <div class="body">
-      <div class="card rise">
-        <div class="between">
-          <span class="h2">Заканчивается на складе</span>
-          <span class="pill warn row" style="gap:6px"><span class="dot"></span>3 товара</span>
-        </div>
-        <div class="row">
-          <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
-          <div class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small warn">Осталось 4 шт</span></div>
-          <button class="btn" data-go="s-product">Заказать</button>
-        </div>
-        <div class="row">
-          <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-bread"/></svg></span>
-          <div class="grow"><span class="name">Хлеб белый, 500 г</span><span class="small warn">Осталось 6 шт</span></div>
-          <button class="btn" data-go="s-product">Заказать</button>
-        </div>
-        <div class="row">
-          <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-butter"/></svg></span>
-          <div class="grow"><span class="name">Масло сливочное 82%, 200 г</span><span class="small warn">Осталось 2 шт</span></div>
-          <button class="btn" data-go="s-product">Заказать</button>
-        </div>
+      <div class="card rise" style="gap:10px">
+        <span class="h2">Остатки на складе</span>
+        <div class="chips scroll stock-filter" style="margin:0 -16px;padding:0 16px"></div>
+        <div class="stock-list" data-limit="5" style="display:flex;flex-direction:column;gap:10px"></div>
+        <button type="button" class="linkbtn" id="stock-more" data-go="s-stock" style="display:flex;align-items:center;gap:2px"></button>
       </div>
+      <span class="h2 rise">Заказать у поставщика</span>
+      <div id="sup-groups" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="between rise" data-full><span class="h2">Новинки от агентов</span><button class="small bold" data-tab="s-catalog" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
       <div class="grid2 rise" data-full>
         <button class="product" data-go="s-novelty">
@@ -413,6 +409,19 @@ button.toggle::after{transition:right .2s}
       <button class="tab" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n" id="shop-badge" hidden>1</span></button>
       <button class="tab" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
+  </section>
+
+  <!-- ========== МАГАЗИН: ВСЕ ОСТАТКИ ========== -->
+  <section class="screen" id="s-stock" data-role="shop" hidden>
+    <header class="top">
+      <div class="row" style="gap:8px">
+        <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+        <span style="font-size:18px;font-weight:800">Остатки на складе</span>
+      </div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="stock-search" type="search" aria-label="Поиск по остаткам" placeholder="Найти товар"></label>
+      <div class="chips scroll stock-filter"></div>
+    </header>
+    <div class="body"><div class="card stock-list" style="gap:10px"></div></div>
   </section>
 
   <!-- ========== МАГАЗИН: ВЫБОР ПОСТАВЩИКА ========== -->
@@ -1536,12 +1545,92 @@ button.toggle::after{transition:right .2s}
   });
 
 
+
+  // ===== Остатки магазина: фильтры, 5 самых срочных, заказ у поставщика одной кнопкой =====
+  // [название, фото, осталось шт, поставщик, цена, сколько заказать]
+  const STOCK = [
+    ['Молоко «Белая река» 3,2%, 1 л', 'milk', 4, 'Агент Азамат', 72, 20], ['Кефир 2,5%, 1 л', 'kefir', 0, 'Агент Азамат', 65, 10],
+    ['Сметана 20%, 400 г', 'smetana', 3, 'Агент Азамат', 90, 12], ['Масло сливочное 82%, 200 г', 'butter', 2, 'Агент Азамат', 145, 6],
+    ['Ряженка 4%, 0,5 л', 'kefir', 7, 'Агент Азамат', 68, 10], ['Йогурт питьевой, 0,3 л', 'kefir', 0, 'Агент Азамат', 55, 12],
+    ['Творог 9%, 200 г', 'butter', 5, 'Агент Азамат', 120, 6], ['Молоко 2,5%, 1 л', 'milk', 30, 'Агент Азамат', 68, 20],
+    ['Сок яблочный, 1 л', 'juice', 0, 'Агент Нурлан', 95, 12], ['Сок апельсиновый, 1 л', 'juice', 6, 'Агент Нурлан', 98, 12],
+    ['Лимонад, 1 л', 'juice', 3, 'Агент Нурлан', 70, 12], ['Сок вишнёвый, 1 л', 'juice', 40, 'Агент Нурлан', 99, 12],
+    ['Хлеб белый, 500 г', 'bread', 6, 'Агент Айгерим', 38, 20], ['Батон нарезной', 'bread', 0, 'Агент Айгерим', 35, 20],
+    ['Сахар, 1 кг', 'sugar', 8, 'Агент Айгерим', 82, 10], ['Мука, 2 кг', 'sugar', 2, 'Агент Айгерим', 130, 5],
+    ['Печенье овсяное, 300 г', 'cookie', 4, 'Агент Айгерим', 68, 10], ['Пряники, 400 г', 'cookie', 0, 'Агент Айгерим', 75, 10],
+    ['Рис, 1 кг', 'sugar', 50, 'Агент Айгерим', 110, 10], ['Печенье шоколадное, 250 г', 'cookie', 35, 'Агент Айгерим', 85, 10]
+  ].map(([name, img, left, sup, p, q]) => ({ name, img, left, sup, p, q, ordered: false }));
+  const LOW = 8;   // меньше или равно — «заканчивается»
+  const supOf = x => document.body.classList.contains('lite') ? 'ОсОО «Дистрибьютор»' : x.sup;
+  const need = x => x.left <= LOW && !x.ordered;
+  const SF = [['low', 'Заканчивается', x => x.left > 0 && x.left <= LOW], ['out', 'Нет в наличии', x => x.left === 0], ['all', 'Все', () => true]];
+  let stockF = 'low';
+  function stockRow(x) {
+    const st = x.left === 0 ? '<span class="small" style="color:#B42318">Нет в наличии</span>'
+      : '<span class="small ' + (x.left <= LOW ? 'warn' : 'muted') + '">Осталось ' + x.left + ' шт</span>';
+    const act = x.ordered ? '<span class="pill green">Заказано</span>'
+      : x.left <= LOW ? '<button class="btn" data-go="s-product">Заказать</button>' : '';
+    return '<div class="row">' + pic(x.img) + '<div class="grow"><span class="name">' + x.name + '</span>' + st + '</div>' + act + '</div>';
+  }
+  function renderStock() {
+    const fn = SF.find(f => f[0] === stockF)[2], q = ($('#stock-search').value || '').trim().toLowerCase();
+    const list = STOCK.filter(fn).sort((a, b) => a.left - b.left);
+    $$('.stock-filter').forEach(c => c.innerHTML = SF.map(([k, t, f]) =>
+      '<button type="button" class="chip' + (k === stockF ? ' on' : '') + '" data-sf="' + k + '">' + t + ' · ' + STOCK.filter(f).length + '</button>').join(''));
+    $$('.stock-list').forEach(el => {
+      const lim = +el.dataset.limit || 0, rows = lim ? list.slice(0, lim) : list.filter(x => !q || x.name.toLowerCase().includes(q));
+      el.innerHTML = rows.length ? rows.map(stockRow).join('') : '<span class="small muted">Ничего не найдено</span>';
+    });
+    const more = list.length - 5;
+    $('#stock-more').hidden = more <= 0;
+    $('#stock-more').innerHTML = 'Ещё ' + more + ' ' + (more % 10 === 1 && more % 100 !== 11 ? 'товар' : more % 10 >= 2 && more % 10 <= 4 && (more % 100 < 12 || more % 100 > 14) ? 'товара' : 'товаров') +
+      '<svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg>';
+    // Группы по поставщику: что пора заказать
+    const g = {};
+    STOCK.filter(need).forEach(x => (g[supOf(x)] = g[supOf(x)] || []).push(x));
+    const keys = Object.keys(g);
+    $('#sup-groups').innerHTML = keys.length ? keys.map(k => {
+      const sum = g[k].reduce((s, x) => s + x.p * x.q, 0);
+      return '<div class="card row rise" style="flex-direction:row;padding:14px"><span class="grow"><span class="bold" style="font-size:15px">' + k + '</span>' +
+        '<span class="small muted">' + g[k].length + ' тов. · ' + fmt(sum) + ' сом</span></span>' +
+        '<button class="btn" data-cart="' + esc(k) + '">Заказать всё</button></div>';
+    }).join('') : '<span class="small muted">Всё заказано</span>';
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-sf]');
+    if (b) { stockF = b.dataset.sf; renderStock(); }
+  });
+  $('#stock-search').addEventListener('input', renderStock);
+  // Корзина поставщика: товары, которые пора заказать, с обычным количеством
+  let cartSup = null;
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-cart]');
+    if (!b) return;
+    cartSup = b.dataset.cart;
+    const items = STOCK.filter(x => need(x) && supOf(x) === cartSup);
+    $('#cart-title').textContent = 'Заказ · ' + cartSup;
+    $('#cart-list').innerHTML = items.map(x => '<div class="row" style="gap:10px">' + pic(x.img, 'sm') +
+      '<span class="grow"><span class="name" style="font-size:14px">' + x.name + '</span><span class="xs muted">' + x.q + ' шт × ' + x.p + ' сом</span></span>' +
+      '<span class="bold" style="white-space:nowrap">' + fmt(x.q * x.p) + ' сом</span></div>').join('');
+    $('#cart-total').textContent = fmt(items.reduce((s, x) => s + x.q * x.p, 0)) + ' сом';
+    $('#cart-sheet').hidden = false;
+  });
+  $('#cart-send').addEventListener('click', () => {
+    STOCK.filter(x => need(x) && supOf(x) === cartSup).forEach(x => x.ordered = true);
+    $('#cart-sheet').hidden = true;
+    renderStock();
+    toast('Заказ отправлен · ' + cartSup);
+  });
+  $('#cart-sheet').addEventListener('click', e => { if (e.target.id === 'cart-sheet') $('#cart-sheet').hidden = true; });
+  renderStock();
+
   // ===== Выбор версии (Тест 1 — полная, Тест 2 — без каталога и других поставщиков) =====
   $$('[data-ver]').forEach(b => b.addEventListener('click', () => {
     const lite = b.dataset.ver === 'lite';
     document.body.classList.toggle('lite', lite);
     $('#ver-name').textContent = lite ? 'Тест 2' : 'Тест 1';
     lastScreen.shop = 's-home';
+    renderStock();
     go('auth', 'fade');
   }));
   $('#ver-change').addEventListener('click', () => go('version', 'fade'));

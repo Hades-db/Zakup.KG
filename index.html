@@ -197,6 +197,13 @@ button{cursor:pointer}
 .progress i{display:block;height:100%;background:var(--green);border-radius:3px}
 .note{border-radius:14px;padding:12px 14px;background:var(--amber-bg);color:var(--amber);font-size:13px;font-weight:600;line-height:1.4}
 .pill.grey{background:var(--soft);color:var(--muted)}
+.tabbar.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.btn.danger{background:#B42318}
+.btn.danger:hover{background:#912018}
+.order-open{transition:transform .12s}
+.order-open:active{transform:scale(.98)}
+.section-h{font-size:13px;font-weight:800;color:var(--muted);padding:6px 2px 0}
+.order-bar[hidden]{display:none}
 button.toggle{border:none;padding:0;transition:background .2s}
 button.toggle::after{transition:right .2s}
 .toggle.off{background:#C9CCD0}
@@ -595,476 +602,201 @@ button.toggle::after{transition:right .2s}
     </div>
   </section>
 
+  <!-- ================================================================
+       Два варианта продукта, по итогам встречи останется один:
+       «Агент»        — заказы принимает торговый агент, кабинета дистрибьютора нет;
+       «Дистрибьютор» — заказы принимает офис напрямую, агентов нет.
+       ================================================================ -->
+
   <!-- ========== АГЕНТ: ЗАКАЗЫ ========== -->
   <section class="screen" id="a-orders" data-role="agent" hidden>
-    <button class="notif" id="notif" aria-label="Открыть новый заказ">
-      <span class="thumb" style="width:40px;height:40px;background:var(--green);color:#fff;border-radius:10px"><svg class="ic" style="width:20px;height:20px"><use href="#i-doc"/></svg></span>
-      <span class="grow"><span class="bold" style="font-size:14px">Новый заказ</span><span class="small muted">Магазин «Береке» · 1 260 сом</span></span>
-    </button>
     <header class="top">
-      <div class="grow"><span class="small muted">Агент Азамат</span><span class="h1">Заказы</span></div>
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
-        <div class="stat green"><b id="st-new">2</b><span>Новые</span></div>
-        <div class="stat"><b id="st-tomorrow">8</b><span>На завтра</span></div>
-        <div class="stat"><b>12</b><span>Доставлено</span></div>
+      <div class="grow"><span class="small muted">Агент Азамат · ОсОО «[Дистрибьютор]»</span><span class="h1">Заказы</span></div>
+      <div class="chips scroll filter" data-role-list="agent">
+        <button type="button" class="chip on" data-f="all">Все</button>
+        <button type="button" class="chip" data-f="new">Новые · <span class="agent-new-n">2</span></button>
+        <button type="button" class="chip" data-f="work">В работе</button>
+        <button type="button" class="chip" data-f="done">Завершены</button>
       </div>
     </header>
-    <div class="body" style="gap:12px" id="agent-list">
-      <span class="h2 rise">Новые</span>
-      <div class="card order-card rise" style="padding:14px;gap:10px">
-        <div class="between" style="align-items:flex-start">
-          <div class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">ул. [Адрес] · 5 мин назад</span></div>
-          <span class="pill green">Новый</span>
-        </div>
-        <span style="font-size:14px">Молоко 3,2% × 20, Кефир 2,5% × 10</span>
-        <div class="row" style="gap:10px">
-          <span class="price" style="flex:1">2 240 сом</span>
-          <button class="btn ghost" data-decline style="height:44px">Отклонить</button>
-          <button class="btn" data-accept style="height:44px;padding:0 16px">Принять</button>
-        </div>
-      </div>
-      <div class="card order-card rise" style="padding:14px;gap:10px">
-        <div class="between" style="align-items:flex-start">
-          <div class="grow"><span class="bold" style="font-size:15px">Минимаркет «Ала-Тоо»</span><span class="small muted">ул. [Адрес] · 22 мин назад</span></div>
-          <span class="pill green">Новый</span>
-        </div>
-        <span style="font-size:14px">Сметана 20% × 12</span>
-        <div class="row" style="gap:10px">
-          <span class="price" style="flex:1">1 080 сом</span>
-          <button class="btn ghost" data-decline style="height:44px">Отклонить</button>
-          <button class="btn" data-accept style="height:44px;padding:0 16px">Принять</button>
-        </div>
-      </div>
-      <span class="h2 rise" style="padding-top:4px">На доставку завтра</span>
-      <button class="card row rise" data-go="a-route" style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-truck"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px"><span id="route-n">8</span> магазинов · маршрут</span><span class="small muted">К оплате при получении: <span id="route-sum">18 650</span> сом</span></span>
-        <svg class="ic" style="color:var(--muted);width:20px;height:20px"><use href="#i-next"/></svg>
-      </button>
-    </div>
-    <nav class="tabbar" aria-label="Меню агента">
-      <button class="tab on" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
-      <button class="tab" data-tab="a-offer"><svg class="ic"><use href="#i-plus"/></svg>Новинка</button>
+    <div class="body" style="gap:10px" id="agent-order-list"></div>
+    <nav class="tabbar three" aria-label="Меню агента">
+      <button class="tab on" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
       <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
     </nav>
+  </section>
+
+  <!-- ========== АГЕНТ: КАРТОЧКА ЗАКАЗА ========== -->
+  <section class="screen" id="a-order" data-role="agent" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800" class="order-title">Заказ</span>
+    </header>
+    <div class="body order-body"></div>
+    <div class="bottom-bar order-bar"></div>
   </section>
 
   <!-- ========== АГЕНТ: МАГАЗИНЫ ========== -->
   <section class="screen" id="a-stores" data-role="agent" hidden>
     <header class="top">
       <span class="h1">Мои магазины</span>
-      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="store-search" type="search" aria-label="Поиск магазина" placeholder="Название или адрес"></label>
-      <div class="chips scroll">
-        <button type="button" class="chip on">Все · 24</button>
-        <button type="button" class="chip">Давно не заказывали</button>
-        <button type="button" class="chip">Новые</button>
-      </div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск магазина" placeholder="Название или адрес"></label>
     </header>
     <div class="body" style="gap:10px">
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">Последний заказ: сегодня · 2 240 сом</span></span>
+        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">ул. [Адрес] · заказ сегодня</span></span>
       </div>
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Минимаркет «Ала-Тоо»</span><span class="small muted">Последний заказ: сегодня · 1 080 сом</span></span>
+        <span class="grow"><span class="bold" style="font-size:15px">Минимаркет «Ала-Тоо»</span><span class="small muted">ул. [Адрес] · заказ сегодня</span></span>
+      </div>
+      <div class="card row rise" style="flex-direction:row;padding:14px">
+        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
+        <span class="grow"><span class="bold" style="font-size:15px">Продукты «Нур»</span><span class="small muted">ул. [Адрес] · заказ вчера</span></span>
+      </div>
+      <div class="card row rise" style="flex-direction:row;padding:14px">
+        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
+        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Асель»</span><span class="small muted">ул. [Адрес] · заказ 3 дня назад</span></span>
       </div>
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="width:44px;height:44px;background:var(--warn-bg);color:var(--warn)"><svg class="ic"><use href="#i-store"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small warn">Не заказывал 12 дней</span></span>
-        <button class="btn ghost" data-tab="a-offer" style="height:36px;font-size:13px">Предложить</button>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Продукты «Нур»</span><span class="small muted">Последний заказ: вчера · 3 150 сом</span></span>
       </div>
     </div>
-    <nav class="tabbar" aria-label="Меню агента">
-      <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
-      <button class="tab" data-tab="a-offer"><svg class="ic"><use href="#i-plus"/></svg>Новинка</button>
+    <nav class="tabbar three" aria-label="Меню агента">
+      <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
       <button class="tab on" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
+      <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
     </nav>
   </section>
 
-  <!-- ========== АГЕНТ: ПРОФИЛЬ ========== -->
-  <section class="screen" id="a-profile" data-role="agent" hidden>
-    <header class="top">
-      <div class="row">
-        <div class="avatar">А</div>
-        <div class="grow"><span class="h1" style="font-size:20px">Азамат</span><span class="small muted">Торговый агент · ОсОО «[Дистрибьютор]»</span></div>
-      </div>
-    </header>
-    <div class="body">
-      <div class="grid2 rise" style="gap:10px">
-        <div class="stat green"><b>186 400</b><span>Продажи за месяц, сом</span></div>
-        <div class="stat"><b>24</b><span>Магазина</span></div>
-      </div>
-      <div class="list rise">
-        <button class="list-item" data-go="a-products"><svg class="ic"><use href="#i-box"/></svg><span class="grow">Мои товары и цены</span><svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg></button>
-        <button class="list-item" data-go="a-route"><svg class="ic"><use href="#i-truck"/></svg><span class="grow">Маршрут на завтра</span><svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg></button>
-        <button class="list-item" data-go="s-invoice"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg></button>
-      </div>
-      <div class="list rise">
-        <button class="list-item" style="color:#B42318"><span class="grow">Выйти</span></button>
-      </div>
-    </div>
-    <nav class="tabbar" aria-label="Меню агента">
-      <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
-      <button class="tab" data-tab="a-offer"><svg class="ic"><use href="#i-plus"/></svg>Новинка</button>
-      <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-      <button class="tab on" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
-    </nav>
-  </section>
-
-  <!-- ========== АГЕНТ: МОИ ТОВАРЫ ========== -->
-  <section class="screen" id="a-products" data-role="agent" hidden>
-    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Мои товары и цены</span>
-    </header>
-    <div class="body" style="gap:10px">
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <div class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></div>
-        <div class="grow"><span class="name">Молоко «Белая река» 3,2%</span><span class="small muted">от 10 шт · в наличии</span></div>
-        <span class="price">72 сом</span>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <div class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></div>
-        <div class="grow"><span class="name">Кефир 2,5%, 1 л</span><span class="small muted">от 10 шт · в наличии</span></div>
-        <span class="price">65 сом</span>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <div class="thumb" style="background:#FDF8DD;color:#7A6A0E"><svg class="ic"><use href="#i-butter"/></svg></div>
-        <div class="grow"><span class="name">Масло сливочное 82%</span><span class="small muted">от 10 шт · в наличии</span></div>
-        <span class="price">145 сом</span>
-      </div>
-      <button class="btn lg rise" data-tab="a-offer">Добавить товар</button>
-    </div>
-  </section>
-
-  <!-- ========== АГЕНТ: МАРШРУТ ========== -->
+  <!-- ========== АГЕНТ: НА ДОСТАВКУ ========== -->
   <section class="screen" id="a-route" data-role="agent" hidden>
-    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Маршрут на завтра</span>
-    </header>
-    <div class="body" style="gap:10px">
-      <div class="card rise" style="flex-direction:row;justify-content:space-between;padding:14px">
-        <div class="grow"><span class="small muted">Остановок</span><span class="price"><span class="route-n">8</span></span></div>
-        <div class="grow" style="align-items:flex-end"><span class="small muted">Собрать оплату</span><span class="price"><span class="route-sum">18 650</span> сом</span></div>
-      </div>
-      <div class="card rise" style="padding:14px;gap:0">
-        <div class="step done"><div class="mark"><span class="circle"></span><span class="line" style="height:36px"></span></div><div class="grow"><span class="name" style="font-size:14px">09:00 · Магазин «Достук»</span><span class="xs muted">2 240 сом · молоко, кефир</span></div></div>
-        <div class="step"><div class="mark"><span class="circle"></span><span class="line" style="height:36px"></span></div><div class="grow"><span class="name" style="font-size:14px">09:40 · Минимаркет «Ала-Тоо»</span><span class="xs muted">1 080 сом · сметана</span></div></div>
-        <div class="step"><div class="mark"><span class="circle"></span><span class="line" style="height:36px"></span></div><div class="grow"><span class="name" style="font-size:14px">10:15 · Продукты «Нур»</span><span class="xs muted">3 150 сом · молочка</span></div></div>
-        <div class="step"><div class="mark"><span class="circle"></span></div><div class="grow"><span class="name" style="font-size:14px">… ещё 5 магазинов</span></div></div>
-      </div>
-    </div>
-    <div class="bottom-bar"><button class="btn lg" id="start-route">Начать маршрут</button></div>
-  </section>
-
-  <!-- ========== АГЕНТ: ПРЕДЛОЖИТЬ ТОВАР ========== -->
-  <section class="screen" id="a-offer" data-role="agent" hidden>
-    <header class="top" style="flex-direction:row;align-items:center;gap:8px;padding:14px 16px">
-      <button class="icon-btn" data-tab="a-orders" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Предложить товар</span>
-    </header>
-    <form class="body" id="offer-form">
-      <button type="button" class="upload rise" id="upload"><svg class="ic"><use href="#i-camera"/></svg><span id="upload-text">Добавить фото</span></button>
-      <div class="field rise"><label for="offer-name">Название</label><input id="offer-name" type="text" value="Сок яблочный, 1 л"></div>
-      <div class="grid2 rise" style="gap:10px">
-        <div class="field"><label for="offer-price">Цена за шт, сом</label><input id="offer-price" type="text" inputmode="numeric" value="95"></div>
-        <div class="field"><label for="offer-min">Мин. заказ, шт</label><input id="offer-min" type="text" inputmode="numeric" value="12"></div>
-      </div>
-      <div class="field rise">
-        <span class="label">Кому предложить</span>
-        <div class="chips">
-          <button type="button" class="chip on">Все мои магазины · 24</button>
-          <button type="button" class="chip">Выбрать вручную</button>
-          <button type="button" class="chip">По району</button>
-        </div>
-      </div>
-      <div class="field rise"><label for="offer-msg">Сообщение магазинам</label><textarea id="offer-msg" rows="3">Новинка! При заказе от 24 шт — скидка 5%.</textarea></div>
-      <button type="submit" class="btn lg rise" id="send-offer">Отправить предложение</button>
-    </form>
-  </section>
-
-  <!-- ========== ДИСТРИБЬЮТОР: СВОДКА ========== -->
-  <section class="screen" id="d-home" data-role="dist" hidden>
     <header class="top">
-      <div class="grow"><span class="small muted">ОсОО «[Дистрибьютор]»</span><span class="h1">Сводка за сегодня</span></div>
-      <div class="seg mode-seg" role="radiogroup" aria-label="Кто принимает заказы">
-        <button type="button" data-mode="agents" class="on">Через агентов</button>
-        <button type="button" data-mode="direct">Напрямую</button>
+      <div class="grow"><span class="small muted">Завтра</span><span class="h1">На доставку</span></div>
+      <div class="grid2" style="gap:10px">
+        <div class="stat"><b class="route-n">2</b><span>Магазина</span></div>
+        <div class="stat green"><b class="route-sum">4 330</b><span>Собрать оплату, сом</span></div>
       </div>
     </header>
-    <div class="body">
-      <div class="grid2 rise" style="gap:10px">
-        <div class="stat"><b>34</b><span>Заказов сегодня</span></div>
-        <div class="stat green"><b>286 400</b><span>Выручка, сом</span></div>
-        <div class="stat"><b>112</b><span>Активных магазинов</span></div>
-        <div class="stat"><b>8 420</b><span>Средний заказ, сом</span></div>
-      </div>
-      <div class="card rise">
-        <div class="between"><span class="h2">Заказы за неделю</span><span class="pill green">+18%</span></div>
-        <div class="bars" aria-label="Заказы по дням: 22, 28, 25, 31, 27, 19, 34">
-          <div><b>22</b><i style="height:55%"></i><span>Вс</span></div>
-          <div><b>28</b><i style="height:70%"></i><span>Пн</span></div>
-          <div><b>25</b><i style="height:62%"></i><span>Вт</span></div>
-          <div><b>31</b><i style="height:78%"></i><span>Ср</span></div>
-          <div><b>27</b><i style="height:67%"></i><span>Чт</span></div>
-          <div><b>19</b><i style="height:47%"></i><span>Пт</span></div>
-          <div class="today"><b>34</b><i style="height:85%"></i><span>Сб</span></div>
-        </div>
-      </div>
-      <div class="card rise">
-        <span class="h2">Требует внимания</span>
-        <div class="row">
-          <span class="thumb" style="width:40px;height:40px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-doc"/></svg></span>
-          <span class="grow"><span class="name" style="font-size:14px"><span class="d-new-n">2</span> заказа ждут подтверждения</span><span class="xs muted" data-only="agents">Агенты подтвердят в течение часа</span><span class="xs muted" data-only="direct" hidden>Подтвердите, чтобы собрать на складе</span></span>
-          <button class="btn ghost" data-tab="d-orders" style="height:36px;font-size:13px">Открыть</button>
-        </div>
-        <div class="row">
-          <span class="thumb" style="width:40px;height:40px;background:var(--warn-bg);color:var(--warn)"><svg class="ic"><use href="#i-store"/></svg></span>
-          <span class="grow"><span class="name" style="font-size:14px">9 магазинов давно не заказывали</span><span class="xs muted">Больше 10 дней без заказа</span></span>
-          <button class="btn ghost" data-tab="d-stores" style="height:36px;font-size:13px">Список</button>
-        </div>
-      </div>
-      <div class="card rise" data-only="agents">
-        <div class="between"><span class="h2">Агенты сегодня</span><button class="small bold" data-tab="d-agents" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
-        <div class="between small"><span class="bold">Азамат</span><span class="muted">12 заказов · 98 400 сом</span></div>
-        <div class="between small"><span class="bold">Нурлан</span><span class="muted">9 заказов · 74 100 сом</span></div>
-        <div class="between small"><span class="bold">Айгерим</span><span class="muted">7 заказов · 61 300 сом</span></div>
-      </div>
-      <div class="card rise" data-only="direct" hidden>
-        <span class="h2">Заказы напрямую</span>
-        <span class="small muted" style="line-height:1.45">Магазины заказывают сами в приложении, офис подтверждает и отправляет на склад. Агенты не нужны для приёма заказов — только для выкладки и новых точек.</span>
-        <div class="grid2" style="gap:10px">
-          <div class="stat green"><b>27</b><span>из 34 — без звонков</span></div>
-          <div class="stat"><b>~40</b><span>визитов сэкономлено</span></div>
-        </div>
-      </div>
-      <button class="btn lg rise" data-go="d-promo"><svg class="ic"><use href="#i-tag"/></svg>Разослать акцию магазинам</button>
-    </div>
-    <nav class="tabbar five" aria-label="Меню дистрибьютора">
-      <button class="tab on" data-tab="d-home"><svg class="ic"><use href="#i-home"/></svg>Сводка</button>
-      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n d-badge">2</span></button>
-      <button class="tab" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
-      <button class="tab" data-tab="d-agents"><svg class="ic"><use href="#i-user"/></svg>Агенты</button>
-      <button class="tab" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
+    <div class="body" style="gap:10px" id="route-list"></div>
+    <nav class="tabbar three" aria-label="Меню агента">
+      <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
+      <button class="tab" data-tab="a-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
+      <button class="tab on" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>На доставку</button>
     </nav>
   </section>
 
   <!-- ========== ДИСТРИБЬЮТОР: ЗАКАЗЫ ========== -->
   <section class="screen" id="d-orders" data-role="dist" hidden>
     <header class="top">
-      <span class="h1">Заказы</span>
-      <div class="seg mode-seg" role="radiogroup" aria-label="Кто принимает заказы">
-        <button type="button" data-mode="agents" class="on">Через агентов</button>
-        <button type="button" data-mode="direct">Напрямую</button>
-      </div>
-      <div class="chips scroll" id="d-filter">
+      <div class="grow"><span class="small muted">ОсОО «[Дистрибьютор]» · филиал Бишкек</span><span class="h1">Заказы</span></div>
+      <div class="chips scroll filter" data-role-list="dist">
         <button type="button" class="chip on" data-f="all">Все</button>
-        <button type="button" class="chip" data-f="new">Новые</button>
+        <button type="button" class="chip" data-f="new">Новые · <span class="dist-new-n">3</span></button>
         <button type="button" class="chip" data-f="work">В работе</button>
-        <button type="button" class="chip" data-f="done">Доставлены</button>
+        <button type="button" class="chip" data-f="done">Завершены</button>
       </div>
     </header>
-    <div class="body" style="gap:12px" id="d-order-list"></div>
-    <nav class="tabbar five" aria-label="Меню дистрибьютора">
-      <button class="tab" data-tab="d-home"><svg class="ic"><use href="#i-home"/></svg>Сводка</button>
-      <button class="tab on" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n d-badge">2</span></button>
+    <div class="body" style="gap:10px" id="dist-order-list"></div>
+    <nav class="tabbar three" aria-label="Меню дистрибьютора">
+      <button class="tab on" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n dist-badge">3</span></button>
       <button class="tab" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
-      <button class="tab" data-tab="d-agents"><svg class="ic"><use href="#i-user"/></svg>Агенты</button>
       <button class="tab" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
     </nav>
   </section>
 
-  <!-- ========== ДИСТРИБЬЮТОР: ТОВАРЫ И ЦЕНЫ ========== -->
+  <!-- ========== ДИСТРИБЬЮТОР: КАРТОЧКА ЗАКАЗА ========== -->
+  <section class="screen" id="d-order" data-role="dist" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800" class="order-title">Заказ</span>
+    </header>
+    <div class="body order-body"></div>
+    <div class="bottom-bar order-bar"></div>
+  </section>
+
+  <!-- ========== ДИСТРИБЬЮТОР: ТОВАРЫ ========== -->
   <section class="screen" id="d-catalog" data-role="dist" hidden>
     <header class="top">
-      <span class="h1">Товары и цены</span>
-      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название или штрихкод"></label>
+      <span class="h1">Товары</span>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название товара"></label>
     </header>
-    <div class="body" style="gap:10px">
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-doc"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Прайс-лист</span><span class="small muted" id="price-text">248 товаров · обновлён вчера</span></span>
-        <button class="btn ghost" id="upload-price" style="height:36px;font-size:13px">Загрузить Excel</button>
-      </div>
-      <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
+    <div class="body" style="gap:10px" id="d-product-list">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">от 10 шт · <span class="d-milk-avail">в наличии</span></span></span>
-        <span class="price"><span class="d-milk-price">72</span> сом</span>
+        <span class="grow"><span class="name p-name">Молоко «Белая река» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">72</span> сом</span>
       </button>
-      <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Кефир 2,5%, 1 л</span><span class="small muted">от 10 шт · в наличии</span></span>
-        <span class="price">65 сом</span>
+        <span class="grow"><span class="name p-name">Кефир 2,5%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">65</span> сом</span>
       </button>
-      <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#FDF8DD;color:#7A6A0E"><svg class="ic"><use href="#i-butter"/></svg></span>
-        <span class="grow"><span class="name">Масло сливочное 82%, 200 г</span><span class="small muted">от 10 шт · в наличии</span></span>
-        <span class="price">145 сом</span>
+        <span class="grow"><span class="name p-name">Масло сливочное 82%, 200 г</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">145</span> сом</span>
       </button>
-      <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-box"/></svg></span>
-        <span class="grow"><span class="name">Сок яблочный, 1 л <span class="pill green" style="font-size:10px;padding:2px 6px">NEW</span></span><span class="small muted">от 12 шт · в наличии</span></span>
-        <span class="price">95 сом</span>
+        <span class="grow"><span class="name p-name">Сок яблочный, 1 л</span><span class="small p-meta muted">от <span class="p-min">12</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="price"><span class="p-price">95</span> сом</span>
       </button>
-      <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
+      <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#F3EEFB;color:#6B46A8"><svg class="ic"><use href="#i-box"/></svg></span>
-        <span class="grow"><span class="name">Сахар, 1 кг</span><span class="small warn">Нет в наличии · магазины не видят</span></span>
-        <span class="price muted">82 сом</span>
+        <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
+        <span class="price muted"><span class="p-price">82</span> сом</span>
       </button>
+      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
     </div>
-    <nav class="tabbar five" aria-label="Меню дистрибьютора">
-      <button class="tab" data-tab="d-home"><svg class="ic"><use href="#i-home"/></svg>Сводка</button>
-      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n d-badge">2</span></button>
+    <nav class="tabbar three" aria-label="Меню дистрибьютора">
+      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n dist-badge">3</span></button>
       <button class="tab on" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
-      <button class="tab" data-tab="d-agents"><svg class="ic"><use href="#i-user"/></svg>Агенты</button>
       <button class="tab" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
     </nav>
   </section>
 
-  <!-- ========== ДИСТРИБЬЮТОР: КАРТОЧКА ТОВАРА ========== -->
+  <!-- ========== ДИСТРИБЬЮТОР: ТОВАР (ИЗМЕНИТЬ / ДОБАВИТЬ) ========== -->
   <section class="screen" id="d-product" data-role="dist" hidden>
     <header class="top" style="flex-direction:row;align-items:center;gap:8px">
       <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Цена товара</span>
+      <span style="font-size:18px;font-weight:800" id="d-product-title">Товар</span>
     </header>
     <form class="body" id="d-price-form">
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">Артикул 142 · из прайс-листа</span></span>
+      <div class="field rise"><label for="d-name">Название</label><input id="d-name" type="text"></div>
+      <div class="grid2 rise" style="gap:10px">
+        <div class="field"><label for="d-price">Цена за шт, сом</label><input id="d-price" type="text" inputmode="numeric"></div>
+        <div class="field"><label for="d-min">Мин. заказ, шт</label><input id="d-min" type="text" inputmode="numeric"></div>
       </div>
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="grow"><span class="name">Есть в наличии</span><span class="small muted" id="d-avail-hint">Магазины видят товар и могут заказать</span></span>
         <button type="button" class="toggle" id="d-avail" role="switch" aria-checked="true" aria-label="Есть в наличии"></button>
       </div>
-      <div class="grid2 rise" style="gap:10px">
-        <div class="field"><label for="d-price">Цена за шт, сом</label><input id="d-price" type="text" inputmode="numeric" value="72"></div>
-        <div class="field"><label for="d-min">Мин. заказ, шт</label><input id="d-min" type="text" inputmode="numeric" value="10"></div>
-      </div>
-      <div class="card rise">
-        <div class="between"><span class="h2">Особые цены</span><span class="xs muted">для отдельных магазинов</span></div>
-        <div class="between small"><span>Магазин «Достук»</span><span class="bold">70 сом</span></div>
-        <div class="between small"><span>Продукты «Нур»</span><span class="bold">70 сом</span></div>
-        <div class="between small"><span>Минимаркет «Ала-Тоо»</span><span class="bold">71 сом</span></div>
-      </div>
-      <button type="submit" class="btn lg rise">Сохранить цену</button>
+      <button type="submit" class="btn lg rise" id="d-save">Сохранить</button>
     </form>
   </section>
 
-  <!-- ========== ДИСТРИБЬЮТОР: АГЕНТЫ ========== -->
-  <section class="screen" id="d-agents" data-role="dist" hidden>
-    <header class="top"><span class="h1">Агенты</span></header>
-    <div class="body" style="gap:10px">
-      <div class="note rise" data-only="direct" hidden>Режим «Напрямую»: заказы принимает офис. Агенты работают с полкой, возвратами и подключают новые магазины.</div>
-      <div class="card rise" style="padding:14px">
-        <div class="row">
-          <div class="avatar" style="width:44px;height:44px;font-size:17px;border-radius:12px">А</div>
-          <div class="grow"><span class="bold" style="font-size:15px">Азамат</span><span class="small muted">24 магазина · сегодня 12 заказов</span></div>
-          <span class="price" style="font-size:15px">186 400</span>
-        </div>
-        <div class="between xs muted bold"><span>План месяца</span><span>78%</span></div>
-        <div class="progress"><i style="width:78%"></i></div>
-      </div>
-      <div class="card rise" style="padding:14px">
-        <div class="row">
-          <div class="avatar" style="width:44px;height:44px;font-size:17px;border-radius:12px;background:#2B5C8F">Н</div>
-          <div class="grow"><span class="bold" style="font-size:15px">Нурлан</span><span class="small muted">31 магазин · сегодня 9 заказов</span></div>
-          <span class="price" style="font-size:15px">152 900</span>
-        </div>
-        <div class="between xs muted bold"><span>План месяца</span><span>64%</span></div>
-        <div class="progress"><i style="width:64%"></i></div>
-      </div>
-      <div class="card rise" style="padding:14px">
-        <div class="row">
-          <div class="avatar" style="width:44px;height:44px;font-size:17px;border-radius:12px;background:#6B46A8">А</div>
-          <div class="grow"><span class="bold" style="font-size:15px">Айгерим</span><span class="small muted">19 магазинов · сегодня 7 заказов</span></div>
-          <span class="price" style="font-size:15px">121 700</span>
-        </div>
-        <div class="between xs muted bold"><span>План месяца</span><span>91%</span></div>
-        <div class="progress"><i style="width:91%"></i></div>
-      </div>
-      <span class="xs muted rise" style="text-align:center">Продажи за месяц, сом</span>
-      <button class="btn lg ghost rise" data-toast="Приглашение агенту отправлено по WhatsApp">Добавить агента</button>
-    </div>
-    <nav class="tabbar five" aria-label="Меню дистрибьютора">
-      <button class="tab" data-tab="d-home"><svg class="ic"><use href="#i-home"/></svg>Сводка</button>
-      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n d-badge">2</span></button>
-      <button class="tab" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
-      <button class="tab on" data-tab="d-agents"><svg class="ic"><use href="#i-user"/></svg>Агенты</button>
-      <button class="tab" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
-    </nav>
-  </section>
-
-  <!-- ========== ДИСТРИБЬЮТОР: МАГАЗИНЫ ========== -->
+  <!-- ========== ДИСТРИБЬЮТОР: МАГАЗИНЫ ПО РАЙОНАМ ========== -->
   <section class="screen" id="d-stores" data-role="dist" hidden>
     <header class="top">
-      <span class="h1">Магазины</span>
-      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск магазина" placeholder="Название или адрес"></label>
-      <div class="chips scroll">
-        <button type="button" class="chip on">Все · 112</button>
-        <button type="button" class="chip">Давно не заказывали · 9</button>
-        <button type="button" class="chip">Новые · 5</button>
+      <div class="grow"><span class="small muted">Филиал Бишкек · 4 района</span><span class="h1">Магазины</span></div>
+      <div class="chips scroll" id="district-filter">
+        <button type="button" class="chip on" data-d="all">Все · 8</button>
+        <button type="button" class="chip" data-d="Октябрьский">Октябрьский</button>
+        <button type="button" class="chip" data-d="Свердловский">Свердловский</button>
+        <button type="button" class="chip" data-d="Первомайский">Первомайский</button>
+        <button type="button" class="chip" data-d="Ленинский">Ленинский</button>
       </div>
     </header>
-    <div class="body" style="gap:10px">
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">Агент Азамат · сегодня · 2 240 сом</span></span>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Продукты «Нур»</span><span class="small muted">Агент Нурлан · вчера · 3 150 сом</span></span>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--warn-bg);color:var(--warn)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small warn">Не заказывал 12 дней</span></span>
-        <button class="btn ghost" data-toast="Магазину «Береке» отправлено напоминание" style="height:36px;font-size:13px">Напомнить</button>
-      </div>
-      <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-store"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Магазин «Асель»</span><span class="small muted">Подключился сам через приложение</span></span>
-        <span class="pill green">Новый</span>
-      </div>
-    </div>
-    <nav class="tabbar five" aria-label="Меню дистрибьютора">
-      <button class="tab" data-tab="d-home"><svg class="ic"><use href="#i-home"/></svg>Сводка</button>
-      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n d-badge">2</span></button>
+    <div class="body" style="gap:10px" id="d-store-list"></div>
+    <nav class="tabbar three" aria-label="Меню дистрибьютора">
+      <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n dist-badge">3</span></button>
       <button class="tab" data-tab="d-catalog"><svg class="ic"><use href="#i-box"/></svg>Товары</button>
-      <button class="tab" data-tab="d-agents"><svg class="ic"><use href="#i-user"/></svg>Агенты</button>
       <button class="tab on" data-tab="d-stores"><svg class="ic"><use href="#i-store"/></svg>Магазины</button>
     </nav>
-  </section>
-
-  <!-- ========== ДИСТРИБЬЮТОР: АКЦИЯ ========== -->
-  <section class="screen" id="d-promo" data-role="dist" hidden>
-    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800">Акция для магазинов</span>
-    </header>
-    <form class="body" id="d-promo-form">
-      <div class="field rise"><label for="promo-product">Товар</label><input id="promo-product" type="text" value="Сок яблочный, 1 л"></div>
-      <div class="grid2 rise" style="gap:10px">
-        <div class="field"><label for="promo-disc">Скидка, %</label><input id="promo-disc" type="text" inputmode="numeric" value="5"></div>
-        <div class="field"><label for="promo-from">При заказе от, шт</label><input id="promo-from" type="text" inputmode="numeric" value="24"></div>
-      </div>
-      <div class="field rise">
-        <span class="label">Кому отправить</span>
-        <div class="chips">
-          <button type="button" class="chip on" data-n="112">Все магазины · 112</button>
-          <button type="button" class="chip" data-n="9">Давно не заказывали · 9</button>
-          <button type="button" class="chip" data-n="5">Новые · 5</button>
-        </div>
-      </div>
-      <div class="field rise"><label for="promo-msg">Сообщение</label><textarea id="promo-msg" rows="3">Новинка! Сок яблочный 1 л — скидка 5% при заказе от 24 шт до конца месяца.</textarea></div>
-      <button type="submit" class="btn lg rise" id="send-promo">Отправить акцию</button>
-    </form>
   </section>
 </div>
 
@@ -1098,11 +830,10 @@ button.toggle::after{transition:right .2s}
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const fmt = n => n.toLocaleString('ru-RU');
 
-  let current = 'shop-start';
   let current_id = 's-home';
   const history = [];
-  const lastScreen = { shop: 's-home', agent: 'a-orders', dist: 'd-home' };
-  const homeOf = { shop: 's-home', agent: 'a-orders', dist: 'd-home' };
+  const lastScreen = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
+  const homeOf = { shop: 's-home', agent: 'a-orders', dist: 'd-orders' };
   let role = 'shop';
 
   function animateIn(el, cls) {
@@ -1127,7 +858,6 @@ button.toggle::after{transition:right .2s}
     else { history.length = 0; from.hidden = true; animateIn(to, 'fade-in'); }
     current_id = id;
     if (dir === 'fade') lastScreen[to.dataset.role] = id;
-    if (id === 'a-orders') scheduleNotif();
   }
 
   // Навигация
@@ -1190,201 +920,277 @@ button.toggle::after{transition:right .2s}
     }, 600);
   });
 
-  // Агент: принять / отклонить
-  let newCount = 2, tomorrow = 8, routeSum = 18650;
-  function removeCard(card) {
-    card.classList.add('gone');
-    setTimeout(() => card.remove(), 650);
-    newCount = Math.max(0, newCount - 1);
-    $('#st-new').textContent = newCount; bump($('#st-new'));
-  }
-  $('#agent-list').addEventListener('click', e => {
-    const acc = e.target.closest('[data-accept]'), dec = e.target.closest('[data-decline]');
-    if (!acc && !dec) return;
-    const card = e.target.closest('.order-card');
-    if (acc) {
-      acc.classList.add('done'); acc.textContent = '✓ Принят';
-      const sum = parseInt(card.querySelector('.price').textContent.replace(/\D/g, ''), 10);
-      tomorrow++; routeSum += sum;
-      $('#st-tomorrow').textContent = tomorrow; bump($('#st-tomorrow'));
-      $$('#route-n, .route-n').forEach(e => e.textContent = tomorrow);
-      $$('#route-sum, .route-sum').forEach(e => e.textContent = fmt(routeSum));
-      toast('Заказ принят · накладная отправлена магазину');
-      setTimeout(() => removeCard(card), 500);
-    } else {
-      toast('Заказ отклонён, магазин получит уведомление');
-      removeCard(card);
-    }
-  });
-
-  // Пуш о новом заказе
-  let notifShown = false;
-  function scheduleNotif() {
-    if (notifShown) return;
-    notifShown = true;
-    setTimeout(() => {
-      if (current_id !== 'a-orders') { notifShown = false; return; }
-      $('#notif').classList.add('show');
-      setTimeout(() => $('#notif').classList.remove('show'), 4000);
-    }, 1400);
-  }
-  $('#notif').addEventListener('click', () => {
-    $('#notif').classList.remove('show');
-    const list = $('#agent-list');
-    const card = document.createElement('div');
-    card.className = 'card order-card';
-    card.style.cssText = 'padding:14px;gap:10px;animation:rise .45s cubic-bezier(.2,.8,.2,1) both';
-    card.innerHTML = '<div class="between" style="align-items:flex-start"><div class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small muted">ул. [Адрес] · только что</span></div><span class="pill green">Новый</span></div><span style="font-size:14px">Масло сливочное 82% × 10</span><div class="row" style="gap:10px"><span class="price" style="flex:1">1 260 сом</span><button class="btn ghost" data-decline style="height:44px">Отклонить</button><button class="btn" data-accept style="height:44px;padding:0 16px">Принять</button></div>';
-    list.children[0].after(card);
-    newCount++; $('#st-new').textContent = newCount; bump($('#st-new'));
-  });
-
-  // Агент: фото и чипы
-  $('#upload').addEventListener('click', () => {
-    $('#upload').classList.add('has'); $('#upload-text').textContent = 'Фото добавлено · 1';
-  });
+  // Чипы: выбор одного в группе
   $$('.chip').forEach(c => c.addEventListener('click', () => {
     $$('.chip', c.parentElement).forEach(x => x.classList.remove('on')); c.classList.add('on');
   }));
-  $('#offer-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const b = $('#send-offer'); b.textContent = 'Отправляем…';
-    setTimeout(() => {
-      b.textContent = 'Отправить предложение';
-      toast('Предложение отправлено в 24 магазина');
-      go('a-orders', 'fade');
-    }, 700);
-  });
 
-  // Кнопки на новых экранах
+  // Кнопки магазина
   $('#try-batch').addEventListener('click', () => {
     toast('Пробная партия 12 шт заказана у агента Нурлана');
     go(history.pop() || 's-home', 'back');
   });
   $('#share-invoice').addEventListener('click', () => toast('PDF накладной готов к отправке'));
-  $('#start-route').addEventListener('click', () => {
-    const b = $('#start-route');
-    b.textContent = 'Маршрут начат · следующий: «Ала-Тоо»';
-    b.classList.add('done');
-  });
 
-  // ===== Дистрибьютор =====
-  // Режим: 'agents' — заказы подтверждают агенты, 'direct' — офис дистрибьютора напрямую
-  let mode = 'agents', dFilter = 'all';
-  const dOrders = [
-    { n: '0142', shop: 'Магазин «Достук»', agent: 'Азамат', items: 'Молоко 3,2% × 20, Кефир 2,5% × 10', sum: 2240, st: 'new', ago: '5 мин назад' },
-    { n: '0141', shop: 'Минимаркет «Ала-Тоо»', agent: 'Азамат', items: 'Сметана 20% × 12', sum: 1080, st: 'new', ago: '22 мин назад' },
-    { n: '0140', shop: 'Продукты «Нур»', agent: 'Нурлан', items: 'Сок яблочный × 24, Вода 1,5 л × 12', sum: 3150, st: 'confirmed', ago: '1 ч назад' },
-    { n: '0139', shop: 'Магазин «Береке»', agent: 'Айгерим', items: 'Печенье овсяное × 20', sum: 1360, st: 'delivering', ago: 'утром' },
-    { n: '0138', shop: 'Магазин «Асель»', agent: 'Нурлан', items: 'Сахар 1 кг × 30', sum: 2460, st: 'delivered', ago: 'вчера' }
-  ];
-  const stPill = {
+  // ===== Заказы: общая логика для агента и дистрибьютора =====
+  // Статусы: new → confirmed → delivering → delivered; отдельно rejected
+  const ST = {
     new: ['warn', 'Новый'], confirmed: ['green', 'Подтверждён'], delivering: ['amber', 'В пути'],
     delivered: ['grey', 'Доставлен'], rejected: ['grey', 'Отклонён']
   };
-  const inFilter = o => dFilter === 'all' || (dFilter === 'new' && o.st === 'new') ||
-    (dFilter === 'work' && (o.st === 'confirmed' || o.st === 'delivering')) || (dFilter === 'done' && o.st === 'delivered');
+  const ORDER = { new: 0, confirmed: 1, delivering: 2, delivered: 3, rejected: 4 };
+  const NEXT = {
+    confirmed: ['delivering', 'Отправить в путь', 'Заказ в пути · магазин получил уведомление'],
+    delivering: ['delivered', 'Доставлен и оплачен', 'Заказ доставлен и оплачен']
+  };
+  const REASONS = ['Нет товара', 'Не доставляем в этот район', 'Меньше минимального заказа', 'Другое'];
 
-  function renderDOrders() {
-    const list = $('#d-order-list');
-    const shown = dOrders.filter(inFilter);
-    list.innerHTML = shown.length ? '' : '<span class="muted" style="text-align:center;padding:24px 0">Заказов нет</span>';
-    shown.forEach(o => {
-      const [pc, pt] = stPill[o.st];
-      const who = mode === 'agents' ? 'Агент ' + o.agent : 'Напрямую от магазина';
-      let actions = '';
-      if (o.st === 'new' && mode === 'direct') {
-        actions = '<button class="btn ghost" data-d-decline="' + o.n + '" style="height:44px">Отклонить</button>' +
-                  '<button class="btn" data-d-accept="' + o.n + '" style="height:44px;padding:0 16px">Принять</button>';
-      } else if (o.st === 'new') {
-        actions = '<button class="btn ghost" data-d-remind="' + o.agent + '" style="height:40px;font-size:13px">Напомнить агенту</button>';
+  const it = (name, q, p) => ({ name, q, p });
+  const orders = {
+    agent: [
+      { n: '0142', shop: 'Магазин «Достук»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: '5 мин назад', when: 'завтра до 12:00', st: 'new',
+        items: [it('Молоко «Белая река» 3,2%, 1 л', 20, 72), it('Кефир 2,5%, 1 л', 10, 65)] },
+      { n: '0141', shop: 'Минимаркет «Ала-Тоо»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: '22 мин назад', when: 'завтра до 12:00', st: 'new',
+        items: [it('Сметана 20%, 400 г', 12, 90)] },
+      { n: '0140', shop: 'Продукты «Нур»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
+        items: [it('Молоко «Белая река» 3,2%, 1 л', 30, 72), it('Масло сливочное 82%, 200 г', 6, 145)] },
+      { n: '0139', shop: 'Магазин «Береке»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
+        items: [it('Кефир 2,5%, 1 л', 20, 65)] },
+      { n: '0137', shop: 'Магазин «Асель»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: '3 дня назад', when: '12 ноября', st: 'delivered',
+        items: [it('Сахар, 1 кг', 30, 82)] }
+    ],
+    dist: [
+      { n: '0215', shop: 'Магазин «Достук»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: '5 мин назад', when: 'завтра до 12:00', st: 'new',
+        items: [it('Молоко «Белая река» 3,2%, 1 л', 20, 72), it('Кефир 2,5%, 1 л', 10, 65)] },
+      { n: '0214', shop: 'Минимаркет «Ала-Тоо»', addr: 'ул. [Адрес]', area: 'Свердловский р-н', ago: '22 мин назад', when: 'завтра до 12:00', st: 'new',
+        items: [it('Сметана 20%, 400 г', 12, 90)] },
+      { n: '0213', shop: 'Магазин «Жибек»', addr: 'ул. [Адрес]', area: 'Ленинский р-н', ago: '40 мин назад', when: 'завтра до 15:00', st: 'new',
+        items: [it('Сок яблочный, 1 л', 24, 95), it('Масло сливочное 82%, 200 г', 10, 145)] },
+      { n: '0212', shop: 'Продукты «Нур»', addr: 'ул. [Адрес]', area: 'Первомайский р-н', ago: 'вчера', when: 'сегодня до 18:00', st: 'delivering',
+        items: [it('Молоко «Белая река» 3,2%, 1 л', 30, 72), it('Масло сливочное 82%, 200 г', 6, 145)] },
+      { n: '0211', shop: 'Магазин «Береке»', addr: 'ул. [Адрес]', area: 'Ленинский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
+        items: [it('Кефир 2,5%, 1 л', 20, 65)] },
+      { n: '0209', shop: 'Магазин «Асель»', addr: 'ул. [Адрес]', area: 'Октябрьский р-н', ago: '3 дня назад', when: '12 ноября', st: 'delivered',
+        items: [it('Сахар, 1 кг', 30, 82)] }
+    ]
+  };
+  const filterOf = { agent: 'all', dist: 'all' };
+  const detailId = { agent: 'a-order', dist: 'd-order' };
+  const open = { agent: null, dist: null };   // номер открытого заказа
+  let declining = false, reason = REASONS[0];
+
+  const total = o => o.items.reduce((s, i) => s + i.q * i.p, 0);
+  const summary = o => o.items.map(i => i.name.split(', ')[0] + ' × ' + i.q).join(', ');
+  const find = (r, n) => orders[r].find(o => o.n === n);
+  const pill = st => '<span class="pill ' + ST[st][0] + '">' + ST[st][1] + '</span>';
+  const inFilter = (f, o) => f === 'all' || (f === 'new' && o.st === 'new') ||
+    (f === 'work' && (o.st === 'confirmed' || o.st === 'delivering')) ||
+    (f === 'done' && (o.st === 'delivered' || o.st === 'rejected'));
+
+  function orderButton(r, o) {
+    return '<button class="card rise order-open" data-open="' + r + ':' + o.n + '" style="padding:14px;gap:8px;border:none;text-align:left;width:100%">' +
+      '<span class="between" style="align-items:flex-start"><span class="grow"><span class="bold" style="font-size:15px">' + o.shop + '</span>' +
+      '<span class="small muted">№ ' + o.n + ' · ' + o.area + ' · ' + o.ago + '</span></span>' + pill(o.st) + '</span>' +
+      '<span style="font-size:14px">' + summary(o) + '</span>' +
+      '<span class="between"><span class="price">' + fmt(total(o)) + ' сом</span>' +
+      '<span class="small bold" style="color:var(--green);display:flex;align-items:center;gap:2px">' + (o.st === 'new' ? 'Открыть' : 'Подробнее') +
+      '<svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg></span></span></button>';
+  }
+
+  function renderList(r) {
+    const list = $('#' + r + '-order-list');
+    const shown = orders[r].filter(o => inFilter(filterOf[r], o)).sort((a, b) => ORDER[a.st] - ORDER[b.st]);
+    list.innerHTML = shown.length ? shown.map(o => orderButton(r, o)).join('')
+      : '<span class="muted" style="text-align:center;padding:32px 0">Здесь пока пусто</span>';
+    const newN = orders[r].filter(o => o.st === 'new').length;
+    $$('.' + r + '-badge').forEach(b => { b.textContent = newN; b.hidden = newN === 0; });
+    $$('.' + r + '-new-n').forEach(e => e.textContent = newN);
+  }
+
+  // Агент: что везти завтра (подтверждённые и в пути)
+  function renderRoute() {
+    const todo = orders.agent.filter(o => o.st === 'confirmed' || o.st === 'delivering');
+    $$('.route-n').forEach(e => e.textContent = todo.length);
+    $$('.route-sum').forEach(e => e.textContent = fmt(todo.reduce((s, o) => s + total(o), 0)));
+    $('#route-list').innerHTML = todo.length ? todo.map(o => orderButton('agent', o)).join('')
+      : '<span class="muted" style="text-align:center;padding:32px 0">На завтра доставок нет</span>';
+  }
+
+  function renderAll() { renderList('agent'); renderList('dist'); renderRoute(); }
+
+  function renderDetail(r) {
+    const o = find(r, open[r]), scr = $('#' + detailId[r]);
+    $('.order-title', scr).textContent = 'Заказ № ' + o.n;
+    let html =
+      '<div class="card rise"><div class="between" style="align-items:flex-start"><div class="grow">' +
+      '<span class="h2">' + o.shop + '</span><span class="small muted">' + o.addr + ' · ' + o.area + '</span></div>' + pill(o.st) + '</div>' +
+      '<button type="button" class="btn ghost" data-toast="Звоним в ' + o.shop.replace(/"/g, '') + '" style="height:44px">Позвонить в магазин</button></div>' +
+      '<div class="card rise"><span class="h2">Товары</span>' +
+      o.items.map(i => '<div class="between"><span class="grow"><span class="name" style="font-size:14px">' + i.name + '</span>' +
+        '<span class="xs muted">' + i.q + ' шт × ' + i.p + ' сом</span></span><span class="bold" style="font-variant-numeric:tabular-nums">' +
+        fmt(i.q * i.p) + ' сом</span></div>').join('') +
+      '<div class="divider"></div>' +
+      '<div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price" style="font-size:20px">' + fmt(total(o)) + ' сом</span></div>' +
+      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
+      '<div class="between small"><span class="muted">Доставка</span><span class="bold">' + o.when + '</span></div></div>';
+    if (o.st !== 'new' && o.st !== 'rejected') {
+      html += '<button class="card row rise" data-go="s-invoice" style="flex-direction:row;padding:14px 16px;border:none;text-align:left">' +
+        '<span class="thumb" style="width:44px;height:44px;background:#FDECEC;color:#B42318"><svg class="ic"><use href="#i-pdf"/></svg></span>' +
+        '<span class="grow"><span class="bold" style="font-size:15px">Накладная № ' + o.n + '.pdf</span><span class="small muted">Открыть или отправить магазину</span></span>' +
+        '<svg class="ic" style="color:var(--muted);width:20px;height:20px"><use href="#i-next"/></svg></button>';
+    }
+    if (o.st === 'new' && declining) {
+      html += '<div class="card rise" style="border:2px solid #F4C7C3"><span class="h2">Почему отклоняете?</span>' +
+        '<span class="small muted">Магазин увидит причину</span><div class="chips">' +
+        REASONS.map(x => '<button type="button" class="chip' + (x === reason ? ' on' : '') + '" data-reason="' + x + '">' + x + '</button>').join('') +
+        '</div></div>';
+    }
+    $('.order-body', scr).innerHTML = html;
+
+    const bar = $('.order-bar', scr);
+    if (o.st === 'new' && !declining) {
+      bar.innerHTML = '<button class="btn lg ghost" data-act="decline" style="flex:1;width:auto">Отклонить</button>' +
+                      '<button class="btn lg" data-act="accept" style="flex:1.4;width:auto">Принять заказ</button>';
+    } else if (o.st === 'new') {
+      bar.innerHTML = '<button class="btn lg ghost" data-act="cancel-decline" style="flex:1;width:auto">Назад</button>' +
+                      '<button class="btn lg danger" data-act="confirm-decline" style="flex:1.4;width:auto">Отклонить заказ</button>';
+    } else if (NEXT[o.st]) {
+      bar.innerHTML = '<button class="btn lg" data-act="next">' + NEXT[o.st][1] + '</button>';
+    } else {
+      bar.innerHTML = '';
+    }
+    bar.hidden = !bar.innerHTML;
+  }
+
+  // Открыть заказ из списка
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-open]');
+    if (!b) return;
+    const [r, n] = b.dataset.open.split(':');
+    open[r] = n; declining = false; reason = REASONS[0];
+    renderDetail(r);
+    go(detailId[r], 'push');
+  });
+
+  // Действия внутри карточки заказа
+  ['agent', 'dist'].forEach(r => {
+    const scr = $('#' + detailId[r]);
+    scr.addEventListener('click', e => {
+      const rs = e.target.closest('[data-reason]');
+      if (rs) { reason = rs.dataset.reason; renderDetail(r); return; }
+      const a = e.target.closest('[data-act]');
+      if (!a) return;
+      const o = find(r, open[r]);
+      if (a.dataset.act === 'accept') {
+        o.st = 'confirmed';
+        toast('Заказ № ' + o.n + ' принят · магазин получил уведомление');
+        renderAll(); go(history.pop() || homeOf[role], 'back');
+      } else if (a.dataset.act === 'decline') {
+        declining = true; renderDetail(r);
+      } else if (a.dataset.act === 'cancel-decline') {
+        declining = false; renderDetail(r);
+      } else if (a.dataset.act === 'confirm-decline') {
+        o.st = 'rejected'; declining = false;
+        toast('Заказ отклонён: ' + reason.toLowerCase());
+        renderAll(); go(history.pop() || homeOf[role], 'back');
+      } else if (a.dataset.act === 'next') {
+        const [st, , msg] = NEXT[o.st];
+        o.st = st; toast(msg);
+        renderAll(); renderDetail(r);
       }
-      const card = document.createElement('div');
-      card.className = 'card rise';
-      card.style.cssText = 'padding:14px;gap:10px';
-      card.innerHTML =
-        '<div class="between" style="align-items:flex-start"><div class="grow"><span class="bold" style="font-size:15px">' + o.shop + '</span>' +
-        '<span class="small muted">№ ' + o.n + ' · ' + who + ' · ' + o.ago + '</span></div><span class="pill ' + pc + '">' + pt + '</span></div>' +
-        '<span style="font-size:14px">' + o.items + '</span>' +
-        (o.st === 'new' && mode === 'agents' ? '<span class="xs" style="color:var(--amber);font-weight:700">Ждёт подтверждения агента</span>' : '') +
-        '<div class="row" style="gap:10px"><span class="price" style="flex:1">' + fmt(o.sum) + ' сом</span>' + actions + '</div>';
-      list.appendChild(card);
     });
-    const newN = dOrders.filter(o => o.st === 'new').length;
-    $$('.d-badge').forEach(b => { b.textContent = newN; b.hidden = newN === 0; });
-    $$('.d-new-n').forEach(e => e.textContent = newN);
-  }
+  });
 
-  function setMode(m) {
-    mode = m;
-    $$('.mode-seg button').forEach(b => {
-      const on = b.dataset.mode === m;
-      b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
-    });
-    $$('[data-only]').forEach(e => e.hidden = e.dataset.only !== m);
-    renderDOrders();
-  }
-  $$('.mode-seg button').forEach(b => b.addEventListener('click', () => {
-    if (b.dataset.mode === mode) return;
-    setMode(b.dataset.mode);
-    toast(mode === 'agents' ? 'Заказы подтверждают агенты' : 'Заказы принимает офис напрямую');
+  // Фильтры списков заказов
+  $$('.filter').forEach(f => f.addEventListener('click', e => {
+    const c = e.target.closest('[data-f]');
+    if (!c) return;
+    filterOf[f.dataset.roleList] = c.dataset.f;
+    renderList(f.dataset.roleList);
   }));
 
-  $$('#d-filter .chip').forEach(c => c.addEventListener('click', () => { dFilter = c.dataset.f; renderDOrders(); }));
-
-  $('#d-order-list').addEventListener('click', e => {
-    const acc = e.target.closest('[data-d-accept]'), dec = e.target.closest('[data-d-decline]'), rem = e.target.closest('[data-d-remind]');
-    if (acc) {
-      dOrders.find(o => o.n === acc.dataset.dAccept).st = 'confirmed';
-      toast('Заказ № ' + acc.dataset.dAccept + ' принят · ушёл на склад');
-      renderDOrders();
-    } else if (dec) {
-      dOrders.find(o => o.n === dec.dataset.dDecline).st = 'rejected';
-      toast('Заказ отклонён, магазин получит уведомление');
-      renderDOrders();
-    } else if (rem) {
-      toast('Напоминание отправлено: агент ' + rem.dataset.dRemind);
-    }
+  // ===== Дистрибьютор: магазины по районам филиала =====
+  const stores = [
+    ['Магазин «Достук»', 'Октябрьский', 'заказ сегодня'],
+    ['Магазин «Асель»', 'Октябрьский', 'заказ 3 дня назад'],
+    ['Минимаркет «Ала-Тоо»', 'Свердловский', 'заказ сегодня'],
+    ['Магазин «Айгуль»', 'Свердловский', 'заказ на прошлой неделе'],
+    ['Продукты «Нур»', 'Первомайский', 'заказ вчера'],
+    ['Магазин «Береке»', 'Ленинский', 'заказ вчера'],
+    ['Магазин «Жибек»', 'Ленинский', 'заказ сегодня'],
+    ['Магазин «Ынтымак»', 'Ленинский', 'не заказывал 12 дней']
+  ];
+  let district = 'all';
+  function renderStores() {
+    const groups = {};
+    stores.filter(s => district === 'all' || s[1] === district).forEach(s => (groups[s[1]] = groups[s[1]] || []).push(s));
+    $('#d-store-list').innerHTML = Object.keys(groups).map(g =>
+      '<span class="section-h rise">' + g + ' район · ' + groups[g].length + '</span>' +
+      groups[g].map(s => {
+        const late = s[2].startsWith('не');
+        return '<div class="card row rise" style="flex-direction:row;padding:14px">' +
+          '<span class="thumb" style="width:44px;height:44px;background:' + (late ? 'var(--warn-bg);color:var(--warn)' : 'var(--soft)') + '"><svg class="ic"><use href="#i-store"/></svg></span>' +
+          '<span class="grow"><span class="bold" style="font-size:15px">' + s[0] + '</span><span class="small ' + (late ? 'warn' : 'muted') + '">ул. [Адрес] · ' + s[2] + '</span></span></div>';
+      }).join('')).join('');
+  }
+  $('#district-filter').addEventListener('click', e => {
+    const c = e.target.closest('[data-d]');
+    if (c) { district = c.dataset.d; renderStores(); }
   });
 
-  $('#upload-price').addEventListener('click', () => {
-    const b = $('#upload-price'); b.textContent = 'Загружаем…';
-    setTimeout(() => {
-      b.textContent = 'Загрузить Excel';
-      $('#price-text').textContent = '248 товаров · обновлён только что';
-      toast('Прайс загружен · изменилось 12 цен');
-    }, 900);
-  });
-
+  // ===== Дистрибьютор: товар — изменить или добавить =====
   // Наличие отмечается вручную: склад поставщика на старте не подключаем
-  $('#d-avail').addEventListener('click', () => {
-    const t = $('#d-avail'), on = t.classList.toggle('off') === false;
-    t.setAttribute('aria-checked', on);
+  let editing = null;   // карточка товара, которую меняем; null — новый товар
+  function setAvail(on) {
+    const t = $('#d-avail');
+    t.classList.toggle('off', !on); t.setAttribute('aria-checked', on);
     $('#d-avail-hint').textContent = on ? 'Магазины видят товар и могут заказать' : 'Товар скрыт, магазины его не видят';
-    $$('.d-milk-avail').forEach(x => x.textContent = on ? 'в наличии' : 'нет в наличии');
+  }
+  function writeProduct(b, name, p, m, on) {
+    $('.p-name', b).textContent = name;
+    $('.p-price', b).textContent = p;
+    $('.p-min', b).textContent = m;
+    $('.p-avail', b).textContent = on ? 'в наличии' : 'нет в наличии';
+    $('.p-meta', b).classList.toggle('warn', !on); $('.p-meta', b).classList.toggle('muted', on);
+    $('.price', b).classList.toggle('muted', !on);
+  }
+  $('#d-product-list').addEventListener('click', e => {
+    const b = e.target.closest('[data-edit],[data-new]');
+    if (!b) return;
+    editing = b.hasAttribute('data-edit') ? b : null;
+    $('#d-product-title').textContent = editing ? 'Изменить товар' : 'Новый товар';
+    $('#d-name').value = editing ? $('.p-name', b).textContent : '';
+    $('#d-price').value = editing ? $('.p-price', b).textContent : '';
+    $('#d-min').value = editing ? $('.p-min', b).textContent : '';
+    $('#d-save').textContent = editing ? 'Сохранить' : 'Добавить товар';
+    setAvail(editing ? $('.p-avail', b).textContent === 'в наличии' : true);
+    go('d-product', 'push');
   });
-
+  $('#d-avail').addEventListener('click', () => setAvail($('#d-avail').classList.contains('off')));
   $('#d-price-form').addEventListener('submit', e => {
     e.preventDefault();
-    const p = parseInt($('#d-price').value, 10);
-    if (p > 0) $$('.d-milk-price').forEach(x => x.textContent = p);
-    toast('Цена сохранена · магазины увидят её сразу');
+    const name = $('#d-name').value.trim(), p = parseInt($('#d-price').value, 10), m = parseInt($('#d-min').value, 10) || 1;
+    const on = !$('#d-avail').classList.contains('off');
+    if (!name || !(p > 0)) { toast('Укажите название и цену'); return; }
+    if (!editing) {
+      const b = document.createElement('button');
+      b.className = 'card row rise prod'; b.setAttribute('data-edit', '');
+      b.style.cssText = 'flex-direction:row;padding:14px;border:none;text-align:left';
+      b.innerHTML = '<span class="thumb" style="background:var(--soft)"><svg class="ic"><use href="#i-box"/></svg></span>' +
+        '<span class="grow"><span class="name p-name"></span><span class="small p-meta">от <span class="p-min"></span> шт · <span class="p-avail"></span></span></span>' +
+        '<span class="price"><span class="p-price"></span> сом</span>';
+      $('#d-product-list [data-new]').before(b);
+      writeProduct(b, name, p, m, on);
+      toast('Товар добавлен · магазины уже видят его');
+    } else {
+      writeProduct(editing, name, p, m, on);
+      toast('Сохранено · магазины увидят изменения сразу');
+    }
     go(history.pop() || 'd-catalog', 'back');
   });
 
-  $('#d-promo-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const n = $('#d-promo-form .chip.on').dataset.n;
-    const b = $('#send-promo'); b.textContent = 'Отправляем…';
-    setTimeout(() => {
-      b.textContent = 'Отправить акцию';
-      toast('Акция отправлена: ' + n + ' магазинов');
-      go(history.pop() || 'd-home', 'back');
-    }, 700);
-  });
-
-  renderDOrders();
-
+  renderAll();
+  renderStores();
   // Стартовая анимация
   $('#s-home').classList.add('anim');
 })();

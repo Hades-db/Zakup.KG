@@ -1242,6 +1242,7 @@ button.toggle::after{transition:right .2s}
   <symbol id="p-juice" viewBox="0 0 64 64"><path d="M40 4l-3 9" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/><path d="M18 14l4-4h20l4 4v42a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2z" fill="#FEF3C7" stroke="#B45309" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="36" r="9" fill="#DC2626"/><path d="M32 27c0-3 2-5 5-5-0.5 3-2.5 5-5 5z" fill="#15803D"/><path d="M28 33a3 3 0 0 1 3-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></symbol>
   <symbol id="p-sugar" viewBox="0 0 64 64"><path d="M16 12h32l-2 6 3 36a2 2 0 0 1-2 2H17a2 2 0 0 1-2-2l3-36z" fill="#fff" stroke="#6B7280" stroke-width="2" stroke-linejoin="round"/><path d="M18 18h28" stroke="#6B7280" stroke-width="2"/><rect x="20" y="28" width="24" height="16" rx="2" fill="#2563EB"/><rect x="25" y="32" width="6" height="6" rx="1" fill="#fff"/><rect x="33" y="32" width="6" height="6" rx="1" fill="#fff"/></symbol>
   <symbol id="p-smetana" viewBox="0 0 64 64"><ellipse cx="32" cy="18" rx="20" ry="5" fill="#7C3AED"/><path d="M12 18l4 34a3 3 0 0 0 3 3h26a3 3 0 0 0 3-3l4-34" fill="#fff" stroke="#7C3AED" stroke-width="2" stroke-linejoin="round"/><rect x="17" y="30" width="30" height="12" fill="#7C3AED"/><path d="M24 36h16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11.5a7 7 0 0 1 14 0C19 15 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
@@ -1593,9 +1594,9 @@ button.toggle::after{transition:right .2s}
     const keys = Object.keys(g);
     $('#sup-groups').innerHTML = keys.length ? keys.map(k => {
       const sum = g[k].reduce((s, x) => s + x.p * x.q, 0);
-      return '<div class="card row rise" style="flex-direction:row;padding:14px"><span class="grow"><span class="bold" style="font-size:15px">' + k + '</span>' +
-        '<span class="small muted">' + g[k].length + ' тов. · ' + fmt(sum) + ' сом</span></span>' +
-        '<button class="btn" data-cart="' + esc(k) + '">Заказать всё</button></div>';
+      return '<div class="card row rise" role="button" tabindex="0" data-cart="' + esc(k) + '" style="flex-direction:row;padding:14px;cursor:pointer"><span class="grow"><span class="bold" style="font-size:15px">' + k + '</span>' +
+        '<span class="small muted">' + g[k].length + ' ' + plural(g[k].length, 'товар', 'товара', 'товаров') + ' на ' + fmt(sum) + ' сом</span></span>' +
+        '<span class="btn" style="display:inline-flex;align-items:center">Заказать всё</span></div>';
     }).join('') : '<span class="small muted">Всё заказано</span>';
   }
   document.addEventListener('click', e => {
@@ -1603,22 +1604,36 @@ button.toggle::after{transition:right .2s}
     if (b) { stockF = b.dataset.sf; renderStock(); }
   });
   $('#stock-search').addEventListener('input', renderStock);
-  // Корзина поставщика: товары, которые пора заказать, с обычным количеством
-  let cartSup = null;
+  // Корзина поставщика: товары, которые пора заказать; количество можно менять, товар — убрать
+  const plural = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? b : c;
+  let cartSup = null, cart = [];
+  function renderCart() {
+    $('#cart-list').innerHTML = cart.length ? cart.map((c, k) => '<div class="row" style="gap:10px">' + pic(c.x.img, 'sm') +
+      '<span class="grow"><span class="name" style="font-size:14px">' + c.x.name + '</span><span class="xs muted">' + c.x.p + ' сом × ' + c.q + ' = ' + fmt(c.x.p * c.q) + ' сом</span></span>' +
+      '<span class="stepper sm"><button type="button" data-cq="' + k + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><span class="num">' + c.q + '</span>' +
+      '<button type="button" data-cq="' + k + ':1" aria-label="Больше">+</button></span>' +
+      '<button type="button" class="eye" data-cdel="' + k + '" aria-label="Убрать из заказа"><svg class="ic"><use href="#i-trash"/></svg></button></div>').join('')
+      : '<span class="small muted">Корзина пуста</span>';
+    const sum = cart.reduce((s, c) => s + c.q * c.x.p, 0);
+    $('#cart-total').textContent = fmt(sum) + ' сом';
+    $('#cart-send').disabled = !cart.length;
+  }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-cart]');
     if (!b) return;
     cartSup = b.dataset.cart;
-    const items = STOCK.filter(x => need(x) && supOf(x) === cartSup);
-    $('#cart-title').textContent = 'Заказ · ' + cartSup;
-    $('#cart-list').innerHTML = items.map(x => '<div class="row" style="gap:10px">' + pic(x.img, 'sm') +
-      '<span class="grow"><span class="name" style="font-size:14px">' + x.name + '</span><span class="xs muted">' + x.q + ' шт × ' + x.p + ' сом</span></span>' +
-      '<span class="bold" style="white-space:nowrap">' + fmt(x.q * x.p) + ' сом</span></div>').join('');
-    $('#cart-total').textContent = fmt(items.reduce((s, x) => s + x.q * x.p, 0)) + ' сом';
+    cart = STOCK.filter(x => need(x) && supOf(x) === cartSup).map(x => ({ x, q: x.q }));
+    $('#cart-title').textContent = cartSup;
+    renderCart();
     $('#cart-sheet').hidden = false;
   });
+  $('#cart-list').addEventListener('click', e => {
+    const st = e.target.closest('[data-cq]'), del = e.target.closest('[data-cdel]');
+    if (st) { const [k, d] = st.dataset.cq.split(':'); cart[+k].q = Math.max(1, cart[+k].q + (+d)); renderCart(); }
+    if (del) { cart.splice(+del.dataset.cdel, 1); renderCart(); }
+  });
   $('#cart-send').addEventListener('click', () => {
-    STOCK.filter(x => need(x) && supOf(x) === cartSup).forEach(x => x.ordered = true);
+    cart.forEach(c => c.x.ordered = true);
     $('#cart-sheet').hidden = true;
     renderStock();
     toast('Заказ отправлен · ' + cartSup);

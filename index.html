@@ -164,6 +164,10 @@ button{cursor:pointer}
 .stat.green{background:var(--green-bg)} .stat.green b{color:var(--green)} .stat.green span{color:var(--green-dark)}
 
 /* Карточка заказа агента: уход после принятия */
+.order-open{padding:12px 14px;gap:4px;border:1px solid transparent;text-align:left;width:100%}
+.order-open.is-new{background:#F0F8F2;border-color:#CDE6D4}
+.order-open .between{gap:10px}
+.o-sum{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 .order-card{transition:opacity .35s, transform .35s, max-height .4s .2s, padding .4s .2s, margin .4s .2s;max-height:220px;overflow:hidden}
 .order-card.gone{opacity:0;transform:translateX(40px);max-height:0;padding-top:0;padding-bottom:0;margin-top:-14px}
 
@@ -294,6 +298,10 @@ button.toggle::after{transition:right .2s}
     <button id="role-dist" role="tab" aria-selected="false">Дистрибьютор</button>
   </div>
 
+  <div class="sheet-bg" id="logout-sheet" role="dialog" aria-modal="true" aria-label="Выход" hidden>
+    <div class="sheet"><span class="handle" aria-hidden="true"></span><span class="h2" style="text-align:center">Выйти из аккаунта?</span>
+      <button type="button" class="btn lg danger" id="logout-yes">Выйти</button><button type="button" class="btn lg ghost" id="logout-no">Отмена</button></div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
 
   <!-- ========== ВХОД И РЕГИСТРАЦИЯ (логика из ветки Hades) ========== -->
@@ -1414,14 +1422,12 @@ button.toggle::after{transition:right .2s}
     (f === 'work' && (o.st === 'confirmed' || o.st === 'delivering')) ||
     (f === 'done' && (o.st === 'delivered' || o.st === 'rejected'));
 
+  // Карточка заказа в списке: нажатие открывает заказ; новые — с зелёным оттенком
   function orderButton(r, o) {
-    return '<button class="card rise order-open" data-open="' + r + ':' + o.n + '" style="padding:14px;gap:8px;border:none;text-align:left;width:100%">' +
-      '<span class="between" style="align-items:flex-start"><span class="grow"><span class="bold" style="font-size:15px">' + o.shop + '</span>' +
-      '<span class="small muted">№ ' + o.n + ' · ' + o.area + ' · ' + o.ago + '</span></span>' + pill(o.st) + '</span>' +
-      '<span style="font-size:14px">' + summary(o) + '</span>' +
-      '<span class="between"><span class="price">' + fmt(total(o)) + ' сом</span>' +
-      '<span class="small bold" style="color:var(--green);display:flex;align-items:center;gap:2px">' + (o.st === 'new' ? 'Открыть' : 'Подробнее') +
-      '<svg class="ic" style="width:18px;height:18px"><use href="#i-next"/></svg></span></span></button>';
+    return '<button class="card rise order-open' + (o.st === 'new' ? ' is-new' : '') + '" data-open="' + r + ':' + o.n + '">' +
+      '<span class="between"><span class="bold" style="font-size:15px">' + o.shop + '</span><span class="bold" style="font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums">' + fmt(total(o)) + ' сом</span></span>' +
+      '<span class="between"><span class="small muted">№ ' + o.n + ' · ' + o.area + ' · ' + o.ago + '</span>' + pill(o.st) + '</span>' +
+      '<span class="small o-sum">' + summary(o) + '</span></button>';
   }
 
   function renderList(r) {
@@ -1583,6 +1589,12 @@ button.toggle::after{transition:right .2s}
   $('#reg-form').addEventListener('submit', e => { e.preventDefault(); checkPw2(); enter(e.target, 'Регистрация прошла успешно'); });
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-logout]')) return;
+    $('#logout-sheet').hidden = false;
+  });
+  $('#logout-no').addEventListener('click', () => $('#logout-sheet').hidden = true);
+  $('#logout-sheet').addEventListener('click', e => { if (e.target.id === 'logout-sheet') $('#logout-sheet').hidden = true; });
+  $('#logout-yes').addEventListener('click', () => {
+    $('#logout-sheet').hidden = true;
     $$('#auth form').forEach(fm => fm.reset());
     authMode(false);
     go('auth', 'fade');

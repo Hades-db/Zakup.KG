@@ -197,6 +197,10 @@ button{cursor:pointer}
 .progress i{display:block;height:100%;background:var(--green);border-radius:3px}
 .note{border-radius:14px;padding:12px 14px;background:var(--amber-bg);color:var(--amber);font-size:13px;font-weight:600;line-height:1.4}
 .pill.grey{background:var(--soft);color:var(--muted)}
+button.toggle{border:none;padding:0;transition:background .2s}
+button.toggle::after{transition:right .2s}
+.toggle.off{background:#C9CCD0}
+.toggle.off::after{right:21px}
 .body > *{flex-shrink:0}
 /* Тень только у показанного тоста и пуша, иначе она видна у верхнего края */
 .toast:not(.show),.notif:not(.show){box-shadow:none}
@@ -733,7 +737,7 @@ button{cursor:pointer}
       </div>
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <div class="thumb" style="background:#FDF8DD;color:#7A6A0E"><svg class="ic"><use href="#i-butter"/></svg></div>
-        <div class="grow"><span class="name">Масло сливочное 82%</span><span class="small warn">Мало на складе</span></div>
+        <div class="grow"><span class="name">Масло сливочное 82%</span><span class="small muted">от 10 шт · в наличии</span></div>
         <span class="price">145 сом</span>
       </div>
       <button class="btn lg rise" data-tab="a-offer">Добавить товар</button>
@@ -827,10 +831,6 @@ button{cursor:pointer}
           <span class="grow"><span class="name" style="font-size:14px">9 магазинов давно не заказывали</span><span class="xs muted">Больше 10 дней без заказа</span></span>
           <button class="btn ghost" data-tab="d-stores" style="height:36px;font-size:13px">Список</button>
         </div>
-        <div class="row">
-          <span class="thumb" style="width:40px;height:40px;background:#FDF8DD;color:#7A6A0E"><svg class="ic"><use href="#i-butter"/></svg></span>
-          <span class="grow"><span class="name" style="font-size:14px">Масло сливочное 82%</span><span class="xs warn">На складе 24 шт · хватит на 2 дня</span></span>
-        </div>
       </div>
       <div class="card rise" data-only="agents">
         <div class="between"><span class="h2">Агенты сегодня</span><button class="small bold" data-tab="d-agents" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
@@ -890,34 +890,34 @@ button{cursor:pointer}
     </header>
     <div class="body" style="gap:10px">
       <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-sync"/></svg></span>
-        <span class="grow"><span class="bold" style="font-size:15px">Связь с 1С</span><span class="small muted" id="sync-text">248 товаров · обновлено 10 мин назад</span></span>
-        <button class="btn ghost" id="sync-1c" style="height:36px;font-size:13px">Обновить</button>
+        <span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-doc"/></svg></span>
+        <span class="grow"><span class="bold" style="font-size:15px">Прайс-лист</span><span class="small muted" id="price-text">248 товаров · обновлён вчера</span></span>
+        <button class="btn ghost" id="upload-price" style="height:36px;font-size:13px">Загрузить Excel</button>
       </div>
       <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">Остаток 340 шт · от 10 шт</span></span>
+        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">от 10 шт · <span class="d-milk-avail">в наличии</span></span></span>
         <span class="price"><span class="d-milk-price">72</span> сом</span>
       </button>
       <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Кефир 2,5%, 1 л</span><span class="small muted">Остаток 180 шт · от 10 шт</span></span>
+        <span class="grow"><span class="name">Кефир 2,5%, 1 л</span><span class="small muted">от 10 шт · в наличии</span></span>
         <span class="price">65 сом</span>
       </button>
       <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#FDF8DD;color:#7A6A0E"><svg class="ic"><use href="#i-butter"/></svg></span>
-        <span class="grow"><span class="name">Масло сливочное 82%, 200 г</span><span class="small warn">Остаток 24 шт · мало</span></span>
+        <span class="grow"><span class="name">Масло сливочное 82%, 200 г</span><span class="small muted">от 10 шт · в наличии</span></span>
         <span class="price">145 сом</span>
       </button>
       <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-box"/></svg></span>
-        <span class="grow"><span class="name">Сок яблочный, 1 л <span class="pill green" style="font-size:10px;padding:2px 6px">NEW</span></span><span class="small muted">Остаток 600 шт · от 12 шт</span></span>
+        <span class="grow"><span class="name">Сок яблочный, 1 л <span class="pill green" style="font-size:10px;padding:2px 6px">NEW</span></span><span class="small muted">от 12 шт · в наличии</span></span>
         <span class="price">95 сом</span>
       </button>
       <button class="card row rise" data-go="d-product" style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="thumb" style="background:#F3EEFB;color:#6B46A8"><svg class="ic"><use href="#i-box"/></svg></span>
-        <span class="grow"><span class="name">Сахар, 1 кг</span><span class="small muted">Остаток 1 200 шт · от 10 шт</span></span>
-        <span class="price">82 сом</span>
+        <span class="grow"><span class="name">Сахар, 1 кг</span><span class="small warn">Нет в наличии · магазины не видят</span></span>
+        <span class="price muted">82 сом</span>
       </button>
     </div>
     <nav class="tabbar five" aria-label="Меню дистрибьютора">
@@ -938,7 +938,11 @@ button{cursor:pointer}
     <form class="body" id="d-price-form">
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="background:#EEF4FB;color:#2B5C8F"><svg class="ic"><use href="#i-bottle"/></svg></span>
-        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">Код 1С: 00-000142 · остаток 340 шт</span></span>
+        <span class="grow"><span class="name">Молоко «Белая река» 3,2%, 1 л</span><span class="small muted">Артикул 142 · из прайс-листа</span></span>
+      </div>
+      <div class="card row rise" style="flex-direction:row;padding:14px">
+        <span class="grow"><span class="name">Есть в наличии</span><span class="small muted" id="d-avail-hint">Магазины видят товар и могут заказать</span></span>
+        <button type="button" class="toggle" id="d-avail" role="switch" aria-checked="true" aria-label="Есть в наличии"></button>
       </div>
       <div class="grid2 rise" style="gap:10px">
         <div class="field"><label for="d-price">Цена за шт, сом</label><input id="d-price" type="text" inputmode="numeric" value="72"></div>
@@ -1343,13 +1347,21 @@ button{cursor:pointer}
     }
   });
 
-  $('#sync-1c').addEventListener('click', () => {
-    const b = $('#sync-1c'); b.textContent = 'Обновляем…';
+  $('#upload-price').addEventListener('click', () => {
+    const b = $('#upload-price'); b.textContent = 'Загружаем…';
     setTimeout(() => {
-      b.textContent = 'Обновить';
-      $('#sync-text').textContent = '248 товаров · обновлено только что';
-      toast('Цены и остатки загружены из 1С');
+      b.textContent = 'Загрузить Excel';
+      $('#price-text').textContent = '248 товаров · обновлён только что';
+      toast('Прайс загружен · изменилось 12 цен');
     }, 900);
+  });
+
+  // Наличие отмечается вручную: склад поставщика на старте не подключаем
+  $('#d-avail').addEventListener('click', () => {
+    const t = $('#d-avail'), on = t.classList.toggle('off') === false;
+    t.setAttribute('aria-checked', on);
+    $('#d-avail-hint').textContent = on ? 'Магазины видят товар и могут заказать' : 'Товар скрыт, магазины его не видят';
+    $$('.d-milk-avail').forEach(x => x.textContent = on ? 'в наличии' : 'нет в наличии');
   });
 
   $('#d-price-form').addEventListener('submit', e => {

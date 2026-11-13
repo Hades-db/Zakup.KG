@@ -313,8 +313,8 @@ button.toggle::after{transition:right .2s}
     <div class="body auth">
       <div class="brand" aria-label="Zakup.KG"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="brand-name">Zakup<b>.KG</b></span></div>
       <div class="auth-head"><span class="h1">Выберите версию</span></div>
-      <button type="button" class="ver" data-ver="full"><span class="h2"><span class="pill green">1</span>Полная</span><span class="small muted">Каталог и сравнение поставщиков</span></button>
-      <button type="button" class="ver" data-ver="lite"><span class="h2"><span class="pill green">2</span>Один поставщик</span><span class="small muted">Без каталога и без других поставщиков на главной</span></button>
+      <button type="button" class="ver" data-ver="full"><span class="h2">Тест 1</span></button>
+      <button type="button" class="ver" data-ver="lite"><span class="h2">Тест 2</span></button>
     </div>
   </section>
 
@@ -344,7 +344,7 @@ button.toggle::after{transition:right .2s}
       </form>
 
       <p class="auth-switch"><span id="to-reg">Нет аккаунта? <button type="button" class="linkbtn" data-auth="reg">Зарегистрироваться</button></span><span id="to-login" hidden>Уже есть аккаунт? <button type="button" class="linkbtn" data-auth="login">Войти</button></span></p>
-      <button type="button" class="linkbtn" id="ver-change" style="align-self:center;color:var(--muted);font-weight:600">Версия: <span id="ver-name">полная</span> · сменить</button>
+      <button type="button" class="linkbtn" id="ver-change" style="align-self:center;color:var(--muted);font-weight:600"><span id="ver-name">Тест 1</span></button>
     </div>
 
     <div class="sheet-bg" id="agree-sheet" role="dialog" aria-modal="true" aria-label="Документы" hidden>
@@ -1536,11 +1536,11 @@ button.toggle::after{transition:right .2s}
   });
 
 
-  // ===== Выбор версии для показа =====
+  // ===== Выбор версии (Тест 1 — полная, Тест 2 — без каталога и других поставщиков) =====
   $$('[data-ver]').forEach(b => b.addEventListener('click', () => {
     const lite = b.dataset.ver === 'lite';
     document.body.classList.toggle('lite', lite);
-    $('#ver-name').textContent = lite ? 'один поставщик' : 'полная';
+    $('#ver-name').textContent = lite ? 'Тест 2' : 'Тест 1';
     lastScreen.shop = 's-home';
     go('auth', 'fade');
   }));

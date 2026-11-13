@@ -216,6 +216,11 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+.sugg-wrap{position:relative}
+.sugg{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:20;overflow:hidden;display:flex;flex-direction:column}
+.sugg .list-item{padding:11px 14px}
+.sugg .list-item:disabled{opacity:.5}
+.chev{color:var(--muted);width:18px;height:18px}
 .stepper.sm{gap:6px}
 .stepper.sm button{width:38px;height:38px;font-size:20px}
 .stepper.sm .num{min-width:26px;text-align:center;font-weight:800}
@@ -624,7 +629,7 @@ button.toggle::after{transition:right .2s}
   <!-- ========== АГЕНТ: ЗАКАЗЫ ========== -->
   <section class="screen" id="a-orders" data-role="agent" hidden>
     <header class="top">
-      <div class="grow"><span class="small muted agent-who">Агент Азамат · ОсОО «Дистрибьютор»</span><span class="h1">Заказы</span></div>
+      <div class="grow"><span class="h1">Заказы</span></div>
       <div class="chips scroll filter" data-role-list="agent">
         <button type="button" class="chip on" data-f="all">Все</button>
         <button type="button" class="chip" data-f="new">Новые · <span class="agent-new-n">2</span></button>
@@ -693,7 +698,7 @@ button.toggle::after{transition:right .2s}
   <!-- ========== АГЕНТ: НА ДОСТАВКУ ========== -->
   <section class="screen" id="a-route" data-role="agent" hidden>
     <header class="top">
-      <div class="grow"><span class="small muted">Завтра</span><span class="h1">На доставку</span></div>
+      <div class="grow"><span class="h1">На доставку</span></div>
       <div class="grid2" style="gap:10px">
         <div class="stat"><b class="route-n">2</b><span>Магазина</span></div>
         <div class="stat green"><b class="route-sum">4 330</b><span>Собрать оплату, сом</span></div>
@@ -784,7 +789,7 @@ button.toggle::after{transition:right .2s}
   <!-- ========== АГЕНТ: МОИ ТОВАРЫ (агент сам ведёт товары и цены) ========== -->
   <section class="screen" id="a-catalog" data-role="agent" hidden>
     <header class="top">
-      <div class="grow"><span class="small muted">Свои цены для магазинов</span><span class="h1">Мои товары</span></div>
+      <div class="grow"><span class="h1">Мои товары</span></div>
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название товара"></label>
     </header>
     <div class="body" style="gap:10px" id="a-product-list">
@@ -881,7 +886,7 @@ button.toggle::after{transition:right .2s}
       <span style="font-size:18px;font-weight:800">Новый магазин</span>
     </header>
     <form class="body" id="store-form">
-      <div class="field"><label for="ns-name">Название</label><input id="ns-name" type="text"></div>
+      <div class="field sugg-wrap"><label for="ns-name">Название</label><input id="ns-name" type="text" autocomplete="off"><div class="sugg" id="ns-sugg" role="listbox" hidden></div></div>
       <div class="field"><label for="ns-addr">Адрес</label><input id="ns-addr" type="text"></div>
       <div class="field"><label for="ns-phone">Телефон</label><input id="ns-phone" type="tel" placeholder="+996"></div>
       <div class="field" id="ns-district">
@@ -919,9 +924,10 @@ button.toggle::after{transition:right .2s}
         <div class="between small" data-ip hidden><span class="muted">ИНН</span><span class="bold">[14 цифр]</span></div>
       </div>
       <div class="list rise">
-        <div class="list-item" style="cursor:default"><svg class="ic"><use href="#i-globe"/></svg><span class="grow">Язык</span>
-          <div class="seg lang-seg" role="radiogroup" aria-label="Язык" style="width:150px;padding:3px"><button type="button" class="on" style="height:34px;font-size:13px">Рус</button><button type="button" style="height:34px;font-size:13px">Кыр</button></div>
-        </div>      </div>
+        <button class="list-item" data-go="a-invoices"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="list-item" data-go="a-settings"><svg class="ic"><use href="#i-user"/></svg><span class="grow">Настройки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="list-item" data-toast="Чат поддержки — в следующей версии"><svg class="ic"><use href="#i-bell"/></svg><span class="grow">Поддержка</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+      </div>
       <div class="list rise">
         <button class="list-item" data-toast="Вы вышли из аккаунта (в прототипе — без выхода)" style="color:#B42318"><span class="grow">Выйти</span></button>
       </div>
@@ -933,6 +939,32 @@ button.toggle::after{transition:right .2s}
       <button class="tab" data-tab="a-route"><svg class="ic"><use href="#i-truck"/></svg>Доставка</button>
       <button class="tab on" data-tab="a-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
+  </section>
+
+  <!-- ========== АГЕНТ: НАКЛАДНЫЕ ========== -->
+  <section class="screen" id="a-invoices" data-role="agent" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800">Накладные</span>
+    </header>
+    <div class="body" id="a-inv-list" style="gap:10px"></div>
+  </section>
+
+  <!-- ========== АГЕНТ: НАСТРОЙКИ ========== -->
+  <section class="screen" id="a-settings" data-role="agent" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800">Настройки</span>
+    </header>
+    <form class="body" id="a-settings-form">
+      <div class="field"><label for="as-name">Имя</label><input id="as-name" type="text" value="Азамат"></div>
+      <div class="field"><label for="as-phone">Телефон</label><input id="as-phone" type="tel" value="+996 "></div>
+      <div class="field"><span class="label">Язык</span>
+        <div class="seg lang-seg" role="radiogroup" aria-label="Язык"><button type="button" class="on">Русский</button><button type="button">Кыргызча</button></div>
+      </div>
+      <button type="button" class="btn lg ghost" data-toast="Смена пароля — в следующей версии">Сменить пароль</button>
+      <button type="submit" class="btn lg">Сохранить</button>
+    </form>
   </section>
 
   <!-- ========== ДИСТРИБЬЮТОР: ПРОФИЛЬ ========== -->
@@ -1037,6 +1069,7 @@ button.toggle::after{transition:right .2s}
     if (id === current_id) return;
     const from = $('#' + current_id), to = $('#' + id);
     if (id === 's-invoice') { renderInvoice(pendingInv || shopInv); pendingInv = null; }
+    if (id === 'a-invoices') renderInvoiceList();
     if (dir === 'push') { history.push(current_id); animateOut(from, 'out-left'); animateIn(to, 'in-right'); }
     else if (dir === 'back') { animateOut(from, 'out-right'); animateIn(to, 'in-left'); }
     else { history.length = 0; from.hidden = true; animateIn(to, 'fade-in'); }
@@ -1305,6 +1338,22 @@ button.toggle::after{transition:right .2s}
     go('s-invoice', 'push');
   });
 
+  // Профиль агента: список накладных по принятым заказам
+  function renderInvoiceList() {
+    const list = orders.agent.filter(o => o.st !== 'new' && o.st !== 'rejected');
+    $('#a-inv-list').innerHTML = list.length ? list.map(o =>
+      '<div class="card row" role="button" tabindex="0" data-invoice="agent:' + o.n + '" style="flex-direction:row;padding:14px;cursor:pointer">' +
+      '<span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-pdf"/></svg></span>' +
+      '<span class="grow"><span class="bold" style="font-size:15px">№ ' + o.n + ' · ' + o.shop + '</span>' +
+      '<span class="small muted">' + (DATE_OF[o.ago] || '14.11.2026') + ' · ' + fmt(total(o)) + ' сом</span></span></div>').join('')
+      : '<span class="small muted">Накладные появятся после принятия заказов</span>';
+  }
+  $('#a-settings-form').addEventListener('submit', e => {
+    e.preventDefault();
+    toast('Сохранено');
+    go(history.pop() || homeOf[role], 'back');
+  });
+
   // Открыть заказ из списка
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-open]');
@@ -1463,11 +1512,42 @@ button.toggle::after{transition:right .2s}
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-add-store]')) return;
     $('#store-form').reset();
+    $('#ns-sugg').hidden = true;
     $('#ns-district').hidden = role !== 'dist';
     go('store-new', 'push');
   });
+  // Магазины, которые уже зарегистрированы в Zakup.KG: [название, адрес, телефон, район]
+  const REG = [
+    ['Магазин «Достук»', 'ул. [Адрес]', '+996 [номер]', 'Октябрьский'],
+    ['Магазин «Береке»', 'ул. [Адрес]', '+996 [номер]', 'Ленинский'],
+    ['Магазин «Жибек»', 'ул. [Адрес]', '+996 [номер]', 'Ленинский'],
+    ['Минимаркет «Айдай»', 'ул. [Адрес]', '+996 [номер]', 'Свердловский'],
+    ['Продукты «Салам»', 'ул. [Адрес]', '+996 [номер]', 'Первомайский'],
+    ['Магазин «Тумар»', 'ул. [Адрес]', '+996 [номер]', 'Октябрьский']
+  ];
+  const myStores = () => role === 'dist' ? stores.map(x => x[0]) : $$('#a-store-list .card .bold').map(x => x.textContent);
+  const norm = t => t.toLowerCase().replace(/[«»"]/g, '');
+  $('#ns-name').addEventListener('input', () => {
+    const q = norm($('#ns-name').value.trim()), box = $('#ns-sugg'), mine = myStores();
+    const hits = q ? REG.filter(x => norm(x[0]).includes(q)) : [];
+    box.innerHTML = hits.map(x => {
+      const have = mine.includes(x[0]);
+      return '<button type="button" class="list-item" data-reg="' + REG.indexOf(x) + '"' + (have ? ' disabled' : '') + '>' +
+        '<span class="grow"><span class="bold" style="font-size:14px">' + x[0] + '</span><span class="xs muted">' + (have ? 'уже в вашем списке' : x[1] + ' · ' + x[3] + ' р-н') + '</span></span></button>';
+    }).join('');
+    box.hidden = !hits.length;
+  });
+  $('#ns-sugg').addEventListener('click', e => {
+    const b = e.target.closest('[data-reg]');
+    if (!b) return;
+    const x = REG[+b.dataset.reg];
+    $('#ns-name').value = x[0]; $('#ns-addr').value = x[1]; $('#ns-phone').value = x[2];
+    $$('#ns-district .chip').forEach(c => c.classList.toggle('on', c.dataset.d === x[3]));
+    $('#ns-sugg').hidden = true;
+  });
   $('#store-form').addEventListener('submit', e => {
     e.preventDefault();
+    if (myStores().includes($('#ns-name').value.trim())) { toast('Этот магазин уже в вашем списке'); return; }
     const name = $('#ns-name').value.trim(), addr = $('#ns-addr').value.trim() || 'ул. [Адрес]';
     if (!name) { toast('Укажите название магазина'); return; }
     if (role === 'dist') {
@@ -1492,7 +1572,6 @@ button.toggle::after{transition:right .2s}
     if (!b) return;
     agentSelf = b.dataset.self === '1';
     $$('#agent-mode button').forEach(x => x.classList.toggle('on', x === b));
-    $$('.agent-who').forEach(x => x.textContent = agentSelf ? 'ИП Азамат' : 'Агент Азамат · ОсОО «Дистрибьютор»');
     $$('.agent-sub').forEach(x => x.textContent = agentSelf ? 'Индивидуальный предприниматель' : 'Торговый агент · ОсОО «Дистрибьютор»');
     $$('[data-company]').forEach(x => x.hidden = agentSelf);
     $$('[data-ip]').forEach(x => x.hidden = !agentSelf);
@@ -1503,7 +1582,7 @@ button.toggle::after{transition:right .2s}
     const b = e.target.closest('button');
     if (!b || b.classList.contains('on')) return;
     $$('button', g).forEach(x => x.classList.toggle('on', x === b));
-    toast(b.textContent === 'Кыр' ? 'Кыргызский язык — в следующей версии' : 'Язык: русский');
+    toast(b.textContent.startsWith('Кыр') ? 'Кыргызский язык — в следующей версии' : 'Язык: русский');
   }));
 
   renderAll();

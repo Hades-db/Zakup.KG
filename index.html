@@ -1576,7 +1576,7 @@ button.toggle::after{transition:right .2s}
     ['Рис, 1 кг', 'sugar', 50, 'Агент Айгерим', 110, 10], ['Печенье шоколадное, 250 г', 'cookie', 35, 'Агент Айгерим', 85, 10]
   ].map(([name, img, left, sup, p, q]) => ({ name, img, left, sup, p, q, ordered: false }));
   const LOW = 8;   // меньше или равно — «заканчивается»
-  const supOf = x => document.body.classList.contains('lite') ? 'ОсОО «Дистрибьютор»' : x.sup;
+  const supOf = x => x.sup;
   const need = x => x.left <= LOW && !x.ordered;
   const SF = [['low', 'Заканчивается', x => x.left > 0 && x.left <= LOW], ['out', 'Нет в наличии', x => x.left === 0], ['all', 'Все', () => true]];
   let stockF = 'low';

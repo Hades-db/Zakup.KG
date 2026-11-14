@@ -867,7 +867,7 @@ body{background:var(--bg)}
     <span id="invoice-title" hidden>Накладная</span>
     <div class="inv-actions">
       <button type="button" class="inv-send" id="share-invoice">Отправить</button>
-      <button type="button" class="btn lg" id="download-invoice">Сохранить PDF</button>
+      <button type="button" class="btn lg" id="download-invoice">Сохранить фото</button>
     </div>
   </section>
 
@@ -1526,43 +1526,51 @@ body{background:var(--bg)}
     });
     return pdfLib;
   }
-  async function invoicePdf() {
+  // Снимок накладной: из одного снимка делаем и фото (PNG), и PDF.
+  async function invoiceFiles() {
     await loadPdfLib();
     const card = $('#invoice-paper .inv');
     card.classList.remove('rise');
-    const name = $('#invoice-title').textContent.replace('№ ', '').replace(/\s+/g, '_') + '.pdf';
+    const base = $('#invoice-title').textContent.replace('№ ', '').replace(/\s+/g, '_');
     // Снимок копирует всю страницу. С появлением фото товаров (loading="lazy") Safari ждал их
-    // загрузки в копии бесконечно — PDF «не собирался». Само приложение (#phone) в копию не берём:
+    // загрузки в копии бесконечно. Само приложение (#phone) в копию не берём:
     // html2pdf рисует свою копию накладной вне него.
     const ignore = el => el.id === 'phone';
-    const make = html2pdf().set({
-      margin: 8, filename: name,
-      image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: { scale: 2.5, backgroundColor: '#ffffff', useCORS: true, imageTimeout: 5000, ignoreElements: ignore, logging: false },
-      jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
-    }).from(card).outputPdf('blob');
+    const work = (async () => {
+      // Ширина снимка = ширина карточки на экране, чтобы фото выглядело как в приложении
+      const w = Math.max(340, Math.min(420, card.offsetWidth || 360));
+      const canvas = await html2pdf().set({
+        margin: 0, jsPDF: { unit: 'px', format: [w, w * 2], orientation: 'portrait', hotfixes: ['px_scaling'] },
+        html2canvas: { scale: 2.5, backgroundColor: '#ffffff', useCORS: true, imageTimeout: 5000, ignoreElements: ignore, logging: false }
+      }).from(card).toCanvas().get('canvas');
+      const png = await new Promise(ok => canvas.toBlob(ok, 'image/png'));
+      const pdf = await html2pdf().set({
+        margin: 8, image: { type: 'jpeg', quality: 0.96 }, jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+      }).from(canvas, 'canvas').outputPdf('blob');
+      return {
+        img: new File([png], base + '.png', { type: 'image/png' }),
+        pdf: new File([pdf], base + '.pdf', { type: 'application/pdf' })
+      };
+    })();
     const late = new Promise((_, no) => setTimeout(() => no(new Error('слишком долго, попробуйте ещё раз')), 20000));
-    const blob = await Promise.race([make, late]);
-    return new File([blob], name, { type: 'application/pdf' });
+    return Promise.race([work, late]);
   }
-  // PDF готовим заранее, как только открыли накладную: iPhone разрешает «Поделиться»/сохранение
+  // Файлы готовим заранее, как только открыли накладную: iPhone разрешает «Поделиться»/сохранение
   // только сразу после нажатия, а пока файл собирается, это разрешение пропадает.
-  let pdfFile = null, pdfJob = null;
+  let invFiles = null, invJob = null;
   function preparePdf() {
-    pdfFile = null;
-    const job = pdfJob = new Promise(r => setTimeout(r, 450)).then(invoicePdf)
-      .then(f => { if (job === pdfJob) pdfFile = f; return f; });
+    invFiles = null;
+    const job = invJob = new Promise(r => setTimeout(r, 450)).then(invoiceFiles)
+      .then(f => { if (job === invJob) invFiles = f; return f; });
     job.catch(() => {});
     return job;
   }
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const canShareFile = f => !!(navigator.canShare && navigator.canShare({ files: [f] }));
-  // Приложение открыто с экрана «Домой» (без Safari) — там iPhone не умеет скачивать файлы напрямую
-  const isStandalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
   function shareFile(file) {
     return navigator.share({ files: [file], title: file.name }).catch(err => {
       if (err && err.name === 'AbortError') return;            // пользователь закрыл меню
-      if (err && err.name === 'NotAllowedError') { toast('PDF готов — нажмите ещё раз'); return; }
+      if (err && err.name === 'NotAllowedError') { toast('Готово — нажмите ещё раз'); return; }
       throw err;
     });
   }
@@ -1571,39 +1579,35 @@ body{background:var(--bg)}
     a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
-  // «Отправить» — меню «Поделиться». «Сохранить PDF» — скачать файл: в Safari на iPhone он попадёт в «Файлы» → «Загрузки».
-  function deliver(file, share) {
-    if (share) {
-      if (canShareFile(file)) return shareFile(file);
-      downloadFile(file); toast('Отправка недоступна — PDF скачан');
-      return Promise.resolve();
-    }
-    if (isIOS && isStandalone && canShareFile(file)) {         // с экрана «Домой» скачивание не работает
-      toast('Выберите «Сохранить в Файлы»');
+  // «Сохранить фото» — картинка накладной в галерею (на iPhone: меню → «Сохранить изображение»).
+  // «Отправить» — PDF через меню «Поделиться» (WhatsApp, Telegram…).
+  function deliver(files, photo) {
+    const file = photo ? files.img : files.pdf;
+    if (canShareFile(file)) {
+      if (photo && isIOS) toast('Нажмите «Сохранить изображение»');
       return shareFile(file);
     }
     downloadFile(file);
-    toast(isIOS ? 'PDF сохраняется в «Файлы» → «Загрузки»' : 'PDF накладной скачан');
+    toast(photo ? 'Фото накладной сохранено' : 'Отправка недоступна — PDF скачан');
     return Promise.resolve();
   }
-  async function pdfAction(btn, share) {
-    if (pdfFile) {                                             // файл готов — отдаём сразу, в том же нажатии
-      try { await deliver(pdfFile, share); } catch (err) { toast('Не удалось открыть PDF: ' + (err && err.message || err)); }
+  async function invAction(btn, photo) {
+    if (invFiles) {                                            // файлы готовы — отдаём сразу, в том же нажатии
+      try { await deliver(invFiles, photo); } catch (err) { toast('Не получилось: ' + (err && err.message || err)); }
       return;
     }
     const label = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Готовим PDF…';
+    btn.disabled = true; btn.textContent = 'Готовим…';
     try {
-      const file = await (pdfJob || preparePdf());
-      await deliver(file, share);
+      await deliver(await (invJob || preparePdf()), photo);
     } catch (err) {
-      toast('Не удалось сделать PDF: ' + (err && err.message || err));
-      pdfJob = null;
+      toast('Не удалось сделать накладную: ' + (err && err.message || err));
+      invJob = null;
     }
     btn.disabled = false; btn.textContent = label;
   }
-  $('#download-invoice').addEventListener('click', e => pdfAction(e.currentTarget, false));
-  $('#share-invoice').addEventListener('click', e => pdfAction(e.currentTarget, true));
+  $('#download-invoice').addEventListener('click', e => invAction(e.currentTarget, true));
+  $('#share-invoice').addEventListener('click', e => invAction(e.currentTarget, false));
 
   // ===== Фото крупно: нажатие на фото товара открывает его с названием =====
   document.addEventListener('click', e => {

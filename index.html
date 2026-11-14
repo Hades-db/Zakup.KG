@@ -1557,24 +1557,33 @@ body{background:var(--bg)}
   }
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const canShareFile = f => !!(navigator.canShare && navigator.canShare({ files: [f] }));
-  // Отдать готовый файл. На iPhone «Скачать» = меню «Поделиться» → «Сохранить в Файлы».
-  function deliver(file, share) {
-    if ((share || isIOS) && canShareFile(file)) {
-      return navigator.share({ files: [file], title: file.name }).catch(err => {
-        if (err && err.name === 'AbortError') return;          // пользователь закрыл меню
-        if (err && err.name === 'NotAllowedError') { toast('PDF готов — нажмите ещё раз'); return; }
-        throw err;
-      });
-    }
-    const url = URL.createObjectURL(file);
-    if (isIOS) {                                               // старый iOS без отправки файлов — открыть PDF
-      if (!window.open(url, '_blank')) toast('Разрешите всплывающие окна, чтобы открыть PDF');
-    } else {
-      const a = document.createElement('a');
-      a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-      toast(share ? 'Отправка недоступна — PDF скачан' : 'PDF накладной скачан');
-    }
+  // Приложение открыто с экрана «Домой» (без Safari) — там iPhone не умеет скачивать файлы напрямую
+  const isStandalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  function shareFile(file) {
+    return navigator.share({ files: [file], title: file.name }).catch(err => {
+      if (err && err.name === 'AbortError') return;            // пользователь закрыл меню
+      if (err && err.name === 'NotAllowedError') { toast('PDF готов — нажмите ещё раз'); return; }
+      throw err;
+    });
+  }
+  function downloadFile(file) {
+    const url = URL.createObjectURL(file), a = document.createElement('a');
+    a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  // «Отправить» — меню «Поделиться». «Сохранить PDF» — скачать файл: в Safari на iPhone он попадёт в «Файлы» → «Загрузки».
+  function deliver(file, share) {
+    if (share) {
+      if (canShareFile(file)) return shareFile(file);
+      downloadFile(file); toast('Отправка недоступна — PDF скачан');
+      return Promise.resolve();
+    }
+    if (isIOS && isStandalone && canShareFile(file)) {         // с экрана «Домой» скачивание не работает
+      toast('Выберите «Сохранить в Файлы»');
+      return shareFile(file);
+    }
+    downloadFile(file);
+    toast(isIOS ? 'PDF сохраняется в «Файлы» → «Загрузки»' : 'PDF накладной скачан');
     return Promise.resolve();
   }
   async function pdfAction(btn, share) {

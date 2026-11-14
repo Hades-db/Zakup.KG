@@ -351,7 +351,7 @@ const showLogin = () => {
   });
   clearAuthFormValidation();
   clearRecoveryInputs(true);
-  roleToggle.hidden = false;
+  roleToggle.hidden = true;
   loginLink.hidden = true;
   pageTitle.textContent = "Вход";
   welcomeMessage.textContent = "Добро пожаловать!";
@@ -369,7 +369,6 @@ const showResetPassword = () => {
   newPasswordPanel.hidden = true;
   clearAuthFormValidation();
   clearRecoveryInputs(false);
-  roleToggle.hidden = true;
   loginLink.hidden = true;
   pageTitle.textContent = "Восстановление пароля";
   welcomeMessage.textContent =
@@ -387,7 +386,6 @@ const showVerification = () => {
   verificationPanel.hidden = false;
   newPasswordPanel.hidden = true;
   clearAuthFormValidation();
-  roleToggle.hidden = true;
   loginLink.hidden = true;
   pageTitle.textContent = "Подтверждение номера";
   const digits = recoveryPhoneInput.value.replace(/\D/g, "");
@@ -407,7 +405,6 @@ const showNewPassword = () => {
   newPasswordPanel.hidden = false;
   clearAuthFormValidation();
   clearRecoveryInputs(false);
-  roleToggle.hidden = true;
   loginLink.hidden = true;
   pageTitle.textContent = "Создание нового пароля";
   welcomeMessage.textContent =
@@ -445,7 +442,6 @@ const showShopHome = () => {
   profilePhotoReadId += 1;
   renderProfile();
   activeDetailProductId = null;
-  roleToggle.hidden = true;
   loginLink.hidden = true;
   pageTitle.textContent = "Главная";
   welcomeMessage.textContent = "";

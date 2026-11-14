@@ -608,13 +608,8 @@ body {
   display: none;
 }
 
-.phone.is-login .role-toggle {
-  top: 429px;
-  transform: none;
-}
-
 .phone.is-login .login-panel {
-  top: 522px;
+  top: 429px;
   height: 277px;
   transform: none;
 }
@@ -962,7 +957,6 @@ body {
     transform: translate(-50%, var(--content-shift));
   }
 
-  .phone.is-login .role-toggle,
   .phone.is-login .login-panel {
     left: 50%;
     width: min(500px, calc(100% - 48px));
@@ -1296,9 +1290,6 @@ body {
   transform: none;
 }
 
-.phone.is-reset .role-toggle,
-.phone.is-code .role-toggle,
-.phone.is-new-password .role-toggle,
 .phone.is-reset .login-link,
 .phone.is-code .login-link,
 .phone.is-new-password .login-link {
@@ -1576,7 +1567,6 @@ body {
 .phone.is-home .page-header,
 .phone.is-home .brand-wrap,
 .phone.is-home .welcome,
-.phone.is-home .role-toggle,
 .phone.is-home .registration-form,
 .phone.is-home .login-panel,
 .phone.is-home .auth-flow-panel,
@@ -3557,8 +3547,7 @@ body {
   fill: none;
 }
 
-.primary-btn,
-.role-btn.active {
+.primary-btn {
   border-color: #00d18c;
   background: #00d18c;
   box-shadow: 0 0 14px rgba(0, 209, 140, 0.28);
@@ -3864,7 +3853,8 @@ body {
 
 .phone.is-home.theme-light .home-search input,
 .phone.is-home.theme-light .home-profile-field input,
-.phone.is-home.theme-light .home-cart-item select {
+.phone.is-home.theme-light .home-cart-item select,
+.phone.is-home.theme-light .home-quantity-value {
   color: #1d212a;
 }
 

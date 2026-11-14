@@ -1560,10 +1560,15 @@ button.toggle::after{transition:right .2s}
     'Магазин «Достук»': '+996 772 30 15 44', 'Минимаркет «Ала-Тоо»': '+996 555 41 22 07', 'Продукты «Нур»': '+996 700 18 63 90',
     'Магазин «Береке»': '+996 550 61 07 83', 'Магазин «Асель»': '+996 707 52 19 46', 'Магазин «Жибек»': '+996 707 99 40 12'
   };
-  function contactRow(shop) {
-    const ph = SHOP_PHONE[shop] || '+996 555 00 00 00', d = ph.replace(/\D/g, '');
+  // Телефоны поставщиков — магазин тоже может позвонить или написать агенту
+  const SUP_PHONE = {
+    'Агент Азамат': '+996 555 12 34 56', 'Агент Нурлан': '+996 700 33 18 25', 'Агент Айгерим': '+996 772 64 09 11',
+    'ОсОО «Дистрибьютор»': '+996 700 48 21 90'
+  };
+  function contactRow(name, toSupplier) {
+    const ph = (toSupplier ? SUP_PHONE : SHOP_PHONE)[name] || '+996 555 00 00 00', d = ph.replace(/\D/g, '');
     const hi = encodeURIComponent('Здравствуйте! Пишу по заказу в Zakup.KG');
-    return '<div class="contact"><span class="grow"><span class="xs muted">Телефон магазина</span><span class="contact-num">' + ph + '</span></span>' +
+    return '<div class="contact"><span class="grow"><span class="xs muted">' + (toSupplier ? 'Телефон поставщика' : 'Телефон магазина') + '</span><span class="contact-num">' + ph + '</span></span>' +
       '<a class="c-btn call" href="tel:+' + d + '" aria-label="Позвонить"><svg class="ic"><use href="#i-call"/></svg></a>' +
       '<a class="c-btn wa" href="https://wa.me/' + d + '?text=' + hi + '" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><svg viewBox="0 0 24 24"><use href="#i-wa"/></svg></a></div>';
   }
@@ -1795,6 +1800,7 @@ button.toggle::after{transition:right .2s}
     $('#so-title').textContent = 'Заказ № ' + o.n;
     $('#so-body').innerHTML =
       '<div class="card rise" style="gap:4px"><div class="between"><span class="h2">' + o.sup + '</span>' + spill(o.st) + '</div><span class="small muted">№ ' + o.n + ', ' + o.date + '</span>' +
+      '<div style="padding-top:8px">' + contactRow(o.sup, true) + '</div>' +
       '<div class="steps" style="padding-top:8px">' + names.map((t, j) =>
         '<div class="step' + (j <= at ? ' done' : '') + '"><div class="mark"><span class="circle"></span>' + (j < 3 ? '<span class="line"></span>' : '') + '</div>' +
         '<div class="grow"><span class="name" style="font-size:14px">' + t + '</span>' + (j === 2 ? '<span class="xs muted">Доставка ' + o.when + '</span>' : '') + '</div></div>').join('') + '</div></div>' +

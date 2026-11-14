@@ -525,10 +525,12 @@ button.toggle::after{transition:right .2s}
           <div class="step"><div class="mark"><span class="circle"></span><span class="line"></span></div><div class="grow"><span class="name" style="font-size:14px">В пути</span><span class="xs muted">Доставка <span class="sup-when">завтра до 12:00</span></span></div></div>
           <div class="step"><div class="mark"><span class="circle"></span></div><div class="grow"><span class="name" style="font-size:14px">Получен и оплачен</span></div></div>
         </div>
+        <button class="list-item" data-go="s-invoice" style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg><span class="grow">Накладная № 0001</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
       <div class="card rise">
         <div class="between"><span class="bold" style="font-size:15px">Заказ № 0000</span><span class="pill" style="background:var(--soft);color:var(--muted)">Доставлен</span></div>
         <span class="small muted">Агент Нурлан · Кефир 2,5% × 10 · 650 сом</span>
+        <button class="list-item" data-old-inv style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg><span class="grow">Накладная № 0000</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
@@ -1540,6 +1542,14 @@ button.toggle::after{transition:right .2s}
     }
     bar.hidden = !bar.innerHTML;
   }
+
+  // Магазин: накладная по прошлому заказу
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-old-inv]')) return;
+    pendingInv = { n: '0000', date: '12.11.2026', shop: shopInv.shop, addr: shopInv.addr, releasedBy: 'Агент Нурлан',
+      items: [{ name: 'Кефир 2,5%, 1 л', q: 10, p: 65 }] };
+    go('s-invoice', 'push');
+  });
 
   // Открыть накладную по заказу агента или дистрибьютора
   const DATE_OF = { 'вчера': '13.11.2026', '3 дня назад': '11.11.2026' };

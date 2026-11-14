@@ -1395,7 +1395,7 @@ body{background:var(--bg)}
   function go(id, dir) {
     if (id === current_id) return;
     const from = $('#' + current_id), to = $('#' + id);
-    if (id === 's-invoice') { renderInvoice(pendingInv || shopInv); pendingInv = null; }
+    if (id === 's-invoice') { renderInvoice(pendingInv || shopInv); pendingInv = null; preparePdf(); }
     if (id === 'a-invoices') renderInvoiceList();
     if (dir === 'push') { history.push(current_id); animateOut(from, 'out-left'); animateIn(to, 'in-right'); }
     else if (dir === 'back') { animateOut(from, 'out-right'); animateIn(to, 'in-left'); }
@@ -1501,21 +1501,51 @@ body{background:var(--bg)}
     }).from(card).outputPdf('blob');
     return new File([blob], name, { type: 'application/pdf' });
   }
+  // PDF готовим заранее, как только открыли накладную: iPhone разрешает «Поделиться»/сохранение
+  // только сразу после нажатия, а пока файл собирается, это разрешение пропадает.
+  let pdfFile = null, pdfJob = null;
+  function preparePdf() {
+    pdfFile = null;
+    const job = pdfJob = new Promise(r => setTimeout(r, 450)).then(invoicePdf)
+      .then(f => { if (job === pdfJob) pdfFile = f; return f; });
+    job.catch(() => {});
+    return job;
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const canShareFile = f => !!(navigator.canShare && navigator.canShare({ files: [f] }));
+  // Отдать готовый файл. На iPhone «Скачать» = меню «Поделиться» → «Сохранить в Файлы».
+  function deliver(file, share) {
+    if ((share || isIOS) && canShareFile(file)) {
+      return navigator.share({ files: [file], title: file.name }).catch(err => {
+        if (err && err.name === 'AbortError') return;          // пользователь закрыл меню
+        if (err && err.name === 'NotAllowedError') { toast('PDF готов — нажмите ещё раз'); return; }
+        throw err;
+      });
+    }
+    const url = URL.createObjectURL(file);
+    if (isIOS) {                                               // старый iOS без отправки файлов — открыть PDF
+      if (!window.open(url, '_blank')) toast('Разрешите всплывающие окна, чтобы открыть PDF');
+    } else {
+      const a = document.createElement('a');
+      a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+      toast(share ? 'Отправка недоступна — PDF скачан' : 'PDF накладной скачан');
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return Promise.resolve();
+  }
   async function pdfAction(btn, share) {
+    if (pdfFile) {                                             // файл готов — отдаём сразу, в том же нажатии
+      try { await deliver(pdfFile, share); } catch (err) { toast('Не удалось открыть PDF: ' + (err && err.message || err)); }
+      return;
+    }
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Готовим PDF…';
     try {
-      const file = await invoicePdf();
-      if (share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: file.name });
-      } else {
-        const url = URL.createObjectURL(file), a = document.createElement('a');
-        a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        toast(share ? 'Отправка недоступна — PDF скачан' : 'PDF накладной скачан');
-      }
+      const file = await (pdfJob || preparePdf());
+      await deliver(file, share);
     } catch (err) {
-      if (!err || err.name !== 'AbortError') toast('Не удалось сделать PDF — проверьте интернет');
+      toast('Не удалось сделать PDF: ' + (err && err.message || err));
+      pdfJob = null;
     }
     btn.disabled = false; btn.textContent = label;
   }

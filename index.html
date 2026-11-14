@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zakup.KG</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="phone-shell">
+      <div class="phone">
+        <div class="page-header">
+          <h1 id="page-title">Регистрация</h1>
+        </div>
+
+        <div class="brand-wrap">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="bracket bracket-left"></span>
+            <span class="bracket bracket-right"></span>
+          </div>
+          <div class="brand-name">Zakup<span>.KG</span></div>
+        </div>
+
+        <p class="welcome" id="welcome-message">Добро пожаловать в B2B платформу!</p>
+
+        <div class="role-toggle" role="tablist" aria-label="Тип аккаунта">
+          <button class="role-btn active" id="shop-tab" type="button" role="tab" aria-selected="true" data-account-type="shop">Магазин</button>
+          <button class="role-btn" id="supplier-tab" type="button" role="tab" aria-selected="false" data-account-type="supplier">Поставщик</button>
+        </div>
+
+        <form class="registration-form" novalidate>
+          <input type="hidden" name="accountType" value="shop" />
+          <label class="field" aria-label="Название магазина">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M3.5 11 6 5.5h16L24.5 11" />
+                <path d="M3.5 11c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4c0 1.4 1 2.4 2.5 2.4s2.5-1 2.5-2.4" />
+                <path d="M5.5 13.2v9.3h17v-9.3M8 22.5v-6.8h5.5v6.8M17 16.2h3v3h-3z" />
+              </svg>
+            </span>
+            <input type="text" placeholder="Название магазина" required />
+          </label>
+
+          <label class="field" aria-label="ИНН / ПИН">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.5h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2zm0 2v9h10v-9H7zm2 2h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
+            </span>
+            <input
+              type="text"
+              placeholder="ИНН / ПИН"
+              inputmode="numeric"
+              pattern="[0-9]{14}"
+              data-digits-only
+              data-max-digits="14"
+              data-exact-digits="14"
+              required
+            />
+          </label>
+
+          <label class="field" aria-label="Адрес магазина / доставки">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7.5 7.5 0 0 1 7.5 7.5c0 5.63-7.5 11.5-7.5 11.5S4.5 15.63 4.5 10A7.5 7.5 0 0 1 12 2.5zm0 2.2a5.3 5.3 0 0 0-5.3 5.3c0 3.42 4.1 7.48 5.3 8.52 1.2-1.04 5.3-5.1 5.3-8.52A5.3 5.3 0 0 0 12 4.7zm0 2.3a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
+            </span>
+            <input type="text" placeholder="Адрес магазина / доставки" required />
+          </label>
+
+          <label class="field" aria-label="Номер телефона">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M8.2 3.8 4.8 6.3c-.9.7-1.3 1.9-.9 3 2.2 7.3 7.5 12.6 14.8 14.8 1.1.3 2.3 0 3-.9l2.5-3.4-5.6-4.1-3 2.3a16.2 16.2 0 0 1-5.4-5.4l2.3-3-4.3-5.8Z" />
+              </svg>
+            </span>
+            <span class="country-code">+996</span>
+            <input
+              type="text"
+              placeholder="Номер телефона"
+              inputmode="numeric"
+              pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
+              data-phone-format
+              data-max-digits="9"
+              required
+            />
+          </label>
+
+          <label class="field" aria-label="Придумайте пароль">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v10h14V9h-2zm-8 0V7a3 3 0 1 1 6 0v2H9zm7 8H8v-6h8v6z"/></svg>
+            </span>
+            <input id="registration-password" type="password" placeholder="Придумайте пароль" minlength="8" required />
+          </label>
+
+          <label class="field field--password" aria-label="Повторите пароль">
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v10h14V9h-2zm-8 0V7a3 3 0 1 1 6 0v2H9zm7 8H8v-6h8v6z"/></svg>
+            </span>
+            <input id="registration-password-confirm" type="password" placeholder="Повторите пароль" minlength="8" required />
+            <button class="eye-btn" type="button" aria-label="Показать оба пароля" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2 9.6 2 12c0 2.4 4.5 7 10 7s10-4.6 10-7c0-2.4-4.5-7-10-7zm0 2.1c3.89 0 6.97 3.39 8.16 4.9-1.19 1.51-4.27 4.9-8.16 4.9-3.89 0-6.97-3.39-8.16-4.9C5.03 10.49 8.11 7.1 12 7.1zm0 2.4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            </button>
+          </label>
+
+          <div class="checkbox-row">
+            <input type="checkbox" aria-label="Согласен со всеми условиями" required />
+            <button class="agreement-open" type="button" aria-haspopup="dialog">
+              Согласен со всеми условиями
+            </button>
+          </div>
+
+          <button class="primary-btn" type="submit">Зарегистрироваться</button>
+        </form>
+
+        <form class="login-panel" aria-label="Вход" novalidate hidden>
+          <label class="field" aria-label="Номер телефона">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M8.2 3.8 4.8 6.3c-.9.7-1.3 1.9-.9 3 2.2 7.3 7.5 12.6 14.8 14.8 1.1.3 2.3 0 3-.9l2.5-3.4-5.6-4.1-3 2.3a16.2 16.2 0 0 1-5.4-5.4l2.3-3-4.3-5.8Z" />
+              </svg>
+            </span>
+            <span class="country-code">+996</span>
+            <input
+              type="text"
+              placeholder="Номер телефона"
+              inputmode="numeric"
+              pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
+              data-phone-format
+              data-max-digits="9"
+              required
+            />
+          </label>
+
+          <label class="field field--password" aria-label="Пароль">
+            <input type="password" placeholder="Пароль" minlength="8" required />
+            <button class="eye-btn login-eye" type="button" aria-label="Показать пароль" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2 9.6 2 12c0 2.4 4.5 7 10 7s10-4.6 10-7c0-2.4-4.5-7-10-7zm0 2.1c3.89 0 6.97 3.39 8.16 4.9-1.19 1.51-4.27 4.9-8.16 4.9-3.89 0-6.97-3.39-8.16-4.9C5.03 10.49 8.11 7.1 12 7.1zm0 2.4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            </button>
+          </label>
+
+          <div class="login-actions">
+            <button class="forgot-password-link" type="button">Забыли пароль?</button>
+            <button class="login-register-button" type="button">Зарегистрироваться</button>
+          </div>
+          <button class="primary-btn" type="submit">Войти</button>
+        </form>
+
+        <form class="reset-password-panel auth-flow-panel" novalidate hidden>
+          <label class="field" aria-label="Номер телефона">
+            <span class="field-icon" aria-hidden="true">
+              <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
+                <path d="M8.2 3.8 4.8 6.3c-.9.7-1.3 1.9-.9 3 2.2 7.3 7.5 12.6 14.8 14.8 1.1.3 2.3 0 3-.9l2.5-3.4-5.6-4.1-3 2.3a16.2 16.2 0 0 1-5.4-5.4l2.3-3-4.3-5.8Z" />
+              </svg>
+            </span>
+            <span class="country-code">+996</span>
+            <input
+              type="text"
+              placeholder="Номер телефона"
+              inputmode="numeric"
+              autocomplete="tel-national"
+              pattern="[0-9]{3} [0-9]{3} [0-9]{3}"
+              data-phone-format
+              data-max-digits="9"
+              required
+            />
+          </label>
+          <button class="primary-btn" type="submit">Получить SMS-код</button>
+          <button class="auth-back" type="button" data-auth-action="login">
+            Вернуться к <strong>Войти</strong>
+          </button>
+        </form>
+
+        <form class="verification-panel auth-flow-panel" novalidate hidden>
+          <p class="verification-instructions">
+            Введите 4-значный код, отправленный на номер
+            <strong id="recovery-phone-mask"></strong>
+          </p>
+          <div class="code-inputs" role="group" aria-label="Четырёхзначный код из SMS">
+            <input class="code-digit" type="text" inputmode="numeric" pattern="[0-9]{1,4}" maxlength="4" autocomplete="one-time-code" aria-label="Цифры кода" required />
+            <input class="code-digit" type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 2" required />
+            <input class="code-digit" type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 3" required />
+            <input class="code-digit" type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 4" required />
+          </div>
+          <button class="resend-code" type="button" disabled>
+            Повторная отправка недоступна
+          </button>
+          <button class="primary-btn" type="submit">Подтвердить код</button>
+          <button class="secondary-btn change-number" type="button">Изменить номер</button>
+          <button class="auth-back" type="button" data-auth-action="login">
+            Вернуться к <strong>Войти</strong>
+          </button>
+        </form>
+
+        <form class="new-password-panel auth-flow-panel" novalidate hidden>
+          <label class="field" aria-label="Новый пароль">
+            <input id="recovery-password" type="password" placeholder="Придумайте новый пароль" minlength="8" autocomplete="new-password" required />
+          </label>
+          <label class="field" aria-label="Повторите новый пароль">
+            <input id="recovery-password-confirm" type="password" placeholder="Повторите новый пароль" minlength="8" autocomplete="new-password" required />
+            <button class="eye-btn recovery-eye" type="button" aria-label="Показать оба пароля" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2 9.6 2 12c0 2.4 4.5 7 10 7s10-4.6 10-7c0-2.4-4.5-7-10-7zm0 2.1c3.89 0 6.97 3.39 8.16 4.9-1.19 1.51-4.27 4.9-8.16 4.9-3.89 0-6.97-3.39-8.16-4.9C5.03 10.49 8.11 7.1 12 7.1zm0 2.4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            </button>
+          </label>
+          <div class="password-strength" data-strength="empty" aria-live="polite">
+            <div class="password-strength-track"><span></span></div>
+            <p>Надёжность пароля</p>
+          </div>
+          <button class="primary-btn" type="submit">Применить и Войти</button>
+        </form>
+
+        <section class="home-screen" aria-label="Главная вкладка магазина" hidden>
+          <header class="home-header">
+            <div class="home-store-avatar" aria-hidden="true">
+              <img id="home-header-profile-photo" alt="" hidden />
+              <span id="home-header-profile-initial">М</span>
+            </div>
+            <div class="home-store-info">
+              <strong>Мой магазин</strong>
+              <span title="Авторизация не проверяется, данные примерные">
+                <i></i> Демо · вход не проверяется
+              </span>
+            </div>
+            <button class="home-icon-button" type="button" data-home-action="notifications" aria-label="Уведомления">
+              <img src="Concept%20Project/WebMaket/assets/home/notifications.png" alt="" />
+            </button>
+            <button class="home-icon-button" type="button" data-home-action="scan" aria-label="Сканировать штрихкод">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M11 5H7a2 2 0 0 0-2 2v4m16-6h4a2 2 0 0 1 2 2v4M27 21v4a2 2 0 0 1-2 2h-4m-10 0H7a2 2 0 0 1-2-2v-4" />
+                <path d="M11 11v10m3-10v10m4-10v10m3-10v10M8 16h16" />
+              </svg>
+            </button>
+          </header>
+
+          <main class="home-main">
+            <div class="home-feed">
+              <section class="smart-order-card" aria-label="Аналитика остатков и умная закупка">
+                <button
+                  class="smart-order-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="smart-order-details"
+                  data-home-action="toggle-stock"
+                >
+                  <span>Аналитика остатков / Умная закупка</span>
+                  <span class="home-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="smart-order-details" id="smart-order-details" hidden>
+                  <section class="smart-order-full" hidden>
+                    <h2>Склад полный</h2>
+                    <p>По демонстрационным данным товары в наличии.</p>
+                    <button class="smart-order-link" type="button" data-home-action="show-shortages">
+                      Посмотреть позиции к пополнению
+                    </button>
+                  </section>
+                  <section class="smart-order-active" hidden>
+                    <h2>Заканчивается: 4 позиции</h2>
+                    <ul>
+                      <li>Вода 1,5 л (блок)</li>
+                      <li>Brunie (короб)</li>
+                      <li>Сок Садочек 1 л (блок)</li>
+                      <li>Чай 100 г (упаковка)</li>
+                    </ul>
+                    <button class="smart-order-submit" type="button" data-home-action="collect-order">
+                      Собрать заказ
+                    </button>
+                  </section>
+                </div>
+              </section>
+
+              <div class="home-search-row">
+                <label class="home-search">
+                  <span class="visually-hidden">Поиск товаров или брендов</span>
+                  <input id="home-search-input" type="search" placeholder="Поиск…" autocomplete="off" />
+                  <img src="Concept%20Project/WebMaket/assets/home/catalog.png" alt="" aria-hidden="true" />
+                </label>
+              </div>
+
+              <div class="home-filters" role="group" aria-label="Фильтр товаров">
+                <button class="home-filter is-selected" type="button" data-home-filter="all" aria-pressed="true">Все</button>
+                <button class="home-filter" type="button" data-home-filter="sale" aria-pressed="false">
+                  Акции <img src="Concept%20Project/WebMaket/assets/home/sale.png" alt="" aria-hidden="true" />
+                </button>
+                <button class="home-filter" type="button" data-home-filter="new" aria-pressed="false">Новинки</button>
+                <button class="home-filter" type="button" data-home-filter="supplier" aria-pressed="false">Поставщики</button>
+              </div>
+              <div class="home-supplier-filters" role="group" aria-label="Выбор поставщика" hidden>
+                <button class="is-selected" type="button" data-home-supplier="all" aria-pressed="true">Все</button>
+                <button type="button" data-home-supplier="Шоро" aria-pressed="false">Шоро</button>
+                <button type="button" data-home-supplier="Brunie" aria-pressed="false">Brunie</button>
+                <button type="button" data-home-supplier="Садочек" aria-pressed="false">Садочек</button>
+                <button type="button" data-home-supplier="Чайные товары" aria-pressed="false">Чайные товары</button>
+              </div>
+
+              <div class="home-product-grid" id="home-product-grid"></div>
+              <p class="home-empty" id="home-empty" hidden>По вашему запросу ничего не найдено.</p>
+            </div>
+
+            <section class="home-page-view home-notifications-view" id="home-notifications-view" aria-labelledby="home-notifications-title" hidden>
+              <header class="home-notifications-header">
+                <button class="home-notifications-back" type="button" data-home-action="close-notifications" aria-label="Назад">←</button>
+                <h2 id="home-notifications-title">Уведомление</h2>
+              </header>
+              <div class="home-notification-tabs" role="tablist" aria-label="Уведомления и новости">
+                <button class="home-notification-tab is-selected" id="home-notifications-tab" type="button" role="tab" aria-selected="true" data-notification-tab="notifications">
+                  Уведомление
+                </button>
+                <button class="home-notification-tab" id="home-news-tab" type="button" role="tab" aria-selected="false" data-notification-tab="news">
+                  Новости
+                </button>
+              </div>
+              <div class="home-notification-list" id="home-notification-list" role="tabpanel" aria-labelledby="home-notifications-tab"></div>
+              <article class="home-notification-detail" id="home-notification-detail" aria-labelledby="home-notification-detail-title" hidden>
+                <div class="home-notification-detail-heading">
+                  <span class="home-notification-marker home-notification-detail-marker" id="home-notification-detail-icon" aria-hidden="true"></span>
+                  <div class="home-notification-detail-copy">
+                    <time class="home-notification-detail-date" id="home-notification-detail-date"></time>
+                    <h3 id="home-notification-detail-title" tabindex="-1"></h3>
+                    <p class="home-notification-detail-subtitle" id="home-notification-detail-subtitle" hidden></p>
+                  </div>
+                </div>
+                <div class="home-notification-detail-body" id="home-notification-detail-body"></div>
+              </article>
+            </section>
+
+            <section class="home-page-view" id="home-catalog-view" aria-labelledby="home-catalog-title" hidden>
+              <header class="home-view-heading">
+                <h2 id="home-catalog-title">Каталог</h2>
+                <p>Поставщики и цены приведены для демонстрации.</p>
+              </header>
+              <label class="home-search">
+                <span class="visually-hidden">Поиск в каталоге</span>
+                <input id="home-catalog-search" type="search" placeholder="Найти товар…" autocomplete="off" />
+              </label>
+              <div class="home-catalog-categories" role="group" aria-label="Категории товаров">
+                <button class="is-selected" type="button" data-catalog-category="all" aria-pressed="true">Все</button>
+                <button type="button" data-catalog-category="drinks" aria-pressed="false">Напитки</button>
+                <button type="button" data-catalog-category="sweets" aria-pressed="false">Сладости</button>
+                <button type="button" data-catalog-category="tea" aria-pressed="false">Чай</button>
+              </div>
+              <div class="home-product-grid" id="home-catalog-grid"></div>
+              <p class="home-empty" id="home-catalog-empty" hidden>Товары не найдены.</p>
+            </section>
+
+            <section class="home-page-view home-product-detail-view" id="home-product-detail-view" aria-label="Информация о товаре" hidden>
+              <div id="home-product-detail"></div>
+            </section>
+
+            <section class="home-page-view" id="home-cart-view" aria-labelledby="home-cart-title" hidden>
+              <header class="home-view-heading">
+                <h2 id="home-cart-title">Корзина</h2>
+                <p>Заказ будет сохранён только в демонстрации.</p>
+              </header>
+              <div class="home-cart-items" id="home-cart-items"></div>
+              <p class="home-empty" id="home-cart-empty">Корзина пока пуста.</p>
+              <div class="home-cart-summary" id="home-cart-summary" hidden>
+                <div class="home-cart-total"><span>Итого</span><strong id="home-cart-total"></strong></div>
+                <button class="home-checkout-button" type="button" data-home-action="checkout">Оформить демо-заказ</button>
+                <p>Поставщик не получит уведомление — подключение сервера пока не выполнено.</p>
+              </div>
+            </section>
+
+            <section class="home-page-view" id="home-orders-view" aria-labelledby="home-orders-title" hidden>
+              <header class="home-view-heading">
+                <h2 id="home-orders-title">Мои заказы</h2>
+                <p>История заказов в этой демонстрационной сессии.</p>
+              </header>
+              <div class="home-orders-list" id="home-orders-list"></div>
+              <p class="home-empty" id="home-orders-empty">Оформленные демо-заказы появятся здесь.</p>
+            </section>
+
+            <section class="home-page-view home-profile-view" id="home-profile-view" aria-labelledby="home-profile-title" hidden>
+              <div id="home-profile-overview">
+                <header class="home-profile-heading">
+                  <h2 id="home-profile-title">Профиль</h2>
+                </header>
+
+                <div class="home-profile-identity">
+                  <div class="home-profile-photo-control">
+                    <span class="home-profile-avatar" aria-hidden="true">
+                      <img id="home-profile-photo" alt="" hidden />
+                      <span id="home-profile-initial">М</span>
+                    </span>
+                    <button class="home-profile-photo-button" type="button" data-home-action="choose-profile-photo">
+                      Изменить фото
+                    </button>
+                    <input
+                      class="visually-hidden"
+                      id="home-profile-photo-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      aria-label="Выберите фото профиля"
+                      tabindex="-1"
+                    />
+                  </div>
+                  <strong id="home-profile-store-name">Мой магазин</strong>
+                  <span id="home-profile-store-id">ID магазина не указан</span>
+                  <span id="home-profile-phone">Телефон не сохраняется в демо</span>
+                </div>
+
+                <button class="home-profile-edit-button" type="button" data-profile-page="edit">
+                  Редактировать профиль
+                </button>
+
+                <nav class="home-profile-menu" aria-label="Разделы профиля">
+                  <button type="button" data-profile-page="support">Служба поддержки</button>
+                  <button type="button" data-profile-page="documents">Накладные и документы</button>
+                  <button type="button" data-profile-page="settings">Настройки</button>
+                  <button type="button" data-profile-page="legal">Договоры и правила</button>
+                </nav>
+
+                <button class="home-profile-logout" type="button" data-home-action="logout">Выйти</button>
+              </div>
+
+              <div id="home-profile-subview" hidden>
+                <button class="home-back-button" type="button" data-home-action="profile-back">‹  Назад в профиль</button>
+                <header class="home-view-heading">
+                  <h2 id="home-profile-subtitle"></h2>
+                  <p id="home-profile-subtitle-note"></p>
+                </header>
+                <div id="home-profile-subcontent"></div>
+              </div>
+            </section>
+          </main>
+
+          <nav class="home-bottom-nav" aria-label="Основная навигация">
+            <button class="home-nav-button is-current" type="button" data-home-tab="home" aria-current="page">
+              <img src="Concept%20Project/WebMaket/assets/home/home.png" alt="" />
+              <span>Главная</span>
+            </button>
+            <button class="home-nav-button" type="button" data-home-tab="catalog">
+              <img src="Concept%20Project/WebMaket/assets/home/catalog.png" alt="" />
+              <span>Каталог</span>
+            </button>
+            <button class="home-nav-button" type="button" data-home-tab="cart">
+              <span class="home-nav-icon-wrap">
+                <img src="Concept%20Project/WebMaket/assets/home/cart.png" alt="" />
+                <span class="home-cart-count" id="home-cart-count" hidden></span>
+              </span>
+              <span>Корзина</span>
+            </button>
+            <button class="home-nav-button" type="button" data-home-tab="orders">
+              <img src="Concept%20Project/WebMaket/assets/home/orders.png" alt="" />
+              <span>Заказы</span>
+            </button>
+            <button class="home-nav-button" type="button" data-home-tab="profile">
+              <img src="Concept%20Project/WebMaket/assets/home/profile.png" alt="" />
+              <span>Профиль</span>
+            </button>
+          </nav>
+
+          <p class="home-toast" role="status" aria-live="polite" hidden></p>
+        </section>
+
+        <p class="form-status" role="status" aria-live="polite"></p>
+
+        <section
+          class="agreement-sheet"
+          id="agreement-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="agreement-title"
+          hidden
+        >
+          <div class="agreement-sheet-topbar">
+            <div class="agreement-handle" aria-hidden="true"></div>
+            <button class="agreement-close" type="button" aria-label="Закрыть документы">×</button>
+          </div>
+          <h2 id="agreement-title">Условие, Оферта и Политика конфиденциальности</h2>
+          <div class="agreement-tabs" role="tablist" aria-label="Документы">
+            <button
+              class="agreement-tab active"
+              id="agreement-tab-terms"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="agreement-content"
+              data-document="terms"
+            >Услов.Исполь</button>
+            <button
+              class="agreement-tab"
+              id="agreement-tab-offer"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="agreement-content"
+              data-document="offer"
+            >Публ.Оферта</button>
+            <button
+              class="agreement-tab"
+              id="agreement-tab-privacy"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="agreement-content"
+              data-document="privacy"
+            >Полит.Конф</button>
+          </div>
+          <div
+            class="agreement-content"
+            id="agreement-content"
+            role="tabpanel"
+            aria-labelledby="agreement-tab-terms"
+            aria-live="polite"
+            tabindex="0"
+          ></div>
+          <button class="agreement-accept" type="button">Принять и продолжить</button>
+          <p class="agreement-note">Я уже ознакомился с условиями</p>
+        </section>
+
+        <div class="login-link">
+          <span>Уже есть аккаунт ?</span>
+          <a href="#">Войти</a>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

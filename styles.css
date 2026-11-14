@@ -3491,3 +3491,687 @@ body {
 .phone.is-home.theme-light .agreement-sheet .agreement-content:focus-visible {
   outline-color: #24323e;
 }
+
+:root {
+  --brand: #00d18c;
+  --brand-strong: #00d18c;
+  --brand-glow: rgba(0, 209, 140, 0.42);
+  --text: #f9fafb;
+  --muted: #a1a7b3;
+  --surface: rgba(31, 38, 51, 0.96);
+  --surface-soft: rgba(31, 38, 51, 0.78);
+  --surface-strong: rgba(31, 38, 51, 0.94);
+  --line: rgba(161, 167, 179, 0.24);
+}
+
+.phone {
+  background: #0d1117;
+  color: #f9fafb;
+}
+
+.brand-name,
+.phone.is-login .login-panel .field input {
+  color: #f9fafb;
+}
+
+.brand-name span,
+.bracket,
+.brand-mark::after {
+  color: #00d18c;
+  border-color: #00d18c;
+}
+
+.brand-mark::after {
+  background: #00d18c;
+  box-shadow: 0 0 8px rgba(0, 209, 140, 0.55);
+}
+
+.field,
+.phone.is-login .login-panel .field {
+  border-color: rgba(161, 167, 179, 0.2);
+  background: #1f2633;
+  color: #f9fafb;
+}
+
+.field input,
+.country-code,
+.checkbox-row,
+.forgot-password-link,
+.login-register-button {
+  color: #f9fafb;
+}
+
+.field input::placeholder,
+.phone.is-login .login-panel .field input::placeholder {
+  color: #a1a7b3;
+}
+
+.field-icon svg,
+.eye-btn svg,
+.phone.is-login .login-panel .field-icon svg.field-icon-svg--outline {
+  fill: #a1a7b3;
+  stroke: #a1a7b3;
+}
+
+.phone.is-login .login-panel .field-icon svg.field-icon-svg--outline {
+  fill: none;
+}
+
+.primary-btn,
+.role-btn.active {
+  border-color: #00d18c;
+  background: #00d18c;
+  box-shadow: 0 0 14px rgba(0, 209, 140, 0.28);
+  color: #1d212a;
+}
+
+.phone.is-reset .bracket,
+.phone.is-new-password .bracket {
+  border-color: #f9fafb;
+}
+
+.phone.is-reset .brand-mark::after,
+.phone.is-new-password .brand-mark::after {
+  background: #00d18c;
+  box-shadow: 0 0 8px rgba(0, 209, 140, 0.55);
+}
+
+.reset-password-panel .field,
+.new-password-panel .field,
+.code-digit,
+.resend-code {
+  border-color: rgba(161, 167, 179, 0.22);
+  background: #1f2633;
+  color: #f9fafb;
+}
+
+.auth-back,
+.password-strength p {
+  color: #a1a7b3;
+}
+
+.auth-back strong,
+.verification-instructions {
+  color: #f9fafb;
+}
+
+.secondary-btn {
+  border: 1px solid #6a7382;
+  background: #1f2633;
+  box-shadow: none;
+  color: #f9fafb;
+}
+
+.password-strength-track {
+  background: #1f2633;
+}
+
+.password-strength-track span {
+  background: #00d18c;
+}
+
+.code-digit:focus-visible {
+  outline-color: #00d18c;
+}
+
+.phone:not(.theme-light) .agreement-sheet {
+  border-color: rgba(161, 167, 179, 0.2);
+  background: #0d1117;
+  color: #f9fafb;
+}
+
+.phone:not(.theme-light) .agreement-close,
+.phone:not(.theme-light) .agreement-content code {
+  border-color: rgba(161, 167, 179, 0.24);
+  background: #1f2633;
+  color: #f9fafb;
+}
+
+.phone:not(.theme-light) .agreement-tabs {
+  border-color: #00d18c;
+}
+
+.phone:not(.theme-light) .agreement-tab {
+  color: #a1a7b3;
+}
+
+.phone:not(.theme-light) .agreement-tab.active,
+.phone:not(.theme-light) .agreement-accept {
+  background: #00d18c;
+  box-shadow: 0 0 12px rgba(0, 209, 140, 0.24);
+  color: #1d212a;
+}
+
+.phone:not(.theme-light) .agreement-content,
+.phone:not(.theme-light) .agreement-content h1,
+.phone:not(.theme-light) .agreement-content h2,
+.phone:not(.theme-light) .agreement-content h3,
+.phone:not(.theme-light) .agreement-content h4,
+.phone:not(.theme-light) .agreement-content h5,
+.phone:not(.theme-light) .agreement-content h6 {
+  color: #f9fafb;
+}
+
+.phone:not(.theme-light) .agreement-note {
+  color: #a1a7b3;
+}
+
+.phone.is-home:not(.theme-light) .home-screen {
+  background: #0d1117;
+  color: #f9fafb;
+}
+
+.phone.is-home:not(.theme-light) .home-header,
+.phone.is-home:not(.theme-light) .home-bottom-nav {
+  border-color: rgba(161, 167, 179, 0.2);
+  background: #0d1117;
+}
+
+.phone.is-home:not(.theme-light) .home-store-info strong,
+.phone.is-home:not(.theme-light) .home-view-heading h2,
+.phone.is-home:not(.theme-light) .home-product-card,
+.phone.is-home:not(.theme-light) .home-product-detail-title,
+.phone.is-home:not(.theme-light) .home-cart-item h3,
+.phone.is-home:not(.theme-light) .home-order-card h3,
+.phone.is-home:not(.theme-light) .home-cart-total,
+.phone.is-home:not(.theme-light) .home-profile-heading h2,
+.phone.is-home:not(.theme-light) .home-profile-identity > strong,
+.phone.is-home:not(.theme-light) .home-profile-list-item strong,
+.phone.is-home:not(.theme-light) .home-profile-setting strong,
+.phone.is-home:not(.theme-light) .home-profile-theme-copy strong,
+.phone.is-home:not(.theme-light) .home-notifications-header h2,
+.phone.is-home:not(.theme-light) .home-notification-date,
+.phone.is-home:not(.theme-light) .home-notification-item,
+.phone.is-home:not(.theme-light) .home-notification-detail-copy h3 {
+  color: #f9fafb;
+}
+
+.phone.is-home:not(.theme-light) .home-view-heading p,
+.phone.is-home:not(.theme-light) .home-product-price,
+.phone.is-home:not(.theme-light) .home-product-supplier,
+.phone.is-home:not(.theme-light) .home-detail-note,
+.phone.is-home:not(.theme-light) .home-cart-item-summary,
+.phone.is-home:not(.theme-light) .home-order-item,
+.phone.is-home:not(.theme-light) .home-order-total,
+.phone.is-home:not(.theme-light) .home-profile-identity > span:not(.home-profile-avatar),
+.phone.is-home:not(.theme-light) .home-profile-list-item span,
+.phone.is-home:not(.theme-light) .home-profile-setting small,
+.phone.is-home:not(.theme-light) .home-profile-theme-copy small,
+.phone.is-home:not(.theme-light) .home-profile-message,
+.phone.is-home:not(.theme-light) .home-notification-detail-date,
+.phone.is-home:not(.theme-light) .home-notification-detail-subtitle {
+  color: #a1a7b3;
+}
+
+.phone.is-home:not(.theme-light) .home-product-card,
+.phone.is-home:not(.theme-light) .home-product-detail-card,
+.phone.is-home:not(.theme-light) .home-cart-item,
+.phone.is-home:not(.theme-light) .home-order-card,
+.phone.is-home:not(.theme-light) .home-cart-summary,
+.phone.is-home:not(.theme-light) .home-profile-list-item,
+.phone.is-home:not(.theme-light) .home-profile-setting,
+.phone.is-home:not(.theme-light) .home-profile-theme-control,
+.phone.is-home:not(.theme-light) .home-profile-message,
+.phone.is-home:not(.theme-light) .home-search,
+.phone.is-home:not(.theme-light) .home-catalog-categories button,
+.phone.is-home:not(.theme-light) .home-supplier-filters button,
+.phone.is-home:not(.theme-light) .home-profile-field input,
+.phone.is-home:not(.theme-light) .home-cart-item select,
+.phone.is-home:not(.theme-light) .home-offer-option {
+  border-color: rgba(161, 167, 179, 0.2);
+  background-color: #1f2633;
+}
+
+.phone.is-home:not(.theme-light) .smart-order-card {
+  background: linear-gradient(110deg, #1f2633, #1f2633);
+  box-shadow: inset 0 1px 0 rgba(249, 250, 251, 0.04);
+}
+
+.phone.is-home:not(.theme-light) .home-filter.is-selected,
+.phone.is-home:not(.theme-light) .home-supplier-filters button.is-selected,
+.phone.is-home:not(.theme-light) .home-catalog-categories button.is-selected,
+.phone.is-home:not(.theme-light) .home-profile-save,
+.phone.is-home:not(.theme-light) .home-profile-theme-options button[aria-pressed="true"],
+.phone.is-home:not(.theme-light) .home-notification-tab.is-selected,
+.phone.is-home:not(.theme-light) .home-add-to-cart,
+.phone.is-home:not(.theme-light) .home-checkout-button,
+.phone.is-home:not(.theme-light) .home-quantity-button[data-quantity-action="increase"] {
+  border-color: #00d18c;
+  background: #00d18c;
+  color: #1d212a;
+}
+
+.phone.is-home:not(.theme-light) .home-profile-edit-button,
+.phone.is-home:not(.theme-light) .home-profile-photo-button,
+.phone.is-home:not(.theme-light) .home-product-stock,
+.phone.is-home:not(.theme-light) .home-product-open,
+.phone.is-home:not(.theme-light) .home-offer-price,
+.phone.is-home:not(.theme-light) .home-cart-item-summary strong,
+.phone.is-home:not(.theme-light) .home-cart-total strong,
+.phone.is-home:not(.theme-light) .home-order-total strong,
+.phone.is-home:not(.theme-light) .home-store-info span {
+  color: #00d18c;
+}
+
+.phone.is-home:not(.theme-light) .home-profile-edit-button,
+.phone.is-home:not(.theme-light) .home-profile-menu button,
+.phone.is-home:not(.theme-light) .home-profile-document-button,
+.phone.is-home:not(.theme-light) .home-profile-secondary,
+.phone.is-home:not(.theme-light) .home-product-open,
+.phone.is-home:not(.theme-light) .home-profile-theme-options button {
+  border-color: rgba(0, 209, 140, 0.45);
+  background-color: #1f2633;
+}
+
+.phone.is-home:not(.theme-light) .home-profile-menu button,
+.phone.is-home:not(.theme-light) .home-profile-document-button,
+.phone.is-home:not(.theme-light) .home-profile-secondary {
+  color: #f9fafb;
+}
+
+.phone.is-home:not(.theme-light) .home-profile-avatar {
+  border-color: #00d18c;
+  background: radial-gradient(circle at 35% 28%, #1f5447 0, #176b58 45%, #1f2633 100%);
+  box-shadow: 0 0 18px rgba(0, 209, 140, 0.2);
+  color: #f9fafb;
+}
+
+.phone.is-home:not(.theme-light) .home-profile-switch[aria-checked="true"],
+.phone.is-home:not(.theme-light) .home-nav-button.is-current::before,
+.phone.is-home:not(.theme-light) .home-cart-count {
+  background: #00d18c;
+  color: #1d212a;
+}
+
+.phone.is-home:not(.theme-light) .home-nav-button > img,
+.phone.is-home:not(.theme-light) .home-nav-icon-wrap > img {
+  filter: grayscale(1) brightness(3.1);
+}
+
+.phone.is-home:not(.theme-light) .home-nav-button.is-current > img,
+.phone.is-home:not(.theme-light) .home-nav-button.is-current .home-nav-icon-wrap > img {
+  filter: brightness(0) saturate(100%) invert(60%) sepia(100%) saturate(500%) hue-rotate(104deg) brightness(95%) contrast(102%);
+}
+
+.phone.is-home.theme-light .home-screen {
+  background: #ebebed;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-header,
+.phone.is-home.theme-light .home-bottom-nav,
+.phone.is-home.theme-light .home-notification-tabs {
+  border-color: rgba(29, 33, 42, 0.12);
+  background: #fff;
+}
+
+.phone.is-home.theme-light .home-store-info strong,
+.phone.is-home.theme-light .home-view-heading h2,
+.phone.is-home.theme-light .home-product-card,
+.phone.is-home.theme-light .home-product-detail-title,
+.phone.is-home.theme-light .home-cart-item h3,
+.phone.is-home.theme-light .home-order-card h3,
+.phone.is-home.theme-light .home-cart-total,
+.phone.is-home.theme-light .home-profile-heading h2,
+.phone.is-home.theme-light .home-profile-identity > strong,
+.phone.is-home.theme-light .home-profile-list-item strong,
+.phone.is-home.theme-light .home-profile-setting strong,
+.phone.is-home.theme-light .home-profile-theme-copy strong,
+.phone.is-home.theme-light .home-notifications-header h2,
+.phone.is-home.theme-light .home-notification-date,
+.phone.is-home.theme-light .home-notification-item,
+.phone.is-home.theme-light .home-notification-detail-copy h3 {
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-product-card,
+.phone.is-home.theme-light .home-product-detail-card,
+.phone.is-home.theme-light .home-cart-item,
+.phone.is-home.theme-light .home-order-card,
+.phone.is-home.theme-light .home-cart-summary,
+.phone.is-home.theme-light .home-profile-list-item,
+.phone.is-home.theme-light .home-profile-setting,
+.phone.is-home.theme-light .home-profile-theme-control,
+.phone.is-home.theme-light .home-profile-message,
+.phone.is-home.theme-light .home-search,
+.phone.is-home.theme-light .home-catalog-categories button,
+.phone.is-home.theme-light .home-supplier-filters button,
+.phone.is-home.theme-light .home-profile-field input,
+.phone.is-home.theme-light .home-cart-item select,
+.phone.is-home.theme-light .home-offer-option,
+.phone.is-home.theme-light .home-notification-item {
+  border-color: rgba(29, 33, 42, 0.12);
+  background-color: #fff;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-view-heading p,
+.phone.is-home.theme-light .home-product-price,
+.phone.is-home.theme-light .home-product-supplier,
+.phone.is-home.theme-light .home-detail-note,
+.phone.is-home.theme-light .home-cart-item-summary,
+.phone.is-home.theme-light .home-order-item,
+.phone.is-home.theme-light .home-order-total,
+.phone.is-home.theme-light .home-profile-identity > span:not(.home-profile-avatar),
+.phone.is-home.theme-light .home-profile-list-item span,
+.phone.is-home.theme-light .home-profile-setting small,
+.phone.is-home.theme-light .home-profile-theme-copy small,
+.phone.is-home.theme-light .home-profile-message,
+.phone.is-home.theme-light .home-notification-detail-date,
+.phone.is-home.theme-light .home-notification-detail-subtitle {
+  color: #6a7382;
+}
+
+.phone.is-home.theme-light .home-search input,
+.phone.is-home.theme-light .home-profile-field input,
+.phone.is-home.theme-light .home-cart-item select {
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-search input::placeholder,
+.phone.is-home.theme-light .home-profile-field input::placeholder {
+  color: #6a7382;
+}
+
+.phone.is-home.theme-light .home-filter.is-selected,
+.phone.is-home.theme-light .home-supplier-filters button.is-selected,
+.phone.is-home.theme-light .home-catalog-categories button.is-selected,
+.phone.is-home.theme-light .home-profile-save,
+.phone.is-home.theme-light .home-profile-theme-options button[aria-pressed="true"],
+.phone.is-home.theme-light .home-notification-tab.is-selected,
+.phone.is-home.theme-light .home-add-to-cart,
+.phone.is-home.theme-light .home-checkout-button,
+.phone.is-home.theme-light .home-quantity-button[data-quantity-action="increase"] {
+  border-color: #00d18c;
+  background: #00d18c;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-profile-edit-button,
+.phone.is-home.theme-light .home-profile-photo-button,
+.phone.is-home.theme-light .home-product-stock,
+.phone.is-home.theme-light .home-product-open,
+.phone.is-home.theme-light .home-offer-price,
+.phone.is-home.theme-light .home-cart-item-summary strong,
+.phone.is-home.theme-light .home-cart-total strong,
+.phone.is-home.theme-light .home-order-total strong,
+.phone.is-home.theme-light .home-store-info span {
+  color: #008761;
+}
+
+.phone.is-home.theme-light .home-profile-edit-button,
+.phone.is-home.theme-light .home-profile-menu button,
+.phone.is-home.theme-light .home-profile-document-button,
+.phone.is-home.theme-light .home-profile-secondary,
+.phone.is-home.theme-light .home-profile-theme-options button {
+  border-color: rgba(29, 33, 42, 0.18);
+  background: #fff;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-profile-avatar {
+  border-color: #00d18c;
+  background: radial-gradient(circle at 35% 28%, #a8ead4 0, #55d2ab 48%, #00a879 100%);
+  box-shadow: 0 0 16px rgba(0, 209, 140, 0.2);
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-profile-switch[aria-checked="true"],
+.phone.is-home.theme-light .home-nav-button.is-current::before,
+.phone.is-home.theme-light .home-cart-count {
+  background: #00d18c;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-nav-button > img,
+.phone.is-home.theme-light .home-nav-icon-wrap > img {
+  filter: grayscale(1) brightness(2.1);
+}
+
+.phone.is-home.theme-light .home-nav-button.is-current > img,
+.phone.is-home.theme-light .home-nav-button.is-current .home-nav-icon-wrap > img {
+  filter: brightness(0) saturate(100%) invert(60%) sepia(100%) saturate(500%) hue-rotate(104deg) brightness(95%) contrast(102%);
+}
+
+.phone.is-home.theme-light .home-back-button,
+.phone.is-home.theme-light .home-detail-stepper button,
+.phone.is-home.theme-light .home-cart-stepper button {
+  background: #ebebed;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-notification-item.is-read,
+.phone.is-home.theme-light .home-notification-item.is-read .home-notification-subtitle {
+  color: #6a7382;
+}
+
+.phone.is-home.theme-light .home-toast,
+.phone.is-home.theme-light .agreement-sheet {
+  border-color: rgba(29, 33, 42, 0.14);
+  background: #fff;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .agreement-close {
+  border-color: rgba(29, 33, 42, 0.18);
+  background: #ebebed;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .agreement-content,
+.phone.is-home.theme-light .agreement-content h1,
+.phone.is-home.theme-light .agreement-content h2,
+.phone.is-home.theme-light .agreement-content h3,
+.phone.is-home.theme-light .agreement-content h4,
+.phone.is-home.theme-light .agreement-content h5,
+.phone.is-home.theme-light .agreement-content h6,
+.phone.is-home.theme-light .agreement-tab.active {
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .agreement-content code {
+  background: #ebebed;
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .agreement-tabs {
+  border-color: #00d18c;
+}
+
+.phone.is-home.theme-light .agreement-tab {
+  color: #6a7382;
+}
+
+.phone.is-home.theme-light .agreement-tab.active,
+.phone.is-home.theme-light .agreement-accept {
+  background: #00d18c;
+  box-shadow: 0 0 12px rgba(0, 209, 140, 0.2);
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .smart-order-link {
+  color: #006b4c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.brand-mark {
+  width: 71px;
+  height: 71px;
+  flex: 0 0 71px;
+  overflow: hidden;
+}
+
+.brand-mark > .bracket,
+.brand-mark::after {
+  display: none;
+  content: none;
+}
+
+.brand-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: 100%;
+  max-width: none;
+}
+
+.brand-logo-light {
+  display: none;
+}
+
+.phone.theme-light .brand-logo-dark {
+  display: none;
+}
+
+.phone.theme-light .brand-logo-light {
+  display: block;
+}
+
+.phone.is-login .brand-mark {
+  width: 137px;
+  height: 137px;
+  flex-basis: 137px;
+}
+
+.phone.is-reset .brand-mark,
+.phone.is-new-password .brand-mark {
+  width: 71px;
+  height: 71px;
+  flex-basis: 71px;
+}
+
+.home-product-card {
+  min-height: 254px;
+  border: 1px solid rgba(161, 167, 179, 0.16);
+  border-radius: 16px;
+  padding: 10px;
+  background: #151c27;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.18);
+  color: #f9fafb;
+}
+
+.home-product-card .home-product-image {
+  width: 100%;
+  height: 74px;
+  flex-basis: 74px;
+  border: 1px solid rgba(161, 167, 179, 0.12);
+  border-radius: 11px;
+  margin: 0 0 2px;
+  padding: 4px;
+  background: #202a38;
+}
+
+.home-product-card .home-product-image img {
+  border-radius: 7px;
+}
+
+.home-product-card .home-product-image.is-placeholder {
+  background: #202a38;
+}
+
+.home-product-card h3 {
+  min-height: 32px;
+  margin: 0;
+  color: inherit;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 16px;
+}
+
+.home-product-price {
+  margin: 0;
+  color: #d4d8df;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.home-product-stock {
+  align-self: flex-start;
+  border-radius: 999px;
+  margin: 0;
+  padding: 2px 7px;
+  background: rgba(0, 209, 140, 0.12);
+  color: #00d18c;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 12px;
+}
+
+.home-product-supplier {
+  margin: 0;
+  color: #a1a7b3;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 9px;
+  line-height: 12px;
+}
+
+.home-product-open {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(0, 209, 140, 0.32);
+  border-radius: 10px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: rgba(0, 209, 140, 0.08);
+  color: #00d18c;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.home-product-actions {
+  min-height: 36px;
+  margin-top: 8px;
+}
+
+.home-add-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #00d18c;
+  color: #0d1117;
+  line-height: 36px;
+}
+
+.phone.is-home.theme-light .home-product-card {
+  border-color: #d9e0e2;
+  background: #f4f5f4;
+  box-shadow: 0 4px 14px rgba(27, 44, 60, 0.08);
+  color: #1d212a;
+}
+
+.phone.is-home.theme-light .home-product-card .home-product-image {
+  border-color: rgba(29, 33, 42, 0.08);
+  background: #ebebed;
+}
+
+.phone.is-home.theme-light .home-product-card .home-product-image.is-placeholder {
+  background: #ebebed;
+}
+
+.phone.is-home.theme-light .home-product-price,
+.phone.is-home.theme-light .home-product-supplier {
+  color: #6a7382;
+}
+
+.phone.is-home.theme-light .home-product-stock {
+  background: rgba(0, 107, 76, 0.1);
+  color: #006b4c;
+}
+
+.phone.is-home.theme-light .home-product-open {
+  border-color: rgba(0, 107, 76, 0.24);
+  background: rgba(0, 107, 76, 0.06);
+  color: #006b4c;
+}
+
+.phone.is-home.theme-light .home-add-button {
+  background: #00d18c;
+  color: #1d212a;
+}

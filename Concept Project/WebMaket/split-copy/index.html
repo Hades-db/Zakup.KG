@@ -8,9 +8,9 @@
   </head>
   <body>
     <div class="phone-shell">
-      <div class="phone">
+      <div class="phone is-login">
         <div class="page-header">
-          <h1 id="page-title">Регистрация</h1>
+          <h1 id="page-title">Вход</h1>
         </div>
 
         <div class="brand-wrap">
@@ -21,14 +21,14 @@
           <div class="brand-name">Zakup<span>.KG</span></div>
         </div>
 
-        <p class="welcome" id="welcome-message">Добро пожаловать в B2B платформу!</p>
+        <p class="welcome" id="welcome-message">Добро пожаловать!</p>
 
-        <div class="role-toggle" role="tablist" aria-label="Тип аккаунта">
+        <div class="role-toggle" role="tablist" aria-label="Тип аккаунта" hidden>
           <button class="role-btn active" id="shop-tab" type="button" role="tab" aria-selected="true" data-account-type="shop">Магазин</button>
           <button class="role-btn" id="supplier-tab" type="button" role="tab" aria-selected="false" data-account-type="supplier">Поставщик</button>
         </div>
 
-        <form class="registration-form" novalidate>
+        <form class="registration-form" novalidate hidden>
           <input type="hidden" name="accountType" value="shop" />
           <label class="field" aria-label="Название магазина">
             <span class="field-icon" aria-hidden="true">
@@ -109,7 +109,7 @@
           <button class="primary-btn" type="submit">Зарегистрироваться</button>
         </form>
 
-        <form class="login-panel" aria-label="Вход" novalidate hidden>
+        <form class="login-panel" aria-label="Вход" novalidate>
           <label class="field" aria-label="Номер телефона">
             <span class="field-icon" aria-hidden="true">
               <svg class="field-icon-svg--outline" viewBox="0 0 28 28" aria-hidden="true">
@@ -504,7 +504,7 @@
           <p class="agreement-note">Я уже ознакомился с условиями</p>
         </section>
 
-        <div class="login-link">
+        <div class="login-link" hidden>
           <span>Уже есть аккаунт ?</span>
           <a href="#">Войти</a>
         </div>

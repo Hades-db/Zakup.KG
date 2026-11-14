@@ -659,7 +659,7 @@ const homeProducts = [
       { id: "asia", supplier: "Азия Дистрибьюшн", price: 64, minQuantity: 2, delivery: "Сегодня до 18:00" },
     ],
     selectedOfferId: "shoro",
-    image: "Concept%20Project/WebMaket/assets/home/water-bottle.png",
+    image: "assets/home/water-bottle.png",
     sale: true,
     isNew: false,
     recommended: true,
@@ -908,6 +908,7 @@ const createHomeProductCard = (product) => {
     image.alt = product.name;
     imageArea.append(image);
   } else {
+    imageArea.classList.add("is-placeholder");
     const placeholder = document.createElement("span");
     placeholder.className = "home-product-placeholder";
     placeholder.textContent = "Фото скоро появится";
@@ -939,7 +940,8 @@ const createHomeProductCard = (product) => {
   openButton.className = "home-product-open";
   openButton.type = "button";
   openButton.dataset.openProduct = product.id;
-  openButton.textContent = "Выбрать поставщика";
+  openButton.setAttribute("aria-label", `Подробнее о товаре: ${product.name}`);
+  openButton.textContent = "Подробнее";
   card.append(openButton);
   card.append(createHomeProductActions(product));
   return card;

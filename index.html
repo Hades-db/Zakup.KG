@@ -915,6 +915,7 @@ body{background:var(--bg)}
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск магазина" placeholder="Название или адрес"></label>
     </header>
     <div class="body" style="gap:10px" id="a-store-list">
+      <button type="button" class="btn lg ghost" data-add-store><svg class="ic"><use href="#i-plus"/></svg>Добавить магазин</button>
       <div class="card row rise" style="flex-direction:row;padding:14px">
         <span class="thumb" style="width:44px;height:44px;background:var(--soft)"><svg class="ic"><use href="#i-store"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Достук»</span><span class="small muted">ул. Токтогула, 45 · заказ сегодня</span></span>
@@ -935,7 +936,6 @@ body{background:var(--bg)}
         <span class="thumb" style="width:44px;height:44px;background:var(--warn-bg);color:var(--warn)"><svg class="ic"><use href="#i-store"/></svg></span>
         <span class="grow"><span class="bold" style="font-size:15px">Магазин «Береке»</span><span class="small warn">Не заказывал 12 дней</span></span>
       </div>
-      <button type="button" class="btn lg ghost" data-add-store><svg class="ic"><use href="#i-plus"/></svg>Добавить магазин</button>
     </div>
     <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
@@ -1002,6 +1002,7 @@ body{background:var(--bg)}
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название товара"></label>
     </header>
     <div class="body" style="gap:10px" id="d-product-list">
+      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="pimg"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Молоко «Моё» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
@@ -1027,7 +1028,6 @@ body{background:var(--bg)}
         <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
         <span class="price muted"><span class="p-price">82</span> сом</span>
       </button>
-      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
     </div>
     <nav class="tabbar" aria-label="Меню дистрибьютора">
       <button class="tab" data-tab="d-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n dist-badge">3</span></button>
@@ -1044,6 +1044,7 @@ body{background:var(--bg)}
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" aria-label="Поиск товара" placeholder="Название товара"></label>
     </header>
     <div class="body" style="gap:10px" id="a-product-list">
+      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
         <span class="pimg"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Молоко «Моё» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
@@ -1069,7 +1070,6 @@ body{background:var(--bg)}
         <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
         <span class="price muted"><span class="p-price">82</span> сом</span>
       </button>
-      <button class="btn lg ghost rise" data-new><svg class="ic"><use href="#i-plus"/></svg>Добавить товар</button>
     </div>
     <nav class="tabbar five" aria-label="Меню агента">
       <button class="tab" data-tab="a-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы<span class="badge-n agent-badge">2</span></button>
@@ -2196,14 +2196,14 @@ body{background:var(--bg)}
   function renderStores() {
     const groups = {};
     stores.filter(s => district === 'all' || s[1] === district).forEach(s => (groups[s[1]] = groups[s[1]] || []).push(s));
-    $('#d-store-list').innerHTML = Object.keys(groups).map(g =>
+    $('#d-store-list').innerHTML = ADD_STORE + Object.keys(groups).map(g =>
       '<span class="section-h rise">' + g + ' район · ' + groups[g].length + '</span>' +
       groups[g].map(s => {
         const late = s[2].startsWith('не');
         return '<div class="card row rise" style="flex-direction:row;padding:14px">' +
           '<span class="thumb" style="width:44px;height:44px;background:' + (late ? 'var(--warn-bg);color:var(--warn)' : 'var(--soft)') + '"><svg class="ic"><use href="#i-store"/></svg></span>' +
           '<span class="grow"><span class="bold" style="font-size:15px">' + esc(s[0]) + '</span><span class="small ' + (late ? 'warn' : 'muted') + '">' + esc(s[3] || 'ул. Боконбаева, 17') + ' · ' + s[2] + '</span></span></div>';
-      }).join('')).join('') + ADD_STORE;
+      }).join('')).join('');
     $('#d-store-n').textContent = stores.length;
   }
   $('#district-filter').addEventListener('click', e => {
@@ -2269,7 +2269,7 @@ body{background:var(--bg)}
       b.innerHTML = '<span class="pimg"><svg class="ic"><use href="#i-box"/></svg></span>' +
         '<span class="grow"><span class="name p-name"></span><span class="small p-meta">от <span class="p-min"></span> шт · <span class="p-avail"></span></span></span>' +
         '<span class="price"><span class="p-price"></span> сом</span>';
-      $('[data-new]', editList).before(b);
+      $('[data-new]', editList).after(b);
       writeProduct(b, name, p, m, on);
       if (newPhoto) $('.pimg', b).innerHTML = '<img alt="" src="' + newPhoto + '">';
       toast(newPhoto ? 'Товар с фото добавлен · магазины уже видят его' : 'Товар добавлен без фото');
@@ -2331,7 +2331,7 @@ body{background:var(--bg)}
       c.className = 'card row'; c.style.cssText = 'flex-direction:row;padding:14px';
       c.innerHTML = '<span class="thumb" style="width:44px;height:44px;background:var(--green-bg);color:var(--green)"><svg class="ic"><use href="#i-store"/></svg></span>' +
         '<span class="grow"><span class="bold" style="font-size:15px">' + esc(name) + '</span><span class="small muted">' + esc(addr) + ' · новый</span></span>';
-      $('#a-store-list [data-add-store]').before(c);
+      $('#a-store-list [data-add-store]').after(c);
       $$('.a-store-n').forEach(x => x.textContent = $$('#a-store-list .card').length);
     }
     toast('Магазин добавлен');

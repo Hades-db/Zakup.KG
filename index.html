@@ -333,7 +333,7 @@ body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:
 /* Оформление документа: логотип, итог крупно, мягкое пятно и печать */
 .inv-glow{position:absolute;top:-80px;right:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,#E3F6E8 0%,#EEF9F1 55%,rgba(255,255,255,0) 72%);pointer-events:none}
 .inv-logo{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:800;letter-spacing:-.02em}
-.inv-logo b{color:var(--green)}
+.inv-demo{font-size:10px;font-weight:800;letter-spacing:.08em;color:#B42318;border:1.5px solid #E8A39C;border-radius:6px;padding:1px 5px}
 .inv-mark{width:22px;height:22px;border-radius:6px;flex-shrink:0}
 .inv-hero{align-items:flex-end;padding-top:6px}
 .inv-h{font-size:18px;font-weight:800}
@@ -342,7 +342,7 @@ body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:
 .inv-stamp{align-self:center;justify-self:center;transform:rotate(-10deg);background:rgba(255,255,255,.6);border:2.5px solid rgba(22,128,60,.75);border-radius:10px;padding:5px 12px;color:rgba(22,128,60,.85);display:flex;flex-direction:column;align-items:center;line-height:1.15;pointer-events:none}
 .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .inv-total td{font-weight:800;font-size:13px;color:var(--text)}
-.inv-foot{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;padding-top:6px}
+.inv-foot{display:grid;grid-template-columns:1fr;gap:8px;align-items:end;padding-top:6px}
 .inv-foot .inv-sign{grid-template-columns:1fr 1fr;gap:12px;padding-top:0}
 .inv-foot .inv-sign .line{height:14px}
 .inv-stamp{padding:4px 9px!important}
@@ -1629,7 +1629,7 @@ body{background:var(--bg)}
     $('#invoice-paper').innerHTML =
       '<div class="card rise inv">' +
       '<span class="inv-glow" aria-hidden="true"></span>' +
-      '<div class="between inv-top"><span class="inv-logo"><img class="inv-mark" src="icons/icon-192.png" alt=""><span>Zakup<b>.KG</b></span></span>' +
+      '<div class="between inv-top"><span class="inv-logo">' + from.name + '<span class="inv-demo">ДЕМО</span></span>' +
       '<span class="xs muted">№ ' + inv.n + '</span></div>' +
       '<div class="between inv-hero"><span class="inv-party"><span class="xs muted">' + inv.date + ' · оплата при получении</span><span class="inv-h">Товарная накладная</span></span>' +
       '<span class="inv-sum">' + fmt(sum) + ' <small>сом</small></span></div>' +
@@ -1642,7 +1642,7 @@ body{background:var(--bg)}
       '</tbody></table>' +
       '<div class="inv-foot"><div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">' + esc(inv.releasedBy) + '</span><span class="line"></span></div>' +
       '<div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div>' +
-      '<span class="inv-stamp" aria-hidden="true"><b>ПОДТВЕРЖДЕНО</b><span>через Zakup.KG</span></span></div>' +
+      '</div>' +
       '</div>';
   }
 

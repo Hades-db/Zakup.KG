@@ -1,5 +1,18 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Прототип приложения поставок</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>Zakup.KG</title>
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zakup.KG">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,.chip,.tab{-webkit-user-select:none;user-select:none}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Один телефон по центру, экраны меняются слайдом. Светлая тема намеренно: так выглядит само приложение. */
@@ -90,7 +103,7 @@ button{cursor:pointer}
 @keyframes ping{from{transform:scale(1);opacity:.6}to{transform:scale(2.8);opacity:0}}
 
 /* Таб-бар */
-.tabbar{height:72px;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex-shrink:0;position:relative}
+.tabbar{height:calc(72px + env(safe-area-inset-bottom, 0px));padding-bottom:env(safe-area-inset-bottom, 0px);background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex-shrink:0;position:relative}
 .tab{border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11px;font-weight:600;transition:color .2s,transform .12s;position:relative}
 .tab.on{color:var(--green);font-weight:700}
 .tab .badge-n{position:absolute;top:10px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
@@ -117,7 +130,7 @@ button{cursor:pointer}
 .num{display:inline-block;font-variant-numeric:tabular-nums}
 .num.bump{animation:bump .25s ease}
 @keyframes bump{50%{transform:scale(1.18)}}
-.bottom-bar{background:var(--card);border-top:1px solid var(--line);padding:14px 16px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.bottom-bar{background:var(--card);border-top:1px solid var(--line);padding:14px 16px calc(20px + env(safe-area-inset-bottom, 0px));display:flex;align-items:center;gap:14px;flex-shrink:0}
 
 /* Успех */
 .success-ic{width:84px;height:84px;border-radius:42px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center}
@@ -301,6 +314,7 @@ button.toggle::after{transition:right .2s}
 }
 </style>
 
+</head><body>
 <div class="phone" id="phone">
   <div class="roles" role="tablist" aria-label="Тип аккаунта">
     <button id="role-shop" class="on" role="tab" aria-selected="true">Магазин</button>

@@ -314,7 +314,40 @@ body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:
 .stepper.sm .qin{width:48px;height:38px;font-size:16px}
 .stepper button:disabled,.btn:disabled{opacity:.4}
 /* Накладная */
-.inv{gap:10px;font-size:13px;border:1px solid var(--line)}
+.inv{gap:9px;font-size:13px;border:1px solid var(--line);position:relative;overflow:hidden;border-radius:24px;padding:18px}
+.inv > *:not(.inv-glow):not(.inv-stamp){position:relative}
+/* Экран накладной — как чек: тёмный фон, документ по центру */
+.inv-screen{background:#0F1512!important}
+.inv-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;padding:calc(14px + env(safe-area-inset-top, 0px)) 16px 8px;flex-shrink:0}
+.inv-back{width:44px;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;display:flex;align-items:center;justify-content:center}
+.inv-back:active{transform:scale(.94)}
+.inv-head-t{color:#fff;font-size:18px;font-weight:800;text-align:center}
+.inv-stage{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:12px 16px;scrollbar-width:none}
+.inv-stage::-webkit-scrollbar{display:none}
+.inv-stage > .inv{margin:auto 0;flex-shrink:0;border:none;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.inv-actions{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 16px calc(18px + env(safe-area-inset-bottom, 0px));flex-shrink:0}
+.inv-send{border:none;background:none;color:#5EE08E;font-size:17px;font-weight:800;padding:10px 24px}
+.inv-send:active{opacity:.6}
+.inv-send:disabled{opacity:.5}
+.inv-actions .btn{width:100%}
+/* Оформление документа: логотип, итог крупно, мягкое пятно и печать */
+.inv-glow{position:absolute;top:-80px;right:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,#E3F6E8 0%,#EEF9F1 55%,rgba(255,255,255,0) 72%);pointer-events:none}
+.inv-logo{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.inv-logo b{color:var(--green)}
+.inv-mark{width:22px;height:22px;border-radius:6px;flex-shrink:0}
+.inv-hero{align-items:flex-end;padding-top:6px}
+.inv-h{font-size:18px;font-weight:800}
+.inv-sum{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.inv-sum small{font-size:15px;font-weight:700}
+.inv-stamp{align-self:center;justify-self:center;transform:rotate(-10deg);background:rgba(255,255,255,.6);border:2.5px solid rgba(22,128,60,.75);border-radius:10px;padding:5px 12px;color:rgba(22,128,60,.85);display:flex;flex-direction:column;align-items:center;line-height:1.15;pointer-events:none}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inv-total td{font-weight:800;font-size:13px;color:var(--text)}
+.inv-foot{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;padding-top:6px}
+.inv-foot .inv-sign{grid-template-columns:1fr 1fr;gap:12px;padding-top:0}
+.inv-foot .inv-sign .line{height:14px}
+.inv-stamp{padding:4px 9px!important}
+.inv-stamp b{font-size:12px;font-weight:800;letter-spacing:.06em}
+.inv-stamp span{font-size:9px;font-weight:700}
 .inv-party{display:flex;flex-direction:column;gap:2px}
 .inv-t{width:100%;border-collapse:collapse;font-size:12px}
 .inv-t th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;padding:4px 4px 6px}
@@ -822,16 +855,19 @@ body{background:var(--bg)}
   </section>
 
   <!-- ========== МАГАЗИН: НАКЛАДНАЯ ========== -->
-  <section class="screen" id="s-invoice" data-role="shop" hidden>
-    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span style="font-size:18px;font-weight:800" id="invoice-title">Накладная</span>
+  <!-- Накладная как чек: тёмный фон, документ по центру, снизу «Отправить» и «Сохранить PDF» -->
+  <section class="screen inv-screen" id="s-invoice" data-role="shop" hidden>
+    <header class="inv-head">
+      <button class="inv-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="inv-head-t">Накладная</span>
+      <span class="inv-back-sp" aria-hidden="true"></span>
     </header>
     <!-- Заполняется из заказа: renderInvoice() -->
-    <div class="body" id="invoice-paper"></div>
-    <div class="bottom-bar">
-      <button class="btn lg ghost" id="share-invoice" style="flex:1;width:auto">Поделиться</button>
-      <button class="btn lg" id="download-invoice" style="flex:1.4;width:auto">Скачать PDF</button>
+    <div class="inv-stage" id="invoice-paper"></div>
+    <span id="invoice-title" hidden>Накладная</span>
+    <div class="inv-actions">
+      <button type="button" class="inv-send" id="share-invoice">Отправить</button>
+      <button type="button" class="btn lg" id="download-invoice">Сохранить PDF</button>
     </div>
   </section>
 
@@ -1589,21 +1625,24 @@ body{background:var(--bg)}
   function renderInvoice(inv) {
     const sum = inv.items.reduce((s, i) => s + i.q * i.p, 0), from = inv.supplier || SUPPLIER;
     $('#invoice-title').textContent = 'Накладная № ' + inv.n;
+    $('.inv-head-t').textContent = 'Накладная № ' + inv.n;
     $('#invoice-paper').innerHTML =
       '<div class="card rise inv">' +
-      '<div class="between" style="align-items:flex-start"><span style="font-size:16px;font-weight:800">ТОВАРНАЯ НАКЛАДНАЯ</span>' +
-      '<span class="xs muted" style="text-align:right">№ ' + inv.n + '<br>от ' + inv.date + '</span></div>' +
+      '<span class="inv-glow" aria-hidden="true"></span>' +
+      '<div class="between inv-top"><span class="inv-logo"><img class="inv-mark" src="icons/icon-192.png" alt=""><span>Zakup<b>.KG</b></span></span>' +
+      '<span class="xs muted">№ ' + inv.n + '</span></div>' +
+      '<div class="between inv-hero"><span class="inv-party"><span class="xs muted">' + inv.date + ' · оплата при получении</span><span class="inv-h">Товарная накладная</span></span>' +
+      '<span class="inv-sum">' + fmt(sum) + ' <small>сом</small></span></div>' +
       '<div class="divider"></div>' +
-      '<div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + from.name + '</span><span class="xs muted">' + from.details + '</span></div>' +
-      '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + esc(inv.shop) + '</span><span class="xs muted">' + esc(inv.addr) + '</span></div>' +
+      '<div class="inv-parties"><div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + from.name + '</span><span class="xs muted">' + from.details + '</span></div>' +
+      '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + esc(inv.shop) + '</span><span class="xs muted">' + esc(inv.addr) + '</span></div></div>' +
       '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
       inv.items.filter(i => i.q > 0).map((i, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(i.name) + '</td><td class="r">' + i.q + ' шт</td><td class="r">' + i.p + '</td><td class="r">' + fmt(i.q * i.p) + '</td></tr>').join('') +
+      '<tr class="inv-total"><td></td><td>Итого</td><td></td><td></td><td class="r">' + fmt(sum) + '</td></tr>' +
       '</tbody></table>' +
-      '<div class="divider"></div>' +
-      '<div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(sum) + ' сом</span></div>' +
-      '<div class="between xs"><span class="muted">Оплата</span><span class="bold">при получении</span></div>' +
-      '<div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">' + esc(inv.releasedBy) + '</span><span class="line"></span></div>' +
-      '<div><span class="xs muted">Принял</span><span class="small bold">Представитель магазина</span><span class="line"></span></div></div>' +
+      '<div class="inv-foot"><div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">' + esc(inv.releasedBy) + '</span><span class="line"></span></div>' +
+      '<div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div>' +
+      '<span class="inv-stamp" aria-hidden="true"><b>ПОДТВЕРЖДЕНО</b><span>через Zakup.KG</span></span></div>' +
       '</div>';
   }
 

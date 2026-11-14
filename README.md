@@ -19,7 +19,7 @@ A direct digital bridge between retail stores and suppliers, eliminating the nee
 - [x] Repository initialization
 - [x] Brand identity and logo design
 - [x] UI/UX mockups (Store flow): Registration, Login, Home Dashboard
-- [ ] UI/UX mockups (Store flow): Catalog, Cart, Orders, Profile
+- [x] UI/UX mockups (Store flow): Catalog, Cart, Orders, Profile
 - [ ] UI/UX mockups (Supplier flow)
 - [ ] MVP Development (Cross-platform Client + Backend API)
 

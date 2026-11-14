@@ -104,6 +104,8 @@ button{cursor:pointer}
 .tabbar{height:calc(72px + env(safe-area-inset-bottom, 0px));padding-bottom:env(safe-area-inset-bottom, 0px);background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex-shrink:0;position:relative}
 .tab{border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11px;font-weight:600;transition:color .2s,transform .12s;position:relative}
 .tab.on{color:var(--green);font-weight:700;isolation:isolate}
+/* Служебный слой html2pdf на время сборки PDF не должен перекрывать нажатия */
+.html2pdf__overlay{pointer-events:none!important}
 /* Контакт магазина в заказе: номер + круглые кнопки «позвонить» и WhatsApp */
 .contact{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft)}
 .contact-num{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text}
@@ -1493,12 +1495,18 @@ body{background:var(--bg)}
     const card = $('#invoice-paper .inv');
     card.classList.remove('rise');
     const name = $('#invoice-title').textContent.replace('№ ', '').replace(/\s+/g, '_') + '.pdf';
-    const blob = await html2pdf().set({
+    // Снимок копирует всю страницу. С появлением фото товаров (loading="lazy") Safari ждал их
+    // загрузки в копии бесконечно — PDF «не собирался». Само приложение (#phone) в копию не берём:
+    // html2pdf рисует свою копию накладной вне него.
+    const ignore = el => el.id === 'phone';
+    const make = html2pdf().set({
       margin: 8, filename: name,
       image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: { scale: 3, backgroundColor: '#ffffff', useCORS: true },
+      html2canvas: { scale: 2.5, backgroundColor: '#ffffff', useCORS: true, imageTimeout: 5000, ignoreElements: ignore, logging: false },
       jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
     }).from(card).outputPdf('blob');
+    const late = new Promise((_, no) => setTimeout(() => no(new Error('слишком долго, попробуйте ещё раз')), 20000));
+    const blob = await Promise.race([make, late]);
     return new File([blob], name, { type: 'application/pdf' });
   }
   // PDF готовим заранее, как только открыли накладную: iPhone разрешает «Поделиться»/сохранение

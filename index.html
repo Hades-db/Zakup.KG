@@ -103,7 +103,9 @@ button{cursor:pointer}
 /* Таб-бар */
 .tabbar{height:calc(72px + env(safe-area-inset-bottom, 0px));padding-bottom:env(safe-area-inset-bottom, 0px);background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex-shrink:0;position:relative}
 .tab{border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11px;font-weight:600;transition:color .2s,transform .12s;position:relative}
-.tab.on{color:var(--green);font-weight:700}
+.tab.on{color:var(--green);font-weight:700;isolation:isolate}
+/* Активная вкладка: лёгкое затемнение под иконкой и подписью */
+.tab.on::before{content:"";position:absolute;inset:6px 6px;border-radius:14px;background:rgba(0,0,0,.06);z-index:-1}
 .tab .badge-n{position:absolute;top:10px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
 .tab .badge-n.pop{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}

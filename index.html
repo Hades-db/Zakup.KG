@@ -31,11 +31,9 @@ button,input,textarea{font-family:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
 
-/* Переключатель ролей */
-.roles{position:absolute;top:calc(4px + env(safe-area-inset-top, 0px));left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:2px;padding:2px;border-radius:999px;background:rgba(0,0,0,.04);opacity:.35;transition:opacity .2s}
-.roles:hover,.roles:focus-within{opacity:.9}
-.roles button{border:none;background:transparent;height:18px;padding:0 8px;border-radius:999px;font-size:9px;font-weight:700;color:var(--muted)}
-.roles button.on{background:var(--muted);color:#fff}
+/* Переключатель ролей: внизу экрана входа, как «Тест 1 / Тест 2» */
+.demo-roles{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+.demo-roles .linkbtn{color:var(--muted);font-weight:600}
 
 /* Приложение на весь экран */
 .phone{position:fixed;inset:0;background:var(--bg);overflow:hidden}
@@ -316,11 +314,6 @@ button.toggle::after{transition:right .2s}
 
 </head><body>
 <div class="phone" id="phone">
-  <div class="roles" role="tablist" aria-label="Тип аккаунта">
-    <button id="role-shop" class="on" role="tab" aria-selected="true">Магазин</button>
-    <button id="role-agent" role="tab" aria-selected="false">Агент</button>
-    <button id="role-dist" role="tab" aria-selected="false">Дистрибьютор</button>
-  </div>
 
   <div class="sheet-bg" id="logout-sheet" role="dialog" aria-modal="true" aria-label="Выход" hidden>
     <div class="sheet"><span class="handle" aria-hidden="true"></span><span class="h2" style="text-align:center">Выйти из аккаунта?</span>
@@ -374,6 +367,7 @@ button.toggle::after{transition:right .2s}
 
       <p class="auth-switch"><span id="to-reg">Нет аккаунта? <button type="button" class="linkbtn" data-auth="reg">Зарегистрироваться</button></span><span id="to-login" hidden>Уже есть аккаунт? <button type="button" class="linkbtn" data-auth="login">Войти</button></span></p>
       <button type="button" class="linkbtn" id="ver-change" style="align-self:center;color:var(--muted);font-weight:600"><span id="ver-name">Тест 1</span></button>
+      <div class="demo-roles" aria-label="Открыть кабинет без входа"><button type="button" class="linkbtn" data-role-go="shop">Магазин</button><button type="button" class="linkbtn" data-role-go="agent">Агент</button><button type="button" class="linkbtn" data-role-go="dist">Дистрибьютор</button></div>
     </div>
 
     <div class="sheet-bg" id="agree-sheet" role="dialog" aria-modal="true" aria-label="Документы" hidden>
@@ -1325,13 +1319,9 @@ button.toggle::after{transition:right .2s}
   // Роли
   function setRole(r) {
     role = r;
-    ['shop', 'agent', 'dist'].forEach(k => {
-      $('#role-' + k).classList.toggle('on', k === r);
-      $('#role-' + k).setAttribute('aria-selected', k === r);
-    });
     go(lastScreen[r], 'fade');
   }
-  ['shop', 'agent', 'dist'].forEach(k => $('#role-' + k).addEventListener('click', () => setRole(k)));
+  $$('[data-role-go]').forEach(b => b.addEventListener('click', () => setRole(b.dataset.roleGo)));
 
   // Поставщик и количество
   let qty = 20, price = 72, sup = $('.supplier.on');

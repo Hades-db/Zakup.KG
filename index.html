@@ -177,8 +177,19 @@ button{cursor:pointer}
 .stat.green{background:var(--green-bg)} .stat.green b{color:var(--green)} .stat.green span{color:var(--green-dark)}
 
 /* Карточка заказа агента: уход после принятия */
-.order-open{padding:12px 14px;gap:4px;border:1px solid transparent;text-align:left;width:100%}
-.order-open.is-new{background:#F0F8F2;border-color:#CDE6D4}
+.order-open{padding:12px 14px;gap:4px;border:2px solid transparent;text-align:left;width:100%}
+/* Новые заказы: объёмные, с зелёной обводкой — сразу видно, что их ждут */
+.order-open.is-new{background:var(--card);border-color:var(--green);box-shadow:0 6px 18px rgba(21,128,61,.18),0 1px 3px rgba(0,0,0,.06)}
+
+/* Фото крупно: по нажатию на фото товара */
+.pimg:has(svg:not(.ic)),.pimg:has(img),.product .img,[data-zoom]{cursor:zoom-in}
+.lightbox{position:absolute;inset:0;z-index:60;background:rgba(15,17,15,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;animation:fadeIn .25s ease both}
+.lightbox[hidden]{display:none}
+.lb-img{width:min(82vw,340px);aspect-ratio:1;background:#fff;border-radius:24px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.lb-img svg{width:78%;height:78%}
+.lb-img img{width:100%;height:100%;object-fit:contain}
+.lb-name{color:#fff;font-size:19px;font-weight:800;text-align:center;line-height:1.3;max-width:340px}
+.lb-close{position:absolute;top:calc(16px + env(safe-area-inset-top, 0px));right:16px;width:44px;height:44px;border-radius:22px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:26px;line-height:1}
 .order-open .between{gap:10px}
 .o-sum{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 .order-card{transition:opacity .35s, transform .35s, max-height .4s .2s, padding .4s .2s, margin .4s .2s;max-height:220px;overflow:hidden}
@@ -328,6 +339,11 @@ button.toggle::after{transition:right .2s}
       <button type="button" class="btn lg" id="cart-send">Отправить заказ</button>
     </div>
   </div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Фото товара" hidden>
+    <button type="button" class="lb-close" aria-label="Закрыть">×</button>
+    <div class="lb-img" id="lb-img"></div>
+    <span class="lb-name" id="lb-name"></span>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
 
   <!-- ========== ВЫБОР ВЕРСИИ (для показа) ========== -->
@@ -445,7 +461,7 @@ button.toggle::after{transition:right .2s}
         <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
         <span class="bold" style="font-size:16px">Товар</span>
       </div>
-      <div style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" style="width:120px;height:120px"><use href="#p-milk"/></svg>
+      <div data-zoom="Молоко «Белая река» 3,2%, 1 л" style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" style="width:120px;height:120px"><use href="#p-milk"/></svg>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
         <span style="font-size:20px;font-weight:800;line-height:1.25">Молоко «Белая река» 3,2%, 1 л</span>
@@ -693,7 +709,7 @@ button.toggle::after{transition:right .2s}
         <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
         <span class="bold" style="font-size:16px">Предложение агента</span>
       </div>
-      <div style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative">
+      <div data-zoom="Сок яблочный, 1 л" style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative">
         <svg viewBox="0 0 64 64" style="width:120px;height:120px"><use href="#p-juice"/></svg><span class="badge">NEW</span>
       </div>
       <span style="font-size:20px;font-weight:800">Сок яблочный, 1 л</span>
@@ -724,7 +740,8 @@ button.toggle::after{transition:right .2s}
     <!-- Заполняется из заказа: renderInvoice() -->
     <div class="body" id="invoice-paper"></div>
     <div class="bottom-bar">
-      <button class="btn lg" id="share-invoice">Поделиться PDF</button>
+      <button class="btn lg ghost" id="share-invoice" style="flex:1;width:auto">Поделиться</button>
+      <button class="btn lg" id="download-invoice" style="flex:1.4;width:auto">Скачать PDF</button>
     </div>
   </section>
 
@@ -1368,7 +1385,69 @@ button.toggle::after{transition:right .2s}
     toast('Пробная партия 12 шт заказана у агента Нурлана');
     go(history.pop() || 's-home', 'back');
   });
-  $('#share-invoice').addEventListener('click', () => toast('PDF накладной готов к отправке'));
+  // ===== Накладная в PDF: снимок карточки накладной → файл PDF (кириллица сохраняется) =====
+  let pdfLib = null;
+  function loadPdfLib() {
+    if (window.html2pdf) return Promise.resolve();
+    if (pdfLib) return pdfLib;
+    pdfLib = new Promise((ok, fail) => {
+      const s = document.createElement('script');
+      s.src = 'vendor/html2pdf.bundle.min.js';
+      s.onload = ok; s.onerror = () => { pdfLib = null; fail(); };
+      document.head.appendChild(s);
+    });
+    return pdfLib;
+  }
+  async function invoicePdf() {
+    await loadPdfLib();
+    const card = $('#invoice-paper .inv');
+    card.classList.remove('rise');
+    const name = $('#invoice-title').textContent.replace('№ ', '').replace(/\s+/g, '_') + '.pdf';
+    const blob = await html2pdf().set({
+      margin: 8, filename: name,
+      image: { type: 'jpeg', quality: 0.96 },
+      html2canvas: { scale: 3, backgroundColor: '#ffffff', useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+    }).from(card).outputPdf('blob');
+    return new File([blob], name, { type: 'application/pdf' });
+  }
+  async function pdfAction(btn, share) {
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Готовим PDF…';
+    try {
+      const file = await invoicePdf();
+      if (share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: file.name });
+      } else {
+        const url = URL.createObjectURL(file), a = document.createElement('a');
+        a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        toast(share ? 'Отправка недоступна — PDF скачан' : 'PDF накладной скачан');
+      }
+    } catch (err) {
+      if (!err || err.name !== 'AbortError') toast('Не удалось сделать PDF — проверьте интернет');
+    }
+    btn.disabled = false; btn.textContent = label;
+  }
+  $('#download-invoice').addEventListener('click', e => pdfAction(e.currentTarget, false));
+  $('#share-invoice').addEventListener('click', e => pdfAction(e.currentTarget, true));
+
+  // ===== Фото крупно: нажатие на фото товара открывает его с названием =====
+  document.addEventListener('click', e => {
+    const ph = e.target.closest('.pimg, .product .img, [data-zoom]');
+    if (!ph || ph.closest('#d-product')) return;
+    const art = ph.querySelector('img, svg:not(.ic)');
+    if (!art) return;                       // заглушка «нет фото» — увеличивать нечего
+    e.preventDefault(); e.stopPropagation();
+    const box = ph.closest('.row, .product, .card, .notif') || ph.parentElement;
+    const nm = ph.dataset.zoom || (box && box.querySelector('.p-name, .name, .bold') || {}).textContent || '';
+    const big = art.cloneNode(true);
+    big.removeAttribute('style'); big.removeAttribute('class');
+    $('#lb-img').replaceChildren(big);
+    $('#lb-name').textContent = nm.trim();
+    $('#lightbox').hidden = false;
+  }, true);
+  $('#lightbox').addEventListener('click', () => { $('#lightbox').hidden = true; });
 
   // ===== Накладная: одна на все роли, собирается из заказа =====
   // Поставщик в накладной — юрлицо дистрибьютора; агент или склад — только «Отпустил».

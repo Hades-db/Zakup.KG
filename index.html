@@ -516,23 +516,7 @@ button.toggle::after{transition:right .2s}
   <section class="screen" id="s-orders" data-role="shop" hidden>
     <header class="top"><span class="h1">Мои заказы</span></header>
     <div class="body">
-      <div id="s-new-orders" style="display:contents"></div>
-      <div class="card rise">
-        <div class="between"><span class="bold" style="font-size:15px">Заказ № 0001</span><span class="pill green" id="order-status">Подтверждён</span></div>
-        <span class="small muted"><span class="sup-name">Агент Азамат</span> · Молоко 3,2% × <span class="sum-qty">20</span> · <span class="sum-total">1 440</span> сом</span>
-        <div class="steps" style="padding-top:4px">
-          <div class="step done"><div class="mark"><span class="circle"></span><span class="line"></span></div><div class="grow"><span class="name" style="font-size:14px">Заказ отправлен</span></div></div>
-          <div class="step done"><div class="mark"><span class="circle"></span><span class="line"></span></div><div class="grow"><span class="name" style="font-size:14px">Агент подтвердил</span></div></div>
-          <div class="step"><div class="mark"><span class="circle"></span><span class="line"></span></div><div class="grow"><span class="name" style="font-size:14px">В пути</span><span class="xs muted">Доставка <span class="sup-when">завтра до 12:00</span></span></div></div>
-          <div class="step"><div class="mark"><span class="circle"></span></div><div class="grow"><span class="name" style="font-size:14px">Получен и оплачен</span></div></div>
-        </div>
-        <button class="list-item" data-go="s-invoice" style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg><span class="grow">Накладная № 0001</span><svg class="ic chev"><use href="#i-next"/></svg></button>
-      </div>
-      <div class="card rise">
-        <div class="between"><span class="bold" style="font-size:15px">Заказ № 0000</span><span class="pill" style="background:var(--soft);color:var(--muted)">Доставлен</span></div>
-        <span class="small muted">Агент Нурлан · Кефир 2,5% × 10 · 650 сом</span>
-        <button class="list-item" data-old-inv style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg><span class="grow">Накладная № 0000</span><svg class="ic chev"><use href="#i-next"/></svg></button>
-      </div>
+      <div id="s-order-list" style="display:flex;flex-direction:column;gap:14px"></div>
     </div>
     <nav class="tabbar" aria-label="Меню магазина">
       <button class="tab" data-tab="s-home"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
@@ -540,6 +524,15 @@ button.toggle::after{transition:right .2s}
       <button class="tab on" data-tab="s-orders"><svg class="ic"><use href="#i-doc"/></svg>Заказы</button>
       <button class="tab" data-tab="s-profile"><svg class="ic"><use href="#i-user"/></svg>Профиль</button>
     </nav>
+  </section>
+
+  <!-- ========== МАГАЗИН: ЗАКАЗ ========== -->
+  <section class="screen" id="s-order" data-role="shop" hidden>
+    <header class="top" style="flex-direction:row;align-items:center;gap:8px">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span style="font-size:18px;font-weight:800" id="so-title"></span>
+    </header>
+    <div class="body" id="so-body"></div>
   </section>
 
   <!-- ========== МАГАЗИН: КАТАЛОГ ========== -->
@@ -1354,6 +1347,7 @@ button.toggle::after{transition:right .2s}
       $$('.sum-price').forEach(e => e.textContent = price);
       $$('.sum-total').forEach(e => e.textContent = fmt(qty * price));
       shopInv.items[0].q = qty; shopInv.items[0].p = price; shopInv.releasedBy = sup.dataset.name;
+      addShopOrder(sup.dataset.name, sup.dataset.when, [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: qty, p: price, img: 'milk' }]);
       b.textContent = 'Заказать';
       const badge = $('#shop-badge'); badge.hidden = false; badge.classList.add('pop');
       go('s-success', 'push');
@@ -1654,37 +1648,69 @@ button.toggle::after{transition:right .2s}
     const inp = e.target.closest('[data-cin]');
     if (inp) { cart[+inp.dataset.cin].q = Math.max(1, parseInt(inp.value, 10) || 1); renderCart(); }
   });
-  // Заказы магазина из корзины: появляются в «Мои заказы»; накладная — после подтверждения поставщиком
-  const shopOrders = [];
+  // ===== Заказы магазина: одна карточка для всех; шаги — внутри заказа; накладная — после подтверждения =====
+  const SST = { sent: ['warn', 'Отправлен'], confirmed: ['green', 'Подтверждён'], delivering: ['amber', 'В пути'], delivered: ['grey', 'Доставлен'] };
+  const SSTEP = ['sent', 'confirmed', 'delivering', 'delivered'];
+  const spill = st => '<span class="pill ' + SST[st][0] + '">' + SST[st][1] + '</span>';
+  const shopOrders = [
+    { n: '0000', sup: 'Агент Нурлан', date: '12 ноября', when: '12 ноября', st: 'delivered', items: [{ name: 'Кефир 2,5%, 1 л', q: 10, p: 65, img: 'kefir' }] },
+    { n: '0001', sup: 'Агент Азамат', date: 'сегодня', when: 'завтра до 12:00', st: 'confirmed', items: [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: 20, p: 72, img: 'milk' }] }
+  ];
   let shopN = 2;
+  const osum = o => o.items.reduce((s, i) => s + i.q * i.p, 0);
+  const hasInv = o => o.st !== 'sent';
+  const invRow = (o, k) => hasInv(o)
+    ? '<button class="list-item" data-new-inv="' + k + '" style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg>' +
+      '<span class="grow">Накладная № ' + o.n + '</span><svg class="ic chev"><use href="#i-next"/></svg></button>'
+    : '<span class="xs muted" style="padding-top:8px;border-top:1px solid var(--line);margin-top:4px">Накладная появится, когда поставщик подтвердит заказ</span>';
   function renderShopOrders() {
-    $('#s-new-orders').innerHTML = shopOrders.map((o, k) => {
-      const sum = o.items.reduce((s, i) => s + i.q * i.p, 0), ok = o.st === 'confirmed';
-      return '<div class="card rise"><div class="between"><span class="bold" style="font-size:15px">Заказ № ' + o.n + '</span>' +
-        (ok ? '<span class="pill green">Подтверждён</span>' : '<span class="pill warn">Отправлен</span>') + '</div>' +
-        '<span class="small muted">' + o.sup + ', ' + o.items.length + ' ' + plural(o.items.length, 'товар', 'товара', 'товаров') + ' на ' + fmt(sum) + ' сом</span>' +
-        (ok ? '<button class="list-item" data-new-inv="' + k + '" style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg>' +
-              '<span class="grow">Накладная № ' + o.n + '</span><svg class="ic chev"><use href="#i-next"/></svg></button>'
-            : '<span class="xs muted" style="padding-top:8px;border-top:1px solid var(--line);margin-top:4px">Накладная появится, когда поставщик подтвердит заказ</span>') +
-        '</div>';
-    }).reverse().join('');
+    $('#s-order-list').innerHTML = shopOrders.map((o, k) =>
+      '<div class="card rise" role="button" tabindex="0" data-sorder="' + k + '" style="cursor:pointer;gap:4px">' +
+      '<div class="between"><span class="bold" style="font-size:15px">' + o.sup + '</span>' + spill(o.st) + '</div>' +
+      '<span class="small muted">№ ' + o.n + ', ' + o.date + '</span>' +
+      '<div class="between"><span class="small">' + o.items.length + ' ' + plural(o.items.length, 'товар', 'товара', 'товаров') + '</span>' +
+      '<span class="bold" style="font-size:16px">' + fmt(osum(o)) + ' сом</span></div>' + invRow(o, k) + '</div>').reverse().join('');
+    if (current_id === 's-order' && openSO != null) renderShopOrder(openSO);
+  }
+  let openSO = null;
+  function renderShopOrder(k) {
+    const o = shopOrders[k], at = SSTEP.indexOf(o.st);
+    const names = ['Заказ отправлен', 'Поставщик подтвердил', 'В пути', 'Получен и оплачен'];
+    $('#so-title').textContent = 'Заказ № ' + o.n;
+    $('#so-body').innerHTML =
+      '<div class="card rise" style="gap:4px"><div class="between"><span class="h2">' + o.sup + '</span>' + spill(o.st) + '</div><span class="small muted">№ ' + o.n + ', ' + o.date + '</span>' +
+      '<div class="steps" style="padding-top:8px">' + names.map((t, j) =>
+        '<div class="step' + (j <= at ? ' done' : '') + '"><div class="mark"><span class="circle"></span>' + (j < 3 ? '<span class="line"></span>' : '') + '</div>' +
+        '<div class="grow"><span class="name" style="font-size:14px">' + t + '</span>' + (j === 2 ? '<span class="xs muted">Доставка ' + o.when + '</span>' : '') + '</div></div>').join('') + '</div></div>' +
+      '<div class="card rise" style="gap:10px"><span class="h2">Товары</span>' + o.items.map(i =>
+        '<div class="row" style="gap:10px">' + (i.img ? pic(i.img, 'sm') : '') + '<span class="grow"><span class="name" style="font-size:14px">' + i.name + '</span>' +
+        '<span class="xs muted">' + i.q + ' шт × ' + i.p + ' сом</span></span><span class="bold" style="white-space:nowrap">' + fmt(i.q * i.p) + ' сом</span></div>').join('') +
+      '<div class="divider"></div><div class="between"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(osum(o)) + ' сом</span></div>' + invRow(o, k) + '</div>';
   }
   document.addEventListener('click', e => {
-    const b = e.target.closest('[data-new-inv]');
-    if (!b) return;
-    const o = shopOrders[+b.dataset.newInv];
-    pendingInv = { n: o.n, date: '14.11.2026', shop: shopInv.shop, addr: shopInv.addr, releasedBy: o.sup, items: o.items };
-    go('s-invoice', 'push');
+    const inv = e.target.closest('[data-new-inv]');
+    if (inv) {
+      const o = shopOrders[+inv.dataset.newInv];
+      pendingInv = { n: o.n, date: o.date === 'сегодня' ? '14.11.2026' : '12.11.2026', shop: shopInv.shop, addr: shopInv.addr, releasedBy: o.sup, items: o.items };
+      go('s-invoice', 'push'); return;
+    }
+    const c = e.target.closest('[data-sorder]');
+    if (c) { openSO = +c.dataset.sorder; renderShopOrder(openSO); go('s-order', 'push'); }
   });
-  $('#cart-send').addEventListener('click', () => {
-    cart.forEach(c => c.x.ordered = true);
-    const o = { n: String(shopN++).padStart(4, '0'), sup: cartSup, st: 'sent', items: cart.map(c => ({ name: c.x.name, q: c.q, p: c.x.p })) };
-    shopOrders.push(o);
-    $('#cart-sheet').hidden = true;
-    renderStock(); renderShopOrders();
-    toast('Заказ № ' + o.n + ' отправлен · ' + cartSup);
+  function addShopOrder(sup, when, items) {
+    const o = { n: String(shopN++).padStart(4, '0'), sup, date: 'сегодня', when, st: 'sent', items };
+    shopOrders.push(o); renderShopOrders();
     // В прототипе поставщик подтверждает через несколько секунд
     setTimeout(() => { o.st = 'confirmed'; renderShopOrders(); toast('Заказ № ' + o.n + ' подтверждён · накладная готова'); }, 5000);
+    return o;
+  }
+  renderShopOrders();
+  $('#cart-send').addEventListener('click', () => {
+    cart.forEach(c => c.x.ordered = true);
+    const o = addShopOrder(cartSup, 'завтра до 12:00', cart.map(c => ({ name: c.x.name, q: c.q, p: c.x.p, img: c.x.img })));
+    $('#cart-sheet').hidden = true;
+    renderStock();
+    toast('Заказ № ' + o.n + ' отправлен · ' + cartSup);
   });
   $('#cart-sheet').addEventListener('click', e => { if (e.target.id === 'cart-sheet') $('#cart-sheet').hidden = true; });
   renderStock();

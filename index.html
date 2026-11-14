@@ -244,6 +244,12 @@ button{cursor:pointer}
 .photo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .photo-prev .ic{width:36px;height:36px;stroke-width:1.6}
 label.btn{cursor:pointer}
+/* Реальные фото товаров */
+.pimg img{object-fit:contain;padding:2px}
+.product .img img{width:84px;height:84px;object-fit:contain}
+[data-zoom] img{width:130px;height:130px;object-fit:contain}
+.photo-prev img.pk{width:170px;height:170px;object-fit:contain}
+
 body.lite [data-full],body:not(.lite) [data-lite]{display:none!important}
 body.lite .tabbar[aria-label="Меню магазина"]{grid-template-columns:repeat(3,minmax(0,1fr))}
 .ver{display:flex;flex-direction:column;gap:6px;padding:18px;border-radius:18px;border:2px solid var(--line);background:var(--card);text-align:left;width:100%}
@@ -420,13 +426,13 @@ button.toggle::after{transition:right .2s}
       <div class="between rise" data-full><span class="h2">Новинки от агентов</span><button class="small bold" data-tab="s-catalog" style="color:var(--green);border:none;background:none;padding:6px 0">Все</button></div>
       <div class="grid2 rise" data-full>
         <button class="product" data-go="s-novelty">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-juice"/></svg><span class="badge">NEW</span></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/juice.jpg" alt="" loading="lazy"><span class="badge">NEW</span></span>
           <span class="name" style="font-size:14px">Сок яблочный, 1 л</span>
           <span class="xs muted">Агент Нурлан</span>
           <span class="price" style="font-size:16px">95 сом</span>
         </button>
         <button class="product" data-go="s-novelty">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-cookie"/></svg><span class="badge">NEW</span></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/cookie.jpg" alt="" loading="lazy"><span class="badge">NEW</span></span>
           <span class="name" style="font-size:14px">Печенье овсяное, 300 г</span>
           <span class="xs muted">Агент Айгерим</span>
           <span class="price" style="font-size:16px">68 сом</span>
@@ -461,10 +467,10 @@ button.toggle::after{transition:right .2s}
         <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
         <span class="bold" style="font-size:16px">Товар</span>
       </div>
-      <div data-zoom="Молоко «Белая река» 3,2%, 1 л" style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 64 64" style="width:120px;height:120px"><use href="#p-milk"/></svg>
+      <div data-zoom="Молоко «Моё» 3,2%, 1 л" style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center"><img src="photos/milk.jpg" alt="" loading="lazy">
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
-        <span style="font-size:20px;font-weight:800;line-height:1.25">Молоко «Белая река» 3,2%, 1 л</span>
+        <span style="font-size:20px;font-weight:800;line-height:1.25">Молоко «Моё» 3,2%, 1 л</span>
         <span class="pill warn" style="font-size:13px">На складе: 4 шт</span>
       </div>
     </header>
@@ -517,7 +523,7 @@ button.toggle::after{transition:right .2s}
       <div class="card rise">
         <div class="between"><span class="bold" style="font-size:15px">Заказ № 0001</span><span class="pill amber">Ждёт подтверждения</span></div>
         <div class="divider"></div>
-        <div class="between" style="font-size:14px"><span class="muted">Товар</span><span style="font-weight:600;text-align:right">Молоко «Белая река» 3,2%</span></div>
+        <div class="between" style="font-size:14px"><span class="muted">Товар</span><span style="font-weight:600;text-align:right">Молоко «Моё» 3,2%</span></div>
         <div class="between" style="font-size:14px"><span class="muted">Количество</span><span style="font-weight:600"><span class="sum-qty">20</span> шт × <span class="sum-price">72</span> сом</span></div>
         <div class="between" style="font-size:14px"><span class="muted">Поставщик</span><span style="font-weight:600" class="sup-name">Агент Азамат</span></div>
         <div class="between" style="font-size:14px"><span class="muted">Оплата</span><span style="font-weight:600">При получении</span></div>
@@ -576,13 +582,13 @@ button.toggle::after{transition:right .2s}
     <div class="body">
       <div class="grid2 rise">
         <button class="product" data-go="s-product">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-milk"/></svg></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
           <span class="name" style="font-size:14px">Молоко 3,2%, 1 л</span>
           <span class="xs muted">3 поставщика</span>
           <span class="price" style="font-size:16px">от 72 сом</span>
         </button>
         <button class="product" data-go="s-product">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-bread"/></svg></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/bread.jpg" alt="" loading="lazy"></span>
           <span class="name" style="font-size:14px">Хлеб белый, 500 г</span>
           <span class="xs muted">2 поставщика</span>
           <span class="price" style="font-size:16px">от 38 сом</span>
@@ -590,13 +596,13 @@ button.toggle::after{transition:right .2s}
       </div>
       <div class="grid2 rise">
         <button class="product" data-go="s-product">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-butter"/></svg></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/butter.jpg" alt="" loading="lazy"></span>
           <span class="name" style="font-size:14px">Масло сливочное 82%</span>
           <span class="xs muted">4 поставщика</span>
           <span class="price" style="font-size:16px">от 145 сом</span>
         </button>
         <button class="product" data-go="s-product">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-kefir"/></svg></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/kefir.jpg" alt="" loading="lazy"></span>
           <span class="name" style="font-size:14px">Кефир 2,5%, 1 л</span>
           <span class="xs muted">2 поставщика</span>
           <span class="price" style="font-size:16px">от 65 сом</span>
@@ -604,13 +610,13 @@ button.toggle::after{transition:right .2s}
       </div>
       <div class="grid2 rise">
         <button class="product" data-go="s-novelty">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-juice"/></svg><span class="badge">NEW</span></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/juice.jpg" alt="" loading="lazy"><span class="badge">NEW</span></span>
           <span class="name" style="font-size:14px">Сок яблочный, 1 л</span>
           <span class="xs muted">1 поставщик</span>
           <span class="price" style="font-size:16px">95 сом</span>
         </button>
         <button class="product" data-go="s-product">
-          <span class="img" style="background:#fff;border:1px solid var(--line)"><svg viewBox="0 0 64 64" style="width:80px;height:80px"><use href="#p-sugar"/></svg></span>
+          <span class="img" style="background:#fff;border:1px solid var(--line)"><img src="photos/sugar.jpg" alt="" loading="lazy"></span>
           <span class="name" style="font-size:14px">Сахар, 1 кг</span>
           <span class="xs muted">5 поставщиков</span>
           <span class="price" style="font-size:16px">от 82 сом</span>
@@ -688,11 +694,11 @@ button.toggle::after{transition:right .2s}
     </header>
     <div class="body" style="gap:10px">
       <div class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="pimg sm"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
+        <span class="pimg sm"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="bold" style="font-size:14px">Молоко 3,2% заканчивается</span><span class="small muted">Осталось 4 шт · 10 мин назад</span></span>
       </div>
       <div data-full class="card row rise" style="flex-direction:row;padding:14px">
-        <span class="pimg sm"><svg viewBox="0 0 64 64"><use href="#p-juice"/></svg></span>
+        <span class="pimg sm"><img src="photos/juice.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="bold" style="font-size:14px">Новинка от агента Нурлана</span><span class="small muted">Сок яблочный, 1 л · 1 ч назад</span></span>
       </div>
       <div class="card row rise" style="flex-direction:row;padding:14px">
@@ -710,7 +716,7 @@ button.toggle::after{transition:right .2s}
         <span class="bold" style="font-size:16px">Предложение агента</span>
       </div>
       <div data-zoom="Сок яблочный, 1 л" style="height:150px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative">
-        <svg viewBox="0 0 64 64" style="width:120px;height:120px"><use href="#p-juice"/></svg><span class="badge">NEW</span>
+        <img src="photos/juice.jpg" alt="" loading="lazy"><span class="badge">NEW</span>
       </div>
       <span style="font-size:20px;font-weight:800">Сок яблочный, 1 л</span>
     </header>
@@ -877,27 +883,27 @@ button.toggle::after{transition:right .2s}
     </header>
     <div class="body" style="gap:10px" id="d-product-list">
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
-        <span class="grow"><span class="name p-name">Молоко «Белая река» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="pimg"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
+        <span class="grow"><span class="name p-name">Молоко «Моё» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">72</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-kefir"/></svg></span>
+        <span class="pimg"><img src="photos/kefir.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Кефир 2,5%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">65</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-butter"/></svg></span>
+        <span class="pimg"><img src="photos/butter.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Масло сливочное 82%, 200 г</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">145</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-juice"/></svg></span>
+        <span class="pimg"><img src="photos/juice.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Сок яблочный, 1 л</span><span class="small p-meta muted">от <span class="p-min">12</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">95</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-sugar"/></svg></span>
+        <span class="pimg"><img src="photos/sugar.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
         <span class="price muted"><span class="p-price">82</span> сом</span>
       </button>
@@ -919,27 +925,27 @@ button.toggle::after{transition:right .2s}
     </header>
     <div class="body" style="gap:10px" id="a-product-list">
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-milk"/></svg></span>
-        <span class="grow"><span class="name p-name">Молоко «Белая река» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
+        <span class="pimg"><img src="photos/milk.jpg" alt="" loading="lazy"></span>
+        <span class="grow"><span class="name p-name">Молоко «Моё» 3,2%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">72</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-kefir"/></svg></span>
+        <span class="pimg"><img src="photos/kefir.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Кефир 2,5%, 1 л</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">65</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-butter"/></svg></span>
+        <span class="pimg"><img src="photos/butter.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Масло сливочное 82%, 200 г</span><span class="small p-meta muted">от <span class="p-min">10</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">145</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-juice"/></svg></span>
+        <span class="pimg"><img src="photos/juice.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Сок яблочный, 1 л</span><span class="small p-meta muted">от <span class="p-min">12</span> шт · <span class="p-avail">в наличии</span></span></span>
         <span class="price"><span class="p-price">95</span> сом</span>
       </button>
       <button class="card row rise prod" data-edit style="flex-direction:row;padding:14px;border:none;text-align:left">
-        <span class="pimg"><svg viewBox="0 0 64 64"><use href="#p-sugar"/></svg></span>
+        <span class="pimg"><img src="photos/sugar.jpg" alt="" loading="lazy"></span>
         <span class="grow"><span class="name p-name">Сахар, 1 кг</span><span class="small p-meta warn">от <span class="p-min">10</span> шт · <span class="p-avail">нет в наличии</span></span></span>
         <span class="price muted"><span class="p-price">82</span> сом</span>
       </button>
@@ -1368,7 +1374,7 @@ button.toggle::after{transition:right .2s}
       $$('.sum-price').forEach(e => e.textContent = price);
       $$('.sum-total').forEach(e => e.textContent = fmt(qty * price));
       shopInv.items[0].q = qty; shopInv.items[0].p = price; shopInv.releasedBy = sup.dataset.name;
-      addShopOrder(sup.dataset.name, sup.dataset.when, [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: qty, p: price, img: 'milk' }]);
+      addShopOrder(sup.dataset.name, sup.dataset.when, [{ name: 'Молоко «Моё» 3,2%, 1 л', q: qty, p: price, img: 'milk' }]);
       b.textContent = 'Заказать';
       const badge = $('#shop-badge'); badge.hidden = false; badge.classList.add('pop');
       go('s-success', 'push');
@@ -1454,7 +1460,7 @@ button.toggle::after{transition:right .2s}
   const SUPPLIER = { name: 'ОсОО «Дистрибьютор»', details: 'ИНН 02305199010045 · г. Бишкек, ул. Льва Толстого, 36' };
   const shopInv = {
     n: '0001', date: '14.11.2026', shop: 'Магазин «Айдана»', addr: 'ул. Исанова, 61', releasedBy: 'Агент Азамат',
-    items: [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: 20, p: 72 }]
+    items: [{ name: 'Молоко «Моё» 3,2%, 1 л', q: 20, p: 72 }]
   };
   let pendingInv = null;   // накладная, которую открыли из карточки заказа агента или дистрибьютора
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1493,15 +1499,15 @@ button.toggle::after{transition:right .2s}
   const REASONS = ['Нет товара', 'Не доставляем в этот район', 'Меньше минимального заказа', 'Другое'];
 
   const it = (name, q, p, img) => ({ name, q, p, img, q0: q });   // q0 — сколько заказал магазин
-  const pic = (key, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '"><svg viewBox="0 0 64 64"><use href="#p-' + key + '"/></svg></span>';
+  const pic = (key, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '"><img src="photos/' + key + '.jpg" alt="" loading="lazy"></span>';
   const orders = {
     agent: [
       { n: '0142', shop: 'Магазин «Достук»', addr: 'ул. Московская, 203', area: 'Октябрьский р-н', ago: '5 мин назад', when: 'завтра до 12:00', st: 'new',
-        items: [it('Молоко «Белая река» 3,2%, 1 л', 20, 72, 'milk'), it('Кефир 2,5%, 1 л', 10, 65, 'kefir')] },
+        items: [it('Молоко «Моё» 3,2%, 1 л', 20, 72, 'milk'), it('Кефир 2,5%, 1 л', 10, 65, 'kefir')] },
       { n: '0141', shop: 'Минимаркет «Ала-Тоо»', addr: 'ул. Боконбаева, 17', area: 'Октябрьский р-н', ago: '22 мин назад', when: 'завтра до 12:00', st: 'new',
         items: [it('Сметана 20%, 400 г', 12, 90, 'smetana')] },
       { n: '0140', shop: 'Продукты «Нур»', addr: 'ул. Ахунбаева, 112', area: 'Октябрьский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
-        items: [it('Молоко «Белая река» 3,2%, 1 л', 30, 72, 'milk'), it('Масло сливочное 82%, 200 г', 6, 145, 'butter')] },
+        items: [it('Молоко «Моё» 3,2%, 1 л', 30, 72, 'milk'), it('Масло сливочное 82%, 200 г', 6, 145, 'butter')] },
       { n: '0139', shop: 'Магазин «Береке»', addr: 'ул. Токтогула, 45', area: 'Октябрьский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
         items: [it('Кефир 2,5%, 1 л', 20, 65, 'kefir')] },
       { n: '0137', shop: 'Магазин «Асель»', addr: 'ул. Байтик Баатыра, 7', area: 'Октябрьский р-н', ago: '3 дня назад', when: '12 ноября', st: 'delivered',
@@ -1509,13 +1515,13 @@ button.toggle::after{transition:right .2s}
     ],
     dist: [
       { n: '0215', shop: 'Магазин «Достук»', addr: 'ул. Ибраимова, 29', area: 'Октябрьский р-н', ago: '5 мин назад', when: 'завтра до 12:00', st: 'new',
-        items: [it('Молоко «Белая река» 3,2%, 1 л', 20, 72, 'milk'), it('Кефир 2,5%, 1 л', 10, 65, 'kefir')] },
+        items: [it('Молоко «Моё» 3,2%, 1 л', 20, 72, 'milk'), it('Кефир 2,5%, 1 л', 10, 65, 'kefir')] },
       { n: '0214', shop: 'Минимаркет «Ала-Тоо»', addr: 'ул. Жибек Жолу, 310', area: 'Свердловский р-н', ago: '22 мин назад', when: 'завтра до 12:00', st: 'new',
         items: [it('Сметана 20%, 400 г', 12, 90, 'smetana')] },
       { n: '0213', shop: 'Магазин «Жибек»', addr: 'ул. Фрунзе, 88', area: 'Ленинский р-н', ago: '40 мин назад', when: 'завтра до 15:00', st: 'new',
         items: [it('Сок яблочный, 1 л', 24, 95, 'juice'), it('Масло сливочное 82%, 200 г', 10, 145, 'butter')] },
       { n: '0212', shop: 'Продукты «Нур»', addr: 'пр. Чуй, 154', area: 'Первомайский р-н', ago: 'вчера', when: 'сегодня до 18:00', st: 'delivering',
-        items: [it('Молоко «Белая река» 3,2%, 1 л', 30, 72, 'milk'), it('Масло сливочное 82%, 200 г', 6, 145, 'butter')] },
+        items: [it('Молоко «Моё» 3,2%, 1 л', 30, 72, 'milk'), it('Масло сливочное 82%, 200 г', 6, 145, 'butter')] },
       { n: '0211', shop: 'Магазин «Береке»', addr: 'ул. Исанова, 61', area: 'Ленинский р-н', ago: 'вчера', when: 'завтра до 12:00', st: 'confirmed',
         items: [it('Кефир 2,5%, 1 л', 20, 65, 'kefir')] },
       { n: '0209', shop: 'Магазин «Асель»', addr: 'ул. Московская, 203', area: 'Октябрьский р-н', ago: '3 дня назад', when: '12 ноября', st: 'delivered',
@@ -1647,16 +1653,16 @@ button.toggle::after{transition:right .2s}
   // ===== Остатки магазина: фильтры, 5 самых срочных, заказ у поставщика одной кнопкой =====
   // [название, фото, осталось шт, поставщик, цена, сколько заказать]
   const STOCK = [
-    ['Молоко «Белая река» 3,2%, 1 л', 'milk', 4, 'Агент Азамат', 72, 20], ['Кефир 2,5%, 1 л', 'kefir', 0, 'Агент Азамат', 65, 10],
+    ['Молоко «Моё» 3,2%, 1 л', 'milk', 4, 'Агент Азамат', 72, 20], ['Кефир 2,5%, 1 л', 'kefir', 0, 'Агент Азамат', 65, 10],
     ['Сметана 20%, 400 г', 'smetana', 3, 'Агент Азамат', 90, 12], ['Масло сливочное 82%, 200 г', 'butter', 2, 'Агент Азамат', 145, 6],
-    ['Ряженка 4%, 0,5 л', 'kefir', 7, 'Агент Азамат', 68, 10], ['Йогурт питьевой, 0,3 л', 'kefir', 0, 'Агент Азамат', 55, 12],
-    ['Творог 9%, 200 г', 'butter', 5, 'Агент Азамат', 120, 6], ['Молоко 2,5%, 1 л', 'milk', 30, 'Агент Азамат', 68, 20],
-    ['Сок яблочный, 1 л', 'juice', 0, 'Агент Нурлан', 95, 12], ['Сок апельсиновый, 1 л', 'juice', 6, 'Агент Нурлан', 98, 12],
-    ['Лимонад, 1 л', 'juice', 3, 'Агент Нурлан', 70, 12], ['Сок вишнёвый, 1 л', 'juice', 40, 'Агент Нурлан', 99, 12],
-    ['Хлеб белый, 500 г', 'bread', 6, 'Агент Айгерим', 38, 20], ['Батон нарезной', 'bread', 0, 'Агент Айгерим', 35, 20],
-    ['Сахар, 1 кг', 'sugar', 8, 'Агент Айгерим', 82, 10], ['Мука, 2 кг', 'sugar', 2, 'Агент Айгерим', 130, 5],
-    ['Печенье овсяное, 300 г', 'cookie', 4, 'Агент Айгерим', 68, 10], ['Пряники, 400 г', 'cookie', 0, 'Агент Айгерим', 75, 10],
-    ['Рис, 1 кг', 'sugar', 50, 'Агент Айгерим', 110, 10], ['Печенье шоколадное, 250 г', 'cookie', 35, 'Агент Айгерим', 85, 10]
+    ['Ряженка 4%, 0,5 л', 'ryazhenka', 7, 'Агент Азамат', 68, 10], ['Йогурт питьевой, 0,3 л', 'yogurt', 0, 'Агент Азамат', 55, 12],
+    ['Творог 9%, 200 г', 'tvorog', 5, 'Агент Азамат', 120, 6], ['Молоко 2,5%, 1 л', 'milk25', 30, 'Агент Азамат', 68, 20],
+    ['Сок яблочный, 1 л', 'juice', 0, 'Агент Нурлан', 95, 12], ['Сок апельсиновый, 1 л', 'juice_orange', 6, 'Агент Нурлан', 98, 12],
+    ['Лимонад, 1 л', 'lemonade', 3, 'Агент Нурлан', 70, 12], ['Сок вишнёвый, 1 л', 'juice_cherry', 40, 'Агент Нурлан', 99, 12],
+    ['Хлеб белый, 500 г', 'bread', 6, 'Агент Айгерим', 38, 20], ['Батон нарезной', 'baton', 0, 'Агент Айгерим', 35, 20],
+    ['Сахар, 1 кг', 'sugar', 8, 'Агент Айгерим', 82, 10], ['Мука, 2 кг', 'flour', 2, 'Агент Айгерим', 130, 5],
+    ['Печенье овсяное, 300 г', 'cookie', 4, 'Агент Айгерим', 68, 10], ['Пряники, 400 г', 'pryaniki', 0, 'Агент Айгерим', 75, 10],
+    ['Рис, 1 кг', 'rice', 50, 'Агент Айгерим', 110, 10], ['Печенье шоколадное, 250 г', 'cookie_choc', 35, 'Агент Айгерим', 85, 10]
   ].map(([name, img, left, sup, p, q]) => ({ name, img, left, sup, p, q, ordered: false }));
   const LOW = 8;   // меньше или равно — «заканчивается»
   const supOf = x => x.sup;
@@ -1737,7 +1743,7 @@ button.toggle::after{transition:right .2s}
   const spill = st => '<span class="pill ' + SST[st][0] + '">' + SST[st][1] + '</span>';
   const shopOrders = [
     { n: '0000', sup: 'Агент Нурлан', date: '12 ноября', when: '12 ноября', st: 'delivered', items: [{ name: 'Кефир 2,5%, 1 л', q: 10, p: 65, img: 'kefir' }] },
-    { n: '0001', sup: 'Агент Азамат', date: 'сегодня', when: 'завтра до 12:00', st: 'confirmed', items: [{ name: 'Молоко «Белая река» 3,2%, 1 л', q: 20, p: 72, img: 'milk' }] }
+    { n: '0001', sup: 'Агент Азамат', date: 'сегодня', when: 'завтра до 12:00', st: 'confirmed', items: [{ name: 'Молоко «Моё» 3,2%, 1 л', q: 20, p: 72, img: 'milk' }] }
   ];
   let shopN = 2;
   const osum = o => o.items.reduce((s, i) => s + i.q * i.p, 0);
@@ -2052,7 +2058,7 @@ button.toggle::after{transition:right .2s}
     newPhoto = null;
     if (editing) {
       const src = $('.pimg', b).innerHTML;
-      showPhoto(src.includes('<img') ? src : src.replace('<svg ', '<svg class="pk" '));
+      showPhoto(src.replace('<img ', '<img class="pk" '));
     } else showPhoto(NO_PHOTO);
     go('d-product', 'push');
   }));

@@ -516,6 +516,7 @@ button.toggle::after{transition:right .2s}
   <section class="screen" id="s-orders" data-role="shop" hidden>
     <header class="top"><span class="h1">Мои заказы</span></header>
     <div class="body">
+      <div id="s-new-orders" style="display:contents"></div>
       <div class="card rise">
         <div class="between"><span class="bold" style="font-size:15px">Заказ № 0001</span><span class="pill green" id="order-status">Подтверждён</span></div>
         <span class="small muted"><span class="sup-name">Агент Азамат</span> · Молоко 3,2% × <span class="sum-qty">20</span> · <span class="sum-total">1 440</span> сом</span>
@@ -1653,11 +1654,37 @@ button.toggle::after{transition:right .2s}
     const inp = e.target.closest('[data-cin]');
     if (inp) { cart[+inp.dataset.cin].q = Math.max(1, parseInt(inp.value, 10) || 1); renderCart(); }
   });
+  // Заказы магазина из корзины: появляются в «Мои заказы»; накладная — после подтверждения поставщиком
+  const shopOrders = [];
+  let shopN = 2;
+  function renderShopOrders() {
+    $('#s-new-orders').innerHTML = shopOrders.map((o, k) => {
+      const sum = o.items.reduce((s, i) => s + i.q * i.p, 0), ok = o.st === 'confirmed';
+      return '<div class="card rise"><div class="between"><span class="bold" style="font-size:15px">Заказ № ' + o.n + '</span>' +
+        (ok ? '<span class="pill green">Подтверждён</span>' : '<span class="pill warn">Отправлен</span>') + '</div>' +
+        '<span class="small muted">' + o.sup + ', ' + o.items.length + ' ' + plural(o.items.length, 'товар', 'товара', 'товаров') + ' на ' + fmt(sum) + ' сом</span>' +
+        (ok ? '<button class="list-item" data-new-inv="' + k + '" style="padding:10px 0 0;border-top:1px solid var(--line);margin-top:4px"><svg class="ic" style="color:#B42318"><use href="#i-pdf"/></svg>' +
+              '<span class="grow">Накладная № ' + o.n + '</span><svg class="ic chev"><use href="#i-next"/></svg></button>'
+            : '<span class="xs muted" style="padding-top:8px;border-top:1px solid var(--line);margin-top:4px">Накладная появится, когда поставщик подтвердит заказ</span>') +
+        '</div>';
+    }).reverse().join('');
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-new-inv]');
+    if (!b) return;
+    const o = shopOrders[+b.dataset.newInv];
+    pendingInv = { n: o.n, date: '14.11.2026', shop: shopInv.shop, addr: shopInv.addr, releasedBy: o.sup, items: o.items };
+    go('s-invoice', 'push');
+  });
   $('#cart-send').addEventListener('click', () => {
     cart.forEach(c => c.x.ordered = true);
+    const o = { n: String(shopN++).padStart(4, '0'), sup: cartSup, st: 'sent', items: cart.map(c => ({ name: c.x.name, q: c.q, p: c.x.p })) };
+    shopOrders.push(o);
     $('#cart-sheet').hidden = true;
-    renderStock();
-    toast('Заказ отправлен · ' + cartSup);
+    renderStock(); renderShopOrders();
+    toast('Заказ № ' + o.n + ' отправлен · ' + cartSup);
+    // В прототипе поставщик подтверждает через несколько секунд
+    setTimeout(() => { o.st = 'confirmed'; renderShopOrders(); toast('Заказ № ' + o.n + ' подтверждён · накладная готова'); }, 5000);
   });
   $('#cart-sheet').addEventListener('click', e => { if (e.target.id === 'cart-sheet') $('#cart-sheet').hidden = true; });
   renderStock();

@@ -624,6 +624,17 @@ details.fold.first{border-top:none}
 .plist.grid .card-foot .add{align-self:flex-end}
 .plist.grid .card-foot .mini-step{justify-content:space-between;width:100%}
 .plist.grid .card-foot .pill.out{align-self:flex-start}
+
+/* ===== v4 ===== */
+.fab{width:52px;height:52px;border-radius:26px;bottom:calc(100% + 10px);box-shadow:0 0 0 4px var(--bg),var(--sh-green),0 8px 20px rgba(22,128,60,.3)}
+.fab .ic{width:24px;height:24px}
+.scan-btn{width:46px;height:46px;border-radius:14px}
+.read-all{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;border:none;background:var(--green-bg);color:var(--green);font-weight:700;font-size:13px;padding:8px 12px;border-radius:10px}
+.read-all .ic{width:16px;height:16px}
+.read-all:disabled{background:var(--soft);color:var(--muted)}
+.notif-c{cursor:pointer;align-items:center}
+.notif-c.unread{box-shadow:inset 3px 0 0 var(--green),var(--sh-1)}
+.n-dot{width:9px;height:9px;border-radius:5px;background:var(--green);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -809,13 +820,13 @@ details.fold.first{border-top:none}
     <header class="top">
       <div class="feed-top">
         <button type="button" class="mini-av" data-tabgo="profile" aria-label="Профиль" id="feed-av">А</button>
-        <span class="feed-name"><span class="xs muted">Добрый день!</span><b>Магазин «Айдана»</b></span>
+        <span class="feed-name"><b>Магазин «Айдана»</b></span>
         <button type="button" class="icon-btn" data-go="m-notifs" aria-label="Уведомления"><svg class="ic"><use href="#i-bell"/></svg><span class="dot-n" id="notif-dot"></span></button>
-        <button type="button" class="icon-btn" id="open-barcode" aria-label="Сканер штрихкодов"><svg class="ic"><use href="#i-barcode"/></svg></button>
+        <button type="button" class="icon-btn" id="feed-view" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <div class="row" style="gap:10px">
         <label class="search" style="flex:1"><svg class="ic"><use href="#i-search"/></svg><input id="f-search" type="search" placeholder="Название или штрихкод" aria-label="Поиск товара"></label>
-        <div class="view-sw" role="group" aria-label="Вид списка" data-view="feed"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+        <button type="button" class="icon-btn scan-btn" id="open-barcode" aria-label="Сканер штрихкодов"><svg class="ic"><use href="#i-barcode"/></svg></button>
       </div>
     </header>
     <div class="body">
@@ -880,7 +891,8 @@ details.fold.first{border-top:none}
   </section>
 
   <section class="screen" id="m-notifs" hidden>
-    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Уведомления</span></div></header>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Уведомления</span></div>
+      <button type="button" class="read-all" id="read-all"><svg class="ic"><use href="#i-check"/></svg>Пометить все как прочитанные</button></header>
     <div class="body" id="notif-list" style="gap:10px"></div>
   </section>
 
@@ -1206,7 +1218,7 @@ details.fold.first{border-top:none}
   let cur = 'a-login';
   const hist = [];
   const TABS = {
-    dist: { orders: 's-orders', products: 's-products', invoices: 's-invoices', profile: 's-profile' },
+    dist: { orders: 's-orders', products: 's-products', profile: 's-profile' },
     shop: { feed: 'm-feed', catalog: 'm-catalog', cart: 'm-cart', sorders: 'm-orders', profile: 's-profile' }
   };
   const HOME = { dist: 's-orders', shop: 'm-feed' };
@@ -1227,29 +1239,27 @@ details.fold.first{border-top:none}
   function openTab(t) {
     const R = {
       orders: renderOrders, products: renderProducts, profile: renderProfile, invoices: () => invoicesAs(true),
-      feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: renderShopOrders
+      feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: () => { if (!soKeep) soFilter = 'acc'; soKeep = false; renderShopOrders(); }
     };
     if (R[t]) R[t]();
     go(TABS[role][t], 'fade');
   }
-  // Поставщик (как в MBank): Заказы · Товары · [сканер QR в центре] · Накладные · Профиль.
-  // Над сканером висит круглая «+» (добавить товар); при прокрутке вниз прячется, при прокрутке вверх возвращается.
+  // Поставщик: Заказы · Товары · Профиль. Над «Товарами» висит круглая «+» (добавить товар), как в MBank;
+  // при прокрутке вниз прячется, при прокрутке вверх возвращается.
   let fabHidden = false;
   function navHTML(active) {
     const t = (k, ic, label, badge) => '<button type="button" class="tab' + (k === active ? ' on' : '') + '" data-tabgo="' + k + '"><svg class="ic"><use href="#' + ic + '"/></svg>' + label +
       (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
     if (role === 'dist') {
       const newN = orders.filter(o => o.sup === DIST && o.st === 'new').length;
-      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') +
-        '<button type="button" class="tab tab-scan" data-scanq aria-label="Сканер QR доставки"><span class="scan-c"><svg class="ic"><use href="#i-qr"/></svg></span></button>' +
-        t('invoices', 'i-pdf', 'Накладные') + t('profile', 'i-user', 'Профиль') +
+      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') + t('profile', 'i-user', 'Профиль') +
         '<button type="button" class="fab' + (fabHidden ? ' hide' : '') + '" data-fab aria-label="Добавить товар"><svg class="ic"><use href="#i-add"/></svg></button>';
     }
     return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cart.length) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
   }
   function renderNav() {
     $$('[data-nav]').forEach(n => {
-      n.classList.add('five'); n.classList.remove('three');
+      n.classList.toggle('five', role === 'shop'); n.classList.toggle('three', role === 'dist');
       n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
     });
   }
@@ -1772,7 +1782,15 @@ details.fold.first{border-top:none}
   // Лента
   const FEED_F = [['all', 'Все'], ['promo', 'Акции'], ['new', 'Новинки']];
   let feedF = 'all';
+  // Одна кнопка вида: показывает, на какой вид переключит (списком ↔ блоками)
+  function syncFeedView() {
+    const grid = view.feed === 'grid', b = $('#feed-view');
+    b.innerHTML = '<svg class="ic"><use href="#' + (grid ? 'i-list' : 'i-grid') + '"/></svg>';
+    b.setAttribute('aria-label', grid ? 'Показать списком' : 'Показать блоками');
+  }
+  $('#feed-view').addEventListener('click', () => { view.feed = view.feed === 'grid' ? 'list' : 'grid'; store.set('zk-v-feed', view.feed); syncFeedView(); renderFeed(); });
   function renderFeed() {
+    syncFeedView();
     $('#f-filter').innerHTML = FEED_F.map(([k, t]) => '<button type="button" class="chip' + (k === feedF ? ' on' : '') + '" data-ff="' + k + '">' + t + '</button>').join('');
     const q = ($('#f-search').value || '').trim().toLowerCase();
     let list = listings().filter(p => p.avail);
@@ -1886,7 +1904,7 @@ details.fold.first{border-top:none}
     });
     cart.length = 0;
     toast(made.length === 1 ? 'Заказ № ' + made[0].n + ' отправлен' : 'Отправлено заказов: ' + made.length + ' (по поставщикам)');
-    soFilter = 'sent'; openTab('sorders');
+    soFilter = 'sent'; soKeep = true; openTab('sorders');
   });
 
   // Заказы магазина: каждая карточка — заказ одного поставщика, накладная и QR сворачиваются
@@ -1902,7 +1920,7 @@ details.fold.first{border-top:none}
   }
   // Фильтр: отправлен запрос · принят / отказ · доставлено
   const SO_F = [['sent', 'Отправлен запрос', o => o.st === 'new'], ['acc', 'Принят / Отказ', o => o.st === 'work' || o.st === 'rejected'], ['done', 'Доставлено', o => o.st === 'done']];
-  let soFilter = 'sent';
+  let soFilter = 'acc', soKeep = false;   // после оформления заказа — сразу «Отправлен запрос»
   // Линия статусов: весь путь заказа от отправки до доставки (или отказа)
   function lineup(o) {
     const steps = o.st === 'rejected'
@@ -1973,11 +1991,15 @@ details.fold.first{border-top:none}
   ];
   function notify(text, o) { if (o.shop === MY_SHOP) notifs.unshift({ t: text, s: o.sup, ago: 'только что', ic: o.st === 'done' ? 'i-truck' : o.st === 'rejected' ? 'i-x' : 'i-check', read: false }); }
   function renderNotifs() {
-    $('#notif-list').innerHTML = notifs.map(n => '<div class="card row rise" style="flex-direction:row;padding:14px;gap:12px"><span class="notif-i" style="background:' + (n.read ? 'var(--soft);color:var(--muted)' : 'var(--green-bg);color:var(--green)') + '"><svg class="ic"><use href="#' + n.ic + '"/></svg></span>' +
-      '<span class="grow"><span class="bold" style="font-size:14px">' + esc(n.t) + '</span><span class="xs muted">' + esc(n.s) + ' · ' + n.ago + '</span></span></div>').join('');
-    notifs.forEach(n => { n.read = true; });
-    $('#notif-dot').hidden = true;
+    const unread = notifs.filter(n => !n.read).length;
+    $('#notif-list').innerHTML = notifs.map((n, i) => '<div class="card row notif-c' + (n.read ? '' : ' unread') + '" role="button" tabindex="0" data-ntf="' + i + '" style="flex-direction:row;padding:14px;gap:12px"><span class="notif-i" style="background:' + (n.read ? 'var(--soft);color:var(--muted)' : 'var(--green-bg);color:var(--green)') + '"><svg class="ic"><use href="#' + n.ic + '"/></svg></span>' +
+      '<span class="grow"><span class="' + (n.read ? '' : 'bold') + '" style="font-size:14px">' + esc(n.t) + '</span><span class="xs muted">' + esc(n.s) + ' · ' + n.ago + '</span></span>' + (n.read ? '' : '<span class="n-dot"></span>') + '</div>').join('');
+    $('#read-all').disabled = !unread;
+    $('#read-all').lastChild.textContent = unread ? 'Пометить все как прочитанные (' + unread + ')' : 'Все уведомления прочитаны';
+    $('#notif-dot').hidden = !unread;
   }
+  $('#read-all').addEventListener('click', () => { notifs.forEach(n => { n.read = true; }); renderNotifs(); toast('Все уведомления прочитаны'); });
+  $('#notif-list').addEventListener('click', e => { const c = e.target.closest('[data-ntf]'); if (c) { notifs[+c.dataset.ntf].read = true; renderNotifs(); } });
 
   // =====================================================================
   //                       ПРОФИЛЬ И НАСТРОЙКИ (обе роли)

@@ -578,6 +578,18 @@ details.fold .chev2{margin-left:auto;color:var(--muted);transition:transform .2s
 details.fold[open] .chev2{transform:rotate(180deg)}
 .fold-in{display:flex;flex-direction:column;gap:10px;padding:6px 0 4px}
 .qr-in{align-items:center}
+
+/* ===== Как в MBank: сканер в центре меню, «+» над ним ===== */
+.tab-scan::before{display:none}
+.tab-scan .scan-c{width:54px;height:54px;border-radius:27px;background:#0B0B13;color:var(--mint);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px rgba(3,244,141,.35),0 6px 16px rgba(0,0,0,.25);transition:transform .12s}
+.tab-scan .scan-c .ic{width:26px;height:26px;stroke-width:2.2}
+.tab-scan:active .scan-c{transform:scale(.92)}
+:root[data-theme="dark"] .tab-scan .scan-c{background:var(--mint);color:#06281A;box-shadow:0 0 16px rgba(3,244,141,.35)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .tab-scan .scan-c{background:var(--mint);color:#06281A;box-shadow:0 0 16px rgba(3,244,141,.35)} }
+.fab{top:auto;bottom:calc(100% + 12px);width:64px;height:64px;border-radius:32px;box-shadow:0 0 0 5px var(--bg),var(--sh-green),0 10px 26px rgba(22,128,60,.35)}
+.fab .ic{width:30px;height:30px}
+.fab.hide{transform:translate(-50%,30px) scale(.5);opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -863,8 +875,9 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   </section>
 
   <section class="screen" id="s-invoices" hidden>
-    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Накладные</span></div></header>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад" id="inv-back"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub" id="inv-h">Накладные</span></div></header>
     <div class="body" id="inv-list"></div>
+    <nav class="tabbar" data-nav id="inv-nav" hidden></nav>
   </section>
   <section class="screen inv-screen" id="s-invoice" hidden>
     <header class="inv-head"><button class="inv-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="inv-head-t" id="iv-title">Накладная</span><span></span></header>
@@ -1155,7 +1168,7 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   let cur = 'a-login';
   const hist = [];
   const TABS = {
-    dist: { orders: 's-orders', products: 's-products', profile: 's-profile' },
+    dist: { orders: 's-orders', products: 's-products', invoices: 's-invoices', profile: 's-profile' },
     shop: { feed: 'm-feed', catalog: 'm-catalog', cart: 'm-cart', sorders: 'm-orders', profile: 's-profile' }
   };
   const HOME = { dist: 's-orders', shop: 'm-feed' };
@@ -1175,37 +1188,54 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   const back = () => go(hist.pop() || HOME[role], 'back');
   function openTab(t) {
     const R = {
-      orders: renderOrders, products: renderProducts, profile: renderProfile,
+      orders: renderOrders, products: renderProducts, profile: renderProfile, invoices: () => invoicesAs(true),
       feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: renderShopOrders
     };
     if (R[t]) R[t]();
     go(TABS[role][t], 'fade');
   }
-  // Поставщик: Заказы · Товары · Профиль, кнопка «+» висит над вкладкой «Товары» и прячется при прокрутке вниз
+  // Поставщик (как в MBank): Заказы · Товары · [сканер QR в центре] · Накладные · Профиль.
+  // Над сканером висит круглая «+» (добавить товар); при прокрутке вниз прячется, при прокрутке вверх возвращается.
   let fabHidden = false;
   function navHTML(active) {
     const t = (k, ic, label, badge) => '<button type="button" class="tab' + (k === active ? ' on' : '') + '" data-tabgo="' + k + '"><svg class="ic"><use href="#' + ic + '"/></svg>' + label +
       (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
     if (role === 'dist') {
       const newN = orders.filter(o => o.sup === DIST && o.st === 'new').length;
-      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') + t('profile', 'i-user', 'Профиль') +
+      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') +
+        '<button type="button" class="tab tab-scan" data-scanq aria-label="Сканер QR доставки"><span class="scan-c"><svg class="ic"><use href="#i-qr"/></svg></span></button>' +
+        t('invoices', 'i-pdf', 'Накладные') + t('profile', 'i-user', 'Профиль') +
         '<button type="button" class="fab' + (fabHidden ? ' hide' : '') + '" data-fab aria-label="Добавить товар"><svg class="ic"><use href="#i-add"/></svg></button>';
     }
     return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cart.length) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
   }
   function renderNav() {
     $$('[data-nav]').forEach(n => {
-      n.classList.toggle('five', role === 'shop'); n.classList.toggle('three', role === 'dist');
+      n.classList.add('five'); n.classList.remove('three');
       n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
     });
   }
+
+  // Центральная кнопка сканера: экспедитор сканирует QR у магазина — заказ определяется по коду
+  function invoicesAs(tab) {
+    renderInvoices();
+    $('#inv-back').hidden = tab; $('#inv-nav').hidden = !tab;
+    $('#s-invoices').dataset.tab = tab ? 'invoices' : '';
+    renderNav();
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-scanq]')) return;
+    const work = orders.filter(o => o.sup === DIST && o.st === 'work').sort((a, b) => a.deliver - b.deliver);
+    if (!work.length) { toast('Нет заказов в работе — доставлять нечего'); return; }
+    curOrder = work[0]; openScan('qr-any'); go('s-scan', 'push');
+  });
   function setFab(hidden) { if (fabHidden === hidden) return; fabHidden = hidden; $$('.fab').forEach(f => f.classList.toggle('hide', hidden)); }
   document.addEventListener('click', e => { if (e.target.closest('[data-fab]')) { openEditor(null); go('s-editor', 'push'); } });
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-tabgo],[data-go],[data-back]');
     if (!t) return;
     if (t.dataset.tabgo) openTab(t.dataset.tabgo);
-    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') renderInvoices(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
+    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') invoicesAs(false); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
     else back();
   });
 
@@ -1251,7 +1281,7 @@ details.fold[open] .chev2{transform:rotate(180deg)}
     const boot = $('#boot');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) { boot.remove(); showAuth('a-login'); return; }
-    setTimeout(() => { if (navigator.vibrate) navigator.vibrate(8); }, 1800);   // лёгкий отклик в момент свечения
+    setTimeout(() => { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(8); }, 1800);   // лёгкий отклик в момент свечения
     setTimeout(() => {
       // Кадр 5: логотип перелетает в шапку экрана входа
       showAuth('a-login', true);
@@ -1536,14 +1566,15 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   const ean13 = () => { const d = '470' + String(Math.floor(Math.random() * 1e9)).padStart(9, '0'); const s = [...d].reduce((a, c, i) => a + +c * (i % 2 ? 3 : 1), 0); return d + ((10 - s % 10) % 10); };
   function openScan(mode) {
     scanMode = mode;
-    const qr = mode === 'qr';
+    const qr = mode === 'qr' || mode === 'qr-any';
     $('#scan-title').textContent = qr ? 'Доставка по QR' : 'Сканер штрихкодов';
     $('#scan-frame').classList.toggle('bar', !qr);
     $('#scan-art').className = qr ? 'scan-qr' : 'bars-art';
     $('#scan-art').innerHTML = qr ? Array.from({ length: 49 }, (_, i) => '<span' + ('1110111100100110111011010101101011011100111011001011100100101011101'[i] === '1' ? '' : ' class="o"') + '></span>').join('')
       : Array.from({ length: 28 }, () => '<span></span>').join('');
-    $('#scan-cap-b').textContent = qr ? SHOPS[curOrder.shop].name + ' · № ' + curOrder.n : 'Штрихкод на упаковке (EAN-13)';
-    $('#scan-cap-s').textContent = qr ? 'Наведите камеру на QR-код в приложении магазина. В коде — информация о заказе и статус «доставлено».'
+    $('#scan-cap-b').textContent = mode === 'qr-any' ? 'QR-код магазина' : qr ? SHOPS[curOrder.shop].name + ' · № ' + curOrder.n : 'Штрихкод на упаковке (EAN-13)';
+    $('#scan-cap-s').textContent = mode === 'qr-any' ? 'Наведите камеру на QR-код в приложении магазина — заказ определится сам и получит статус «доставлено».'
+      : qr ? 'Наведите камеру на QR-код в приложении магазина. В коде — информация о заказе и статус «доставлено».'
       : mode === 'code' ? 'Наведите камеру на штрихкод — он впишется в карточку товара.' : 'Наведите камеру на штрихкод товара — откроем его карточку.';
     $('#scan-demo').textContent = qr ? 'Код отсканирован (демо)' : 'Штрихкод распознан (демо)';
     $('#scan-ok').hidden = true; $('#scan-demo').disabled = false;
@@ -1551,14 +1582,17 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   $('#scan-demo').addEventListener('click', () => {
     $('#scan-demo').disabled = true;
     if (navigator.vibrate) navigator.vibrate(60);
-    if (scanMode === 'qr') {
+    if (scanMode === 'qr' || scanMode === 'qr-any') {
       const o = curOrder, now = new Date();
       $('#scan-ok-b').textContent = 'Доставлено';
       $('#scan-ok-t').innerHTML = 'Из QR: заказ № ' + o.n + ' · ' + SHOPS[o.shop].name + '<br>' + o.items.length + ' ' + plural(o.items.length, 'позиция', 'позиции', 'позиций') + ' · ' + fmt(oSum(o)) + ' сом · статус DELIVERED';
       $('#scan-ok').hidden = false;
       o.st = 'done'; o.deliver = 0; o.deliveredAt = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
       notify('Заказ № ' + o.n + ' доставлен', o);
-      scanT = setTimeout(() => { renderOrder(true); renderOrders(); go(hist.pop() || 's-order', 'back'); toast('Доставлено · магазин получил подтверждение'); }, 1600);
+      scanT = setTimeout(() => {
+        renderOrder(true); renderOrders(); if (cur === 's-scan' && hist[hist.length - 1] === 's-invoices') renderInvoices();
+        go(hist.pop() || 's-order', 'back'); toast('Заказ № ' + o.n + ' доставлен · магазин получил подтверждение');
+      }, 1600);
     } else if (scanMode === 'code') {
       const code = ean13();
       $('#scan-ok-b').textContent = 'Штрихкод распознан'; $('#scan-ok-t').textContent = code; $('#scan-ok').hidden = false;
@@ -1587,7 +1621,7 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   $('#p-search').addEventListener('input', renderProducts);
   $('#p-list').addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if (b) { openEditor(+b.dataset.pid); go('s-editor', 'push'); } });
   // «+» прячется при прокрутке списка товаров вниз и возвращается при прокрутке вверх
-  (() => { let last = 0; const body = $('#s-products .body'); body.addEventListener('scroll', () => { const y = body.scrollTop; if (y > last + 6 && y > 40) setFab(true); else if (y < last - 6 || y < 20) setFab(false); last = y; }, { passive: true }); })();
+  ['#s-orders', '#s-products', '#s-invoices', '#s-profile'].forEach(sc => { let last = 0; const body = $(sc + ' .body'); body.addEventListener('scroll', () => { const y = body.scrollTop; if (y > last + 6 && y > 40) setFab(true); else if (y < last - 6 || y < 20) setFab(false); last = y; }, { passive: true }); });
 
   let edId = null, ed = null;
   function openEditor(id) {

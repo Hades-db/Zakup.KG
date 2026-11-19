@@ -410,24 +410,24 @@ details.desc textarea:focus{border-color:var(--green)}
 
 /* Заставка (Boot Animation, 1,8 с) */
 .boot{position:absolute;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--logo-fg)}
-.boot-stack{display:flex;flex-direction:column;align-items:center;gap:14px;animation:bootLift .4s cubic-bezier(.16,1,.3,1) 1.2s both}
+.boot-stack{display:flex;flex-direction:column;align-items:center;gap:14px;animation:bootLift .6s cubic-bezier(.16,1,.3,1) 2.2s both}
 .boot-mark{width:150px;height:110px;position:relative}
 .boot-mark svg{width:100%;height:100%;overflow:visible}
 .b-left,.b-right{transform-box:fill-box;transform-origin:center}
-.b-left{animation:bLeft .5s cubic-bezier(.16,1,.3,1) .2s both}
-.b-right{animation:bRight .5s cubic-bezier(.16,1,.3,1) .2s both}
+.b-left{animation:bLeft .8s cubic-bezier(.16,1,.3,1) .2s both}
+.b-right{animation:bRight .8s cubic-bezier(.16,1,.3,1) .2s both}
 @keyframes bLeft{from{opacity:0;transform:translateX(255px)}to{opacity:1;transform:none}}
 @keyframes bRight{from{opacity:0;transform:translateX(-255px)}to{opacity:1;transform:none}}
-.b-dot{transform-box:fill-box;transform-origin:center;animation:bDot .3s ease .7s both}
-@keyframes bDot{0%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.4)}70%{opacity:.4}100%{opacity:0;transform:scale(1)}}
-.b-line{transform-box:fill-box;transform-origin:center;animation:bLine .4s cubic-bezier(.16,1,.3,1) .8s both}
+.b-dot{transform-box:fill-box;transform-origin:center;animation:bDot .5s ease 1s both}
+@keyframes bDot{0%{opacity:0;transform:scale(.2)}25%{opacity:1;transform:scale(1.4)}45%{opacity:.25}65%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1)}}
+.b-line{transform-box:fill-box;transform-origin:center;animation:bLine .5s cubic-bezier(.16,1,.3,1) 1.4s both}
 @keyframes bLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.b-glow{transform-box:fill-box;transform-origin:center;animation:bGlow .5s ease .85s both}
+.b-glow{transform-box:fill-box;transform-origin:center;animation:bGlow .6s ease 1.6s both}
 @keyframes bGlow{0%{opacity:0;transform:scaleX(.3)}45%{opacity:1;transform:scaleX(1.05)}100%{opacity:.55;transform:scaleX(1)}}
 @keyframes bootLift{from{transform:none}to{transform:translateY(-14px)}}
-.boot-title{font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--text);animation:upIn .4s cubic-bezier(.16,1,.3,1) 1.2s both}
+.boot-title{font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--text);animation:upIn .5s cubic-bezier(.16,1,.3,1) 2.2s both}
 .boot-title b{color:var(--mint-ink)}
-.boot-sub{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.02em;animation:subInOut .7s ease 1.3s both}
+.boot-sub{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.02em;animation:subInOut .95s ease 2.35s both}
 @keyframes upIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes subInOut{0%{opacity:0;transform:translateY(8px)}35%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0}}
 .boot.fly .boot-title,.boot.fly .boot-sub{opacity:0!important;transition:opacity .2s}
@@ -476,13 +476,6 @@ details.desc textarea:focus{border-color:var(--green)}
 .feed-name b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon-btn .dot-n{position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:5px;background:var(--red);box-shadow:0 0 0 2px var(--card)}
 .icon-btn{position:relative}
-.smart{background:linear-gradient(135deg,#0F1B14 0%,#17301F 100%);color:#fff;border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-2)}
-.smart .s-ic{width:42px;height:42px;border-radius:12px;background:rgba(3,244,141,.14);color:var(--mint);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.smart b{font-size:15px}
-.smart span{font-size:12.5px;opacity:.75;line-height:1.35}
-.smart .btn{height:36px;font-size:13px;padding:0 12px;border-radius:11px;background:var(--mint);color:#06281A;box-shadow:0 0 14px rgba(3,244,141,.4)}
-.smart-tip{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--blue-bg);color:var(--blue);font-size:13px;font-weight:600;line-height:1.4}
-.smart-tip .ic{width:18px;height:18px;flex-shrink:0;margin-top:1px}
 .scard{position:relative}
 .scard .add{position:absolute;right:10px;bottom:10px;width:38px;height:38px;border-radius:12px;border:none;background:var(--grad-green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-green);transition:transform .12s}
 .scard .add:active{transform:scale(.9)}
@@ -541,6 +534,50 @@ details.desc textarea:focus{border-color:var(--green)}
 .tabbar.five{grid-template-columns:repeat(5,1fr)}
 .tabbar.five .tab{font-size:10.5px}
 .tab .badge-n.green{background:var(--green)}
+
+/* ===== Версия ТЗ 2 ===== */
+.tabbar.three{grid-template-columns:repeat(3,1fr)}
+.fab{position:absolute;left:50%;top:-34px;transform:translateX(-50%);width:58px;height:58px;border-radius:19px;border:none;background:var(--grad-green);color:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--bg),var(--sh-green),0 10px 24px rgba(22,128,60,.3);transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;z-index:3}
+.fab .ic{width:28px;height:28px;stroke-width:2.6}
+.fab:active{transform:translateX(-50%) scale(.92)}
+.fab.hide{transform:translate(-50%,46px) scale(.6);opacity:0;pointer-events:none}
+.bar-row{display:grid;grid-template-columns:1fr 1.5fr;gap:10px}
+.info-line.red{background:var(--red-bg);color:var(--red)}
+.reasons{display:flex;flex-direction:column;gap:8px}
+.reason{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:15px;font-weight:700;text-align:left;color:var(--text)}
+.reason.on{border-color:#D8392C}
+.reason.on .radio{border-color:#D8392C}.reason.on .radio::after{transform:scale(1);background:#D8392C}
+.rj-text{width:100%;min-height:90px;border-radius:14px;border:1px solid var(--border);background:var(--card);padding:12px;font-size:15px;resize:vertical;outline:none}
+.rj-text:focus{border-color:#D8392C}
+.code-row{display:flex;gap:8px}.code-row input{flex:1}
+.cat-pick{display:flex;flex-wrap:wrap;gap:6px}
+.chip.sm{height:32px;font-size:13px;padding:0 12px;box-shadow:none}
+.vol-row{display:flex;gap:8px;align-items:center}.vol-row input{flex:1}
+.seg.units{width:168px;flex-shrink:0}.seg.units button{height:42px}
+.it-price{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.it-price small{font-size:13px;color:var(--muted);font-weight:600}
+.date-opt.urgent span{color:#D8392C}
+.date-opt.urgent.on{border-color:#D8392C;background:var(--red-bg)}.date-opt.urgent.on b{color:#D8392C}
+.scard .add{position:static;width:36px;height:36px;flex-shrink:0;margin:0}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:2px}
+.card-foot .p-price{white-space:normal;line-height:1.2}
+.pcard.row-card{flex-direction:column;align-items:stretch;gap:10px}
+.plist.grid .scard{padding-bottom:12px}
+.cart-row{display:flex;flex-direction:column;gap:8px}
+.cart-open{display:flex;gap:10px;align-items:center;border:none;background:none;text-align:left;padding:0;width:100%;color:var(--text);font:inherit}
+.cart-ctl{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.so-card{gap:10px}
+.so-card.rej{border:2px solid var(--red-bg)}
+.so-items{display:flex;flex-direction:column;gap:10px;padding-top:4px}
+details.fold{border-top:1px solid var(--line)}
+details.fold summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0 6px;font-weight:700;cursor:pointer}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary > .ic:first-child{color:var(--green)}
+details.fold .chev2{margin-left:auto;color:var(--muted);transition:transform .2s}
+details.fold[open] .chev2{transform:rotate(180deg)}
+.fold-in{display:flex;flex-direction:column;gap:10px;padding:6px 0 4px}
+.qr-in{align-items:center}
 </style>
 </head>
 <body>
@@ -683,11 +720,11 @@ details.desc textarea:focus{border-color:var(--green)}
     <nav class="tabbar" data-nav></nav>
   </section>
 
-  <section class="screen" id="s-editor" data-tab="add" data-role="dist" hidden>
+  <!-- ===== Шаблон карточки товара: «+» и редактирование ===== -->
+  <section class="screen" id="s-editor" hidden>
     <header class="top"><div class="top-row">
-      <button class="icon-btn" data-back aria-label="Назад" id="ed-back"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span class="h1" id="ed-title" style="font-size:22px">Новый товар</span>
-      <button class="icon-btn" id="ed-del" aria-label="Удалить товар" hidden><svg class="ic" style="color:var(--red)"><use href="#i-trash"/></svg></button>
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h-sub" id="ed-title">Новый товар</span>
     </div></header>
     <form class="body" id="ed-form" novalidate>
       <div class="field">
@@ -697,24 +734,28 @@ details.desc textarea:focus{border-color:var(--green)}
         <input type="file" accept="image/*" multiple hidden id="ph-input">
       </div>
       <div class="field"><label for="ed-name">Наименование товара</label><input id="ed-name" type="text" placeholder="Например: Молоко «Моё» 3,2%"></div>
+      <div class="field"><label for="ed-code">Штрихкод товара</label>
+        <div class="code-row"><input id="ed-code" type="text" inputmode="numeric" placeholder="EAN-13, например 4870001154691"><button type="button" class="icon-btn" id="ed-scan" aria-label="Сканировать штрихкод"><svg class="ic"><use href="#i-barcode"/></svg></button></div>
+        <span class="hint">Введите вручную или отсканируйте камерой</span></div>
+      <div class="field"><label for="ed-cat">Категория товара</label><input id="ed-cat" type="text" placeholder="Введите или выберите из списка">
+        <div class="cat-pick" id="ed-cats"></div></div>
       <details class="desc" id="ed-desc-box"><summary>Описание <svg class="ic"><use href="#i-down"/></svg></summary>
         <div class="desc-in"><textarea id="ed-desc" placeholder="Состав, срок хранения, условия поставки…"></textarea></div></details>
-      <div class="field"><span class="label">Тип</span>
-        <div class="types" id="ed-type" role="radiogroup" aria-label="Тип товара">
+      <div class="field"><span class="label">Тип фасовки</span>
+        <div class="types" id="ed-type" role="radiogroup" aria-label="Тип фасовки">
           <button type="button" data-t="box">Коробка</button><button type="button" data-t="block">Блок</button><button type="button" data-t="weight">Весовой</button><button type="button" data-t="piece">Штучный</button>
         </div>
       </div>
-      <div class="grid2">
-        <div class="field" id="ed-pack-f"><label for="ed-pack" id="ed-pack-l">Штук в коробке</label><input id="ed-pack" type="text" inputmode="numeric" placeholder="12"></div>
-        <div class="field"><label for="ed-vol">Объём / грамм</label><input id="ed-vol" type="text" placeholder="1 л, 500 г"></div>
-      </div>
+      <div class="field" id="ed-pack-f"><label for="ed-pack" id="ed-pack-l">Кол-во в упаковке, шт</label><input id="ed-pack" type="text" inputmode="numeric" placeholder="12"></div>
+      <div class="field"><label for="ed-vol">Объём / Вес</label>
+        <div class="vol-row"><input id="ed-vol" type="text" inputmode="decimal" placeholder="1"><div class="seg units" id="ed-unit" role="radiogroup" aria-label="Единица"><button type="button" data-u="г">г</button><button type="button" data-u="мл">мл</button><button type="button" data-u="л">л</button></div></div></div>
       <div class="field"><label for="ed-price">Цена, сом</label><div class="suffix"><input id="ed-price" type="text" inputmode="numeric" placeholder="0"><span id="ed-price-s">за коробку</span></div></div>
       <div class="opt"><span class="grow"><span class="bold">Обмен и возврат</span><span class="small muted">Магазин может вернуть или обменять товар</span></span><button type="button" class="switch" id="ed-ret" role="switch" aria-checked="true" aria-label="Обмен и возврат"></button></div>
       <div class="opt"><span class="grow"><span class="bold">В наличии</span><span class="small muted" id="ed-avail-h">Магазины видят товар и могут заказать</span></span><button type="button" class="switch" id="ed-avail" role="switch" aria-checked="true" aria-label="В наличии"></button></div>
       <span class="err" id="ed-err" style="font-size:13px;color:var(--red);font-weight:700" hidden></span>
       <button type="submit" class="btn lg" id="ed-save">Сохранить товар</button>
+      <button type="button" class="btn lg ghost" id="ed-del" style="color:var(--red)" hidden><svg class="ic"><use href="#i-trash"/></svg>Удалить товар</button>
     </form>
-    <nav class="tabbar" data-nav id="ed-nav"></nav>
   </section>
 
   <!-- ===================== МАГАЗИН ===================== -->
@@ -727,12 +768,11 @@ details.desc textarea:focus{border-color:var(--green)}
         <button type="button" class="icon-btn" id="open-barcode" aria-label="Сканер штрихкодов"><svg class="ic"><use href="#i-barcode"/></svg></button>
       </div>
       <div class="row" style="gap:10px">
-        <label class="search" style="flex:1"><svg class="ic"><use href="#i-search"/></svg><input id="f-search" type="search" placeholder="Молоко, хлеб, масло…" aria-label="Поиск товара"></label>
+        <label class="search" style="flex:1"><svg class="ic"><use href="#i-search"/></svg><input id="f-search" type="search" placeholder="Название или штрихкод" aria-label="Поиск товара"></label>
         <div class="view-sw" role="group" aria-label="Вид списка" data-view="feed"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
       </div>
     </header>
     <div class="body">
-      <div id="smart-box"></div>
       <div class="chips" id="f-filter" role="tablist" aria-label="Фильтр"></div>
       <span class="section-h" id="f-title">Популярные товары</span>
       <div class="plist" id="f-list"></div>
@@ -745,28 +785,29 @@ details.desc textarea:focus{border-color:var(--green)}
       <div class="top-row"><span class="h1">Каталог</span>
         <div class="view-sw" role="group" aria-label="Вид списка" data-view="catalog"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
       </div>
-      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="c-search" type="search" placeholder="Найти товар" aria-label="Поиск в каталоге"></label>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="c-search" type="search" placeholder="Название или штрихкод" aria-label="Поиск в каталоге"></label>
       <div class="chips" id="c-cats" role="tablist" aria-label="Категории"></div>
     </header>
     <div class="body"><div class="plist" id="c-list"></div></div>
     <nav class="tabbar five" data-nav></nav>
   </section>
 
-  <!-- Подробнее о товаре (магазин) -->
+  <!-- Подробнее о товаре (магазин): товар конкретного поставщика -->
   <section class="screen" id="m-item" hidden>
     <div class="body" style="padding:0 0 20px;gap:12px">
       <div class="hero-img" id="it-hero"><button class="icon-btn hero-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><img alt="" id="it-img"></div>
       <div style="padding:0 16px;display:flex;flex-direction:column;gap:12px">
-        <div class="grow" style="gap:4px"><span style="font-size:21px;font-weight:800;line-height:1.25" id="it-name"></span><span class="small muted" id="it-meta"></span></div>
-        <div id="it-tip"></div>
-        <span class="bold" style="font-size:16px">Поставщик</span>
-        <div id="it-offers" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div class="grow" style="gap:4px"><span style="font-size:21px;font-weight:800;line-height:1.25" id="it-name"></span>
+          <span class="row" style="gap:6px"><svg class="ic" style="width:16px;height:16px;color:var(--muted)"><use href="#i-truck"/></svg><span class="small bold muted" id="it-sup"></span></span></div>
+        <div class="between"><span class="it-price" id="it-price"></span><span id="it-avail"></span></div>
+        <details class="desc" id="it-desc-box"><summary>Описание <svg class="ic"><use href="#i-down"/></svg></summary><div class="desc-in small" id="it-desc" style="line-height:1.5;color:var(--muted)"></div></details>
+        <div class="card" style="gap:10px" id="it-props"></div>
         <div class="card" style="flex-direction:row;align-items:center;justify-content:space-between;padding:12px 14px">
           <span class="grow"><span class="bold">Количество</span><span class="xs muted" id="it-unit"></span></span>
           <div class="stepper"><button type="button" id="it-minus" aria-label="Меньше">−</button><input class="qin" id="it-q" type="number" inputmode="numeric" min="1" value="1" aria-label="Количество"><button type="button" id="it-plus" aria-label="Больше">+</button></div>
         </div>
-        <div class="urgent-opt" id="it-urgent-box"><svg class="ic" style="color:#D8392C"><use href="#i-fire"/></svg><span class="grow"><span class="bold">Срочно</span><span class="small muted">Поставщик увидит пометку «Срочно» с датой</span></span><button type="button" class="switch" id="it-urgent" role="switch" aria-checked="false" aria-label="Срочно"></button></div>
-        <div class="card" style="gap:10px"><span class="bold" style="font-size:16px">Желаемая дата поставки</span><div class="dates" id="it-dates" role="radiogroup" aria-label="Дата поставки"></div></div>
+        <div class="card" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" id="it-dates" role="radiogroup" aria-label="Дата поставки"></div>
+          <span class="xs muted">«Сегодня» — заказ уйдёт поставщику с пометкой «Срочно»</span></div>
       </div>
     </div>
     <div class="bottom-bar"><div class="sum-bar"><span class="s"><span class="xs muted bold">Итого</span><b id="it-total">0 сом</b></span><button type="button" class="btn lg" id="it-add">В корзину</button></div></div>
@@ -775,22 +816,17 @@ details.desc textarea:focus{border-color:var(--green)}
   <section class="screen" id="m-cart" data-tab="cart" data-role="shop" hidden>
     <header class="top"><div class="top-row"><span class="h1">Корзина</span><button type="button" class="linkbtn" id="cart-clear" style="color:var(--red)">Очистить</button></div></header>
     <div class="body" id="cart-body"></div>
-    <div class="bottom-bar" id="cart-bar" hidden><div class="sum-bar"><span class="s"><span class="xs muted bold" id="cart-n">Итого</span><b id="cart-total">0 сом</b></span><button type="button" class="btn lg" id="cart-send">Оформить заказ</button></div></div>
+    <div class="bottom-bar" id="cart-bar" hidden>
+      <div class="between small"><span class="muted">Поставщиков</span><b id="cart-sups">0</b></div>
+      <div class="sum-bar"><span class="s"><span class="xs muted bold">Итого</span><b id="cart-total">0 сом</b></span><button type="button" class="btn lg" id="cart-send">Оформить заказ</button></div>
+    </div>
     <nav class="tabbar five" data-nav></nav>
   </section>
 
   <section class="screen" id="m-orders" data-tab="sorders" data-role="shop" hidden>
-    <header class="top"><span class="h1">Заказы</span><div class="chips" id="so-filter" role="tablist" aria-label="Статус"></div></header>
-    <div class="body"><div class="olist" id="so-list"></div></div>
+    <header class="top"><span class="h1">Заказы</span></header>
+    <div class="body" id="so-list"></div>
     <nav class="tabbar five" data-nav></nav>
-  </section>
-
-  <section class="screen" id="m-order" hidden>
-    <header class="top"><div class="top-row">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span class="h-sub" id="mo-title">Заказ</span><span id="mo-pill"></span>
-    </div></header>
-    <div class="body" id="mo-body"></div>
   </section>
 
   <section class="screen" id="m-notifs" hidden>
@@ -980,6 +1016,7 @@ details.desc textarea:focus{border-color:var(--green)}
     <rect x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D" filter="url(#mint-glow)" opacity=".8"/>
     <rect x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D"/>
   </symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
   <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.5 3h2.6l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.8a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></symbol>
   <symbol id="i-barcode" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10 8v8M13 8v8M16.5 8v8"/></symbol>
   <symbol id="i-feed" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
@@ -1032,92 +1069,82 @@ details.desc textarea:focus{border-color:var(--green)}
 
   // ---------- Товары ----------
   const TYPE = {
-    box: { name: 'Коробка', unit: 'кор', per: 'за коробку', packL: 'Штук в коробке' },
-    block: { name: 'Блок', unit: 'бл', per: 'за блок', packL: 'Штук в блоке' },
+    box: { name: 'Коробка', unit: 'кор', per: 'за коробку', packL: 'Кол-во в коробке, шт' },
+    block: { name: 'Блок', unit: 'бл', per: 'за блок', packL: 'Кол-во в блоке, шт' },
     weight: { name: 'Весовой', unit: 'кг', per: 'за кг', packL: null },
     piece: { name: 'Штучный', unit: 'шт', per: 'за шт', packL: null }
   };
+  const CATS_DIR = ['Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'];
+  const volText = v => !v ? '' : typeof v === 'string' ? v : String(v.n).replace('.', ',') + ' ' + v.u;
   let pid = 100;
-  // Товары нашего дистрибьютора (вкладка «Товары» у поставщика)
-  const P = (key, name, vol, type, pack, price, cat, extra) => Object.assign({
-    id: ++pid, key, name, vol, type, pack, price, cat, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], dist: true
+  // P(ключ фото, название, объём, ед., тип фасовки, в упаковке, цена, категория, штрихкод, доп.)
+  const P = (key, name, n, u, type, pack, price, cat, code, extra) => Object.assign({
+    id: ++pid, key, name, vol: { n, u }, type, pack, price, cat, code, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], sup: DIST
   }, extra || {});
+  // Товары нашего дистрибьютора (его вкладка «Товары»)
   const products = [
-    P('milk', 'Молоко «Моё» 3,2%', '1 л', 'box', 12, 864, 'Молочка', { desc: 'Ультрапастеризованное, срок хранения 6 месяцев. В коробке 12 пакетов.', pop: 1 }),
-    P('kefir', 'Кефир 2,5%', '1 л', 'box', 12, 780, 'Молочка', { desc: 'Срок хранения 10 дней при +2…+6 °C.', pop: 2 }),
-    P('smetana', 'Сметана 20%', '400 г', 'piece', 1, 90, 'Молочка', { promo: 98 }),
-    P('butter', 'Масло сливочное 82,5%', '180 г', 'block', 20, 2900, 'Молочка', { ret: false, desc: 'Высший сорт, ГОСТ.' }),
-    P('ryazhenka', 'Ряженка 4%', '0,5 л', 'piece', 1, 68, 'Молочка', { isNew: 1 }),
-    P('tvorog', 'Творог 9%', '200 г', 'piece', 1, 120, 'Молочка'),
-    P('juice', 'Сок яблочный', '1 л', 'box', 12, 1140, 'Напитки', { desc: 'Восстановленный, без добавления сахара.', pop: 3 }),
-    P('juice_orange', 'Сок апельсиновый', '1 л', 'box', 12, 1176, 'Напитки', { promo: 1250 }),
-    P('sugar', 'Сахар белый', '50 кг (мешок)', 'weight', 1, 82, 'Бакалея', { ret: false, desc: 'Цена за 1 кг, отгрузка мешками.', pop: 4 }),
-    P('flour', 'Мука пшеничная в/с', '2 кг', 'piece', 1, 130, 'Бакалея', { avail: false, ret: false }),
-    P('rice', 'Рис пропаренный', '900 г', 'piece', 1, 110, 'Бакалея'),
-    P('cookie', 'Печенье овсяное', '300 г', 'block', 12, 816, 'Сладости', { ret: false, isNew: 1 })
+    P('milk', 'Молоко «Моё» 3,2%', 1, 'л', 'box', 12, 864, 'Молочка', '4870001154691', { desc: 'Ультрапастеризованное, срок хранения 6 месяцев. В коробке 12 пакетов.', pop: 1 }),
+    P('kefir', 'Кефир 2,5%', 1, 'л', 'box', 12, 780, 'Молочка', '4607053473780', { desc: 'Срок хранения 10 дней при +2…+6 °C.', pop: 2 }),
+    P('smetana', 'Сметана 20%', 400, 'г', 'piece', 1, 90, 'Молочка', '4607807431837', { promo: 98 }),
+    P('butter', 'Масло сливочное 82,5%', 180, 'г', 'block', 20, 2900, 'Молочка', '4606419001995', { ret: false, desc: 'Высший сорт, ГОСТ.' }),
+    P('ryazhenka', 'Ряженка 4%', 0.5, 'л', 'piece', 1, 68, 'Молочка', '4870055000043', { isNew: 1 }),
+    P('tvorog', 'Творог 9%', 200, 'г', 'piece', 1, 120, 'Молочка', '4700002062124'),
+    P('juice', 'Сок яблочный', 1, 'л', 'box', 12, 1140, 'Напитки', '4680019565262', { desc: 'Восстановленный, без добавления сахара.', pop: 3 }),
+    P('juice_orange', 'Сок апельсиновый', 1, 'л', 'box', 12, 1176, 'Напитки', '4850089001407', { promo: 1250 }),
+    P('sugar', 'Сахар белый', 1000, 'г', 'weight', 1, 82, 'Бакалея', '4610020700192', { ret: false, desc: 'Цена за 1 кг, отгрузка мешками по 50 кг.', pop: 4 }),
+    P('flour', 'Мука пшеничная в/с', 2000, 'г', 'piece', 1, 130, 'Бакалея', '4601780002565', { avail: false, ret: false }),
+    P('rice', 'Рис пропаренный', 900, 'г', 'piece', 1, 110, 'Бакалея', '4605093001802'),
+    P('cookie', 'Печенье овсяное', 300, 'г', 'block', 12, 816, 'Сладости', '4607015234398', { ret: false, isNew: 1 })
   ];
-  // Товары, которых нет у нашего дистрибьютора — только у других поставщиков (для каталога магазина)
-  const X = (key, name, vol, type, price, cat, extra) => Object.assign({ id: ++pid, key, name, vol, type, pack: 1, price, cat, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], dist: false }, extra || {});
-  const extras = [
-    X('bread', 'Хлеб «Экстра»', '500 г', 'piece', 38, 'Хлеб', { pop: 5 }),
-    X('baton', 'Батон нарезной', '400 г', 'piece', 35, 'Хлеб', { isNew: 1 }),
-    X('lemonade', 'Лимонад «Holiday»', '1 л', 'box', 840, 'Напитки', { promo: 900 }),
-    X('juice_cherry', 'Сок вишнёвый', '1 л', 'box', 1188, 'Напитки'),
-    X('yogurt', 'Йогурт питьевой', '0,3 л', 'piece', 55, 'Молочка', { isNew: 1 }),
-    X('milk25', 'Молоко 2,5%', '1 л', 'box', 816, 'Молочка'),
-    X('pryaniki', 'Пряники «Тульские»', '140 г', 'piece', 75, 'Сладости', { promo: 85 }),
-    X('cookie_choc', 'Печенье шоколадное', '250 г', 'block', 1020, 'Сладости')
+  const byKeyD = k => products.find(p => p.key === k);
+  // Товары других поставщиков: тот же товар (тот же штрихкод) по другой цене и товары, которых у нас нет
+  const clone = (p, sup, price, extra) => Object.assign({}, p, { id: ++pid, sup, price, avail: true, photos: p.photos.slice(), vol: Object.assign({}, p.vol), pop: 0 }, extra || {});
+  const X = (key, name, n, u, type, pack, price, cat, code, sup, extra) => Object.assign(P(key, name, n, u, type, pack, price, cat, code, extra), { sup });
+  const others = [
+    clone(byKeyD('milk'), OTHERS[0], 899), clone(byKeyD('kefir'), OTHERS[1], 820), clone(byKeyD('juice'), OTHERS[0], 1180),
+    clone(byKeyD('sugar'), OTHERS[1], 85), clone(byKeyD('flour'), OTHERS[0], 135),
+    X('bread', 'Хлеб «Экстра»', 500, 'г', 'piece', 1, 38, 'Хлеб', '4601388000116', OTHERS[0], { pop: 5 }),
+    X('baton', 'Батон нарезной', 400, 'г', 'piece', 1, 35, 'Хлеб', '4601347009273', OTHERS[0], { isNew: 1 }),
+    X('lemonade', 'Лимонад «Holiday»', 1, 'л', 'box', 12, 840, 'Напитки', '4870071002113', OTHERS[1], { promo: 900 }),
+    X('juice_cherry', 'Сок вишнёвый', 1, 'л', 'box', 12, 1188, 'Напитки', '4607041190361', OTHERS[0]),
+    X('yogurt', 'Йогурт питьевой', 0.3, 'л', 'piece', 1, 55, 'Молочка', '4870207314202', OTHERS[1], { isNew: 1 }),
+    X('milk25', 'Молоко 2,5%', 1, 'л', 'box', 12, 816, 'Молочка', '4870144006352', OTHERS[0]),
+    X('pryaniki', 'Пряники «Тульские»', 140, 'г', 'piece', 1, 75, 'Сладости', '4601713001702', OTHERS[1], { promo: 85 }),
+    X('cookie_choc', 'Печенье шоколадное', 250, 'г', 'block', 12, 1020, 'Сладости', '4610169561425', OTHERS[1])
   ];
-  const allItems = () => products.concat(extras);
-  const prod = id => allItems().find(p => p.id === id);
-  const byKey = k => allItems().find(p => p.key === k);
+  const listings = () => products.concat(others);
+  const prod = id => listings().find(p => p.id === id);
+  const byKeyAny = k => listings().find(p => p.key === k);
   const unitOf = p => TYPE[p.type].unit;
-  // Предложения поставщиков для товара (магазин сравнивает). Метки — по правилам: самая низкая цена, самая быстрая доставка, отсрочка.
-  function offersOf(p) {
-    let list;
-    if (p.dist) list = [
-      { sup: DIST, price: p.price, avail: p.avail },
-      { sup: OTHERS[0], price: Math.round(p.price * 1.04), avail: true },
-      { sup: OTHERS[1], price: Math.round(p.price * 1.07), avail: true }];
-    else list = [{ sup: OTHERS[0], price: p.price, avail: true }, { sup: OTHERS[1], price: Math.round(p.price * 1.03), avail: true }];
-    list.forEach(o => { o.days = SUPS[o.sup].days; o.defer = SUPS[o.sup].defer || 0; });
-    const av = list.filter(o => o.avail);
-    if (av.length) {
-      const minP = Math.min(...av.map(o => o.price)), minD = Math.min(...av.map(o => o.days));
-      av.forEach(o => { o.tags = []; });
-      av.filter(o => o.price === minP).slice(0, 1).forEach(o => o.tags.push(['green', 'Дешевле']));
-      const fast = av.filter(o => o.days === minD);
-      if (fast.length < av.length) fast.slice(0, 1).forEach(o => o.tags.push(['blue', 'Быстрее']));
-      av.filter(o => o.defer).forEach(o => o.tags.push(['amber', 'Удобнее']));
-    }
-    return list;
-  }
-  const bestOffer = p => offersOf(p).filter(o => o.avail).sort((a, b) => a.price - b.price)[0];
-  const isAvail = p => offersOf(p).some(o => o.avail);
+  const nameVol = p => p.name + ', ' + volText(p.vol);
+  const matchQ = (p, q) => !q || nameVol(p).toLowerCase().includes(q) || (p.code || '').includes(q.replace(/\s/g, ''));
 
   // ---------- Заказы (общие для магазина и поставщика) ----------
-  // st: new — отправлен/новый, work — принят (в работе), done — доставлен
-  const snap = (p, q, price) => ({ pid: p.id, name: p.name, vol: p.vol, photo: p.photos[0], unit: unitOf(p), price: price == null ? p.price : price, q });
-  const L = (k, q) => snap(byKey(k), q);
+  // st: new — отправлен/новый, work — принят (в работе), done — доставлен, rejected — отклонён
+  const snap = (p, q, price) => ({ pid: p.id, name: p.name, vol: volText(p.vol), photo: p.photos[0], unit: unitOf(p), price: price == null ? p.price : price, q });
+  const L = (k, q) => snap(byKeyD(k), q);
   let oNum = 222;
   const orders = [
-    { n: '0221', sup: DIST, shop: 'dostuk', ago: '5 мин назад', urgent: 1, want: 1, st: 'new', items: [L('milk', 3), L('kefir', 2), L('smetana', 12)] },
+    { n: '0221', sup: DIST, shop: 'dostuk', ago: '5 мин назад', urgent: 0, want: 0, st: 'new', items: [L('milk', 3), L('kefir', 2), L('smetana', 12)] },
     { n: '0220', sup: DIST, shop: 'alatoo', ago: '25 мин назад', want: 1, st: 'new', items: [L('juice', 2), L('juice_orange', 1)] },
     { n: '0219', sup: DIST, shop: 'nur', ago: '1 ч назад', urgent: 0, want: 0, st: 'new', items: [L('butter', 1), L('tvorog', 10), L('ryazhenka', 12)] },
     { n: '0218', sup: DIST, shop: 'jibek', ago: '2 ч назад', want: 2, st: 'new', items: [L('sugar', 50), L('rice', 10)] },
     { n: '0217', sup: DIST, shop: 'bereke', ago: 'вчера', st: 'work', deliver: 0, accepted: -1, items: [L('kefir', 2)] },
     { n: '0216', sup: DIST, shop: MY_SHOP, ago: 'вчера', st: 'work', deliver: 1, accepted: -1, items: [L('milk', 2), L('ryazhenka', 12)] },
+    { n: '0215', sup: DIST, shop: 'aigul', ago: '2 дня назад', st: 'rejected', reason: 'Нет в наличии', items: [L('flour', 20)] },
     { n: '0214', sup: DIST, shop: 'aigul', ago: '3 дня назад', st: 'done', deliver: -2, accepted: -3, deliveredAt: '10:42', items: [L('cookie', 1)] },
     { n: '0213', sup: DIST, shop: MY_SHOP, ago: '4 дня назад', st: 'done', deliver: -3, accepted: -4, deliveredAt: '15:05', items: [L('sugar', 25), L('juice', 1)] },
-    { n: '0212', sup: OTHERS[0], shop: MY_SHOP, ago: '5 дней назад', st: 'done', deliver: -4, accepted: -5, deliveredAt: '09:20', items: [snap(byKey('bread'), 30), snap(byKey('baton'), 20)] }
+    { n: '0212', sup: OTHERS[0], shop: MY_SHOP, ago: '5 дней назад', st: 'done', deliver: -4, accepted: -5, deliveredAt: '09:20', items: [snap(byKeyAny('bread'), 30), snap(byKeyAny('baton'), 20)] }
   ];
   const findOrder = n => orders.find(o => o.n === n);
   const lineSum = l => l.q * l.price;
   const oSum = o => o.items.reduce((s, l) => s + lineSum(l), 0);
   const qtyText = l => l.q + ' ' + l.unit;
   const summary = o => o.items.slice(0, 2).map(l => l.name + ' × ' + qtyText(l)).join(', ') + (o.items.length > 2 ? ' и ещё ' + (o.items.length - 2) : '');
+  const hasInvoice = o => o.st === 'work' || o.st === 'done';
   function pillOf(o, forShop) {
-    if (o.st === 'new' && o.urgent != null) return '<span class="pill urgent"><svg class="ic" style="width:13px;height:13px"><use href="#i-fire"/></svg>Срочно · до ' + dm(day(o.urgent)) + '</span>';
+    if (o.st === 'rejected') return '<span class="pill out">Отклонён</span>';
+    if (o.st === 'new' && o.urgent != null) return '<span class="pill urgent"><svg class="ic" style="width:13px;height:13px"><use href="#i-fire"/></svg>Срочно · ' + dm(day(o.urgent)) + '</span>';
     if (o.st === 'new') return forShop ? '<span class="pill new">Отправлен</span>' : '<span class="pill new">Новый</span>';
     if (o.st === 'work') return '<span class="pill work">' + (forShop ? 'Принят · ' : 'Поставка ') + dm(day(o.deliver)) + '</span>';
     return '<span class="pill done">Доставлен</span>';
@@ -1128,7 +1155,7 @@ details.desc textarea:focus{border-color:var(--green)}
   let cur = 'a-login';
   const hist = [];
   const TABS = {
-    dist: { orders: 's-orders', products: 's-products', add: 's-editor', profile: 's-profile' },
+    dist: { orders: 's-orders', products: 's-products', profile: 's-profile' },
     shop: { feed: 'm-feed', catalog: 'm-catalog', cart: 'm-cart', sorders: 'm-orders', profile: 's-profile' }
   };
   const HOME = { dist: 's-orders', shop: 'm-feed' };
@@ -1147,7 +1174,6 @@ details.desc textarea:focus{border-color:var(--green)}
   }
   const back = () => go(hist.pop() || HOME[role], 'back');
   function openTab(t) {
-    if (t === 'add') openEditor(null);
     const R = {
       orders: renderOrders, products: renderProducts, profile: renderProfile,
       feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: renderShopOrders
@@ -1155,24 +1181,26 @@ details.desc textarea:focus{border-color:var(--green)}
     if (R[t]) R[t]();
     go(TABS[role][t], 'fade');
   }
+  // Поставщик: Заказы · Товары · Профиль, кнопка «+» висит над вкладкой «Товары» и прячется при прокрутке вниз
+  let fabHidden = false;
   function navHTML(active) {
     const t = (k, ic, label, badge) => '<button type="button" class="tab' + (k === active ? ' on' : '') + '" data-tabgo="' + k + '"><svg class="ic"><use href="#' + ic + '"/></svg>' + label +
       (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
     if (role === 'dist') {
       const newN = orders.filter(o => o.sup === DIST && o.st === 'new').length;
-      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') +
-        '<button type="button" class="tab tab-add' + (active === 'add' ? ' on' : '') + '" data-tabgo="add" aria-label="Добавить товар"><span class="plus"><svg class="ic"><use href="#i-add"/></svg></span></button>' +
-        t('profile', 'i-user', 'Профиль');
+      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') + t('profile', 'i-user', 'Профиль') +
+        '<button type="button" class="fab' + (fabHidden ? ' hide' : '') + '" data-fab aria-label="Добавить товар"><svg class="ic"><use href="#i-add"/></svg></button>';
     }
-    const cartN = cart.reduce((s, c) => s + 1, 0);
-    return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cartN) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
+    return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cart.length) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
   }
   function renderNav() {
     $$('[data-nav]').forEach(n => {
-      n.classList.toggle('five', role === 'shop');
+      n.classList.toggle('five', role === 'shop'); n.classList.toggle('three', role === 'dist');
       n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
     });
   }
+  function setFab(hidden) { if (fabHidden === hidden) return; fabHidden = hidden; $$('.fab').forEach(f => f.classList.toggle('hide', hidden)); }
+  document.addEventListener('click', e => { if (e.target.closest('[data-fab]')) { openEditor(null); go('s-editor', 'push'); } });
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-tabgo],[data-go],[data-back]');
     if (!t) return;
@@ -1204,7 +1232,7 @@ details.desc textarea:focus{border-color:var(--green)}
     e.preventDefault(); e.stopPropagation();
     $('#lb-img').innerHTML = '<img alt="" src="' + esc(z.dataset.zoom) + '">'; $('#lb-name').textContent = z.dataset.zname || ''; $('#lightbox').hidden = false;
   }, true);
-  const zimg = (p, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '" data-zoom="' + esc(p.photos ? p.photos[0] : p.photo) + '" data-zname="' + esc(p.name + ', ' + p.vol) + '"><img alt="" loading="lazy" src="' + esc(p.photos ? p.photos[0] : p.photo) + '"></span>';
+  const zimg = (p, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '" data-zoom="' + esc(p.photos ? p.photos[0] : p.photo) + '" data-zname="' + esc(p.name + ', ' + volText(p.vol)) + '"><img alt="" loading="lazy" src="' + esc(p.photos ? p.photos[0] : p.photo) + '"></span>';
 
   function contactRow(label) {
     const d = DEMO_PHONE.replace(/\D/g, ''), hi = encodeURIComponent('Здравствуйте! Пишу по заказу в Zakup.KG');
@@ -1223,7 +1251,7 @@ details.desc textarea:focus{border-color:var(--green)}
     const boot = $('#boot');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) { boot.remove(); showAuth('a-login'); return; }
-    setTimeout(() => { if (navigator.vibrate) navigator.vibrate(8); }, 900);   // лёгкий отклик в момент свечения
+    setTimeout(() => { if (navigator.vibrate) navigator.vibrate(8); }, 1800);   // лёгкий отклик в момент свечения
     setTimeout(() => {
       // Кадр 5: логотип перелетает в шапку экрана входа
       showAuth('a-login', true);
@@ -1234,7 +1262,7 @@ details.desc textarea:focus{border-color:var(--green)}
       mark.style.transform = 'translate(' + ((b.left + b.width / 2) - (a.left + a.width / 2)) + 'px,' + ((b.top + b.height / 2) - (a.top + a.height / 2)) + 'px) scale(' + s + ')';
       setTimeout(() => { boot.classList.add('gone'); }, 430);
       setTimeout(() => { boot.remove(); }, 720);
-    }, 1900);
+    }, 3300);
   }
   function showAuth(id, quiet) {
     $$('.screen').forEach(s => { if (s.id !== id) s.hidden = true; });
@@ -1351,12 +1379,13 @@ details.desc textarea:focus{border-color:var(--green)}
   //                          ПОСТАВЩИК: ЗАКАЗЫ
   // =====================================================================
   const FILTERS = [['new', 'Новые'], ['work', 'В работе'], ['done', 'Завершённые']];
+  const inF = (o, k) => k === 'done' ? (o.st === 'done' || o.st === 'rejected') : o.st === k;
   let oFilter = 'new';
   const distOrders = () => orders.filter(o => o.sup === DIST);
   function renderOrders() {
-    $('#o-filter').innerHTML = FILTERS.map(([k, t]) => '<button type="button" class="chip' + (k === oFilter ? ' on' : '') + '" data-of="' + k + '" role="tab" aria-selected="' + (k === oFilter) + '">' + t + '<span class="cnt">' + distOrders().filter(o => o.st === k).length + '</span></button>').join('');
-    const rank = o => o.st === 'new' ? (o.urgent != null ? o.urgent - 10 : 0) : o.st === 'work' ? o.deliver : -o.deliver;
-    const list = distOrders().filter(o => o.st === oFilter).sort((a, b) => rank(a) - rank(b));
+    $('#o-filter').innerHTML = FILTERS.map(([k, t]) => '<button type="button" class="chip' + (k === oFilter ? ' on' : '') + '" data-of="' + k + '" role="tab" aria-selected="' + (k === oFilter) + '">' + t + '<span class="cnt">' + distOrders().filter(o => inF(o, k)).length + '</span></button>').join('');
+    const rank = o => o.st === 'new' ? (o.urgent != null ? o.urgent - 10 : 0) : o.st === 'work' ? o.deliver : o.st === 'rejected' ? 5 : -o.deliver;
+    const list = distOrders().filter(o => inF(o, oFilter)).sort((a, b) => rank(a) - rank(b));
     const box = $('#o-list');
     box.className = 'olist' + (view.orders === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(o => {
@@ -1365,7 +1394,7 @@ details.desc textarea:focus{border-color:var(--green)}
         : '<span class="between"><span class="o-name">' + s.name + '</span>' + pillOf(o) + '</span>';
       return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items">' + esc(summary(o)) + '</span>' +
         '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>';
-    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет доставленных заказов') + '</span></div>';
+    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет завершённых заказов') + '</span></div>';
     renderNav();
   }
   $('#o-filter').addEventListener('click', e => { const b = e.target.closest('[data-of]'); if (b) { oFilter = b.dataset.of; renderOrders(); } });
@@ -1377,7 +1406,7 @@ details.desc textarea:focus{border-color:var(--green)}
     const o = curOrder, s = SHOPS[o.shop];
     $('#od-title').textContent = 'Заказ № ' + o.n; $('#od-pill').innerHTML = pillOf(o);
     let h = '';
-    if (o.st === 'new' && o.urgent != null) h += '<div class="urgent-bar rise"><svg class="ic"><use href="#i-fire"/></svg><span class="grow"><b>СРОЧНО</b><span class="small" style="opacity:.9">Магазин просит привезти до ' + dmy(day(o.urgent)) + '</span></span></div>';
+    if (o.st === 'new' && o.urgent != null) h += '<div class="urgent-bar rise"><svg class="ic"><use href="#i-fire"/></svg><span class="grow"><b>СРОЧНО</b><span class="small" style="opacity:.9">Магазин просит привезти ' + dayWord(o.urgent) + ', ' + dmy(day(o.urgent)) + '</span></span></div>';
     h += '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + s.name + '</span><span class="small muted">' + s.addr + '</span></div>' + contactRow('Телефон магазина') + '</div>';
     h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + o.items.length + ' поз. · ' + o.ago + '</span></div>' + itemRows(o) +
       '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div>' +
@@ -1387,21 +1416,46 @@ details.desc textarea:focus{border-color:var(--green)}
     if (o.st === 'new') {
       h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
         DAYS.map(([t, k]) => { const late = o.urgent != null && k > o.urgent; return '<button type="button" class="date-opt' + (pickDay === k ? ' on' : '') + '" data-day="' + k + '" role="radio" aria-checked="' + (pickDay === k) + '"><b>' + t + '</b><span' + (late ? ' style="color:var(--red)"' : '') + '>' + dm(day(k)) + (late ? ' · позже срока' : '') + '</span></button>'; }).join('') + '</div></div>';
-      bar.innerHTML = '<button type="button" class="btn lg" id="od-accept"' + (pickDay == null ? ' disabled' : '') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять · поставка ' + dm(day(pickDay))) + '</button>' + (pickDay == null ? '<span class="bar-hint">Сначала выберите дату поставки</span>' : '');
+      bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (pickDay == null ? ' disabled' : '') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять · ' + dm(day(pickDay))) + '</button></div>' +
+        (pickDay == null ? '<span class="bar-hint">Чтобы принять, выберите дату поставки</span>' : '');
       bar.hidden = false;
     } else if (o.st === 'work') {
       h += '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>' + invoiceBlock(o);
       bar.innerHTML = '<button type="button" class="btn lg" data-go-scan><svg class="ic"><use href="#i-qr"/></svg>Отметить доставку по QR</button><span class="bar-hint">Экспедитор сканирует QR-код у магазина</span>';
       bar.hidden = false;
+    } else if (o.st === 'rejected') {
+      h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>Отклонён · ' + esc(o.reason) + '</div>';
+      bar.hidden = true; bar.innerHTML = '';
     } else {
       h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + ' · подтверждено по QR</div>' + invoiceBlock(o);
       bar.hidden = true; bar.innerHTML = '';
     }
     $('#od-body').innerHTML = still ? h.replace(/ rise/g, '') : h;
-    if (o.st !== 'new') prepareInv($('#od-body .inv'), o);
+    if (hasInvoice(o)) prepareInv($('#od-body .inv'), o);
   }
   $('#od-body').addEventListener('click', e => { const d = e.target.closest('[data-day]'); if (d) { pickDay = +d.dataset.day; renderOrder(true); } });
+  const REASONS = ['Нет в наличии', 'Загруженность доставки', 'Другое'];
+  function openReject() {
+    let pick = REASONS[0];
+    const draw = () => {
+      sheet('<span class="h2">Отклонить заказ № ' + curOrder.n + '?</span><span class="small muted" style="text-align:center">Магазин увидит причину</span>' +
+        '<div class="reasons">' + REASONS.map(r => '<button type="button" class="reason' + (r === pick ? ' on' : '') + '" data-reason="' + r + '"><span class="radio"></span>' + r + '</button>').join('') + '</div>' +
+        (pick === 'Другое' ? '<textarea id="rj-text" class="rj-text" placeholder="Напишите причину"></textarea>' : '') +
+        '<button type="button" class="btn lg danger" id="rj-yes">Отклонить заказ</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+      $$('#sheet-in [data-reason]').forEach(b => { b.onclick = () => { pick = b.dataset.reason; draw(); if (pick === 'Другое') $('#rj-text').focus(); }; });
+      $('#rj-yes').onclick = () => {
+        const txt = pick === 'Другое' ? ($('#rj-text').value || '').trim() : pick;
+        if (!txt) { toast('Напишите причину отказа'); return; }
+        const o = curOrder; o.st = 'rejected'; o.reason = txt; delete o.urgent;
+        notify('Заказ № ' + o.n + ' отклонён: ' + txt, o);
+        closeSheet(); toast('Заказ № ' + o.n + ' отклонён · магазин увидит причину');
+        renderOrder(true); renderOrders();
+      };
+    };
+    draw();
+  }
   $('#od-bar').addEventListener('click', e => {
+    if (e.target.closest('#od-reject')) { openReject(); return; }
     if (e.target.closest('#od-accept')) {
       const o = curOrder; if (pickDay == null) return;
       acceptOrder(o, pickDay);
@@ -1476,8 +1530,10 @@ details.desc textarea:focus{border-color:var(--green)}
     b.disabled = false; b.textContent = label;
   });
 
-  // ---------- Сканер (макет): QR доставки у поставщика, штрихкод у магазина ----------
+  // ---------- Сканер (макет, одна «библиотека» на две задачи): QR доставки и штрихкод товара (EAN-13) ----------
+  // mode: qr — поставщик отмечает доставку; barcode — магазин ищет товар; code — поставщик вписывает штрихкод в карточку
   let scanMode = 'qr', scanT = null;
+  const ean13 = () => { const d = '470' + String(Math.floor(Math.random() * 1e9)).padStart(9, '0'); const s = [...d].reduce((a, c, i) => a + +c * (i % 2 ? 3 : 1), 0); return d + ((10 - s % 10) % 10); };
   function openScan(mode) {
     scanMode = mode;
     const qr = mode === 'qr';
@@ -1486,8 +1542,9 @@ details.desc textarea:focus{border-color:var(--green)}
     $('#scan-art').className = qr ? 'scan-qr' : 'bars-art';
     $('#scan-art').innerHTML = qr ? Array.from({ length: 49 }, (_, i) => '<span' + ('1110111100100110111011010101101011011100111011001011100100101011101'[i] === '1' ? '' : ' class="o"') + '></span>').join('')
       : Array.from({ length: 28 }, () => '<span></span>').join('');
-    $('#scan-cap-b').textContent = qr ? SHOPS[curOrder.shop].name + ' · № ' + curOrder.n : 'Штрихкод на упаковке';
-    $('#scan-cap-s').textContent = qr ? 'Наведите камеру на QR-код в приложении магазина. В коде — информация о заказе и статус «доставлено».' : 'Наведите камеру на штрихкод товара — откроем его карточку и предложения поставщиков.';
+    $('#scan-cap-b').textContent = qr ? SHOPS[curOrder.shop].name + ' · № ' + curOrder.n : 'Штрихкод на упаковке (EAN-13)';
+    $('#scan-cap-s').textContent = qr ? 'Наведите камеру на QR-код в приложении магазина. В коде — информация о заказе и статус «доставлено».'
+      : mode === 'code' ? 'Наведите камеру на штрихкод — он впишется в карточку товара.' : 'Наведите камеру на штрихкод товара — откроем его карточку.';
     $('#scan-demo').textContent = qr ? 'Код отсканирован (демо)' : 'Штрихкод распознан (демо)';
     $('#scan-ok').hidden = true; $('#scan-demo').disabled = false;
   }
@@ -1496,17 +1553,20 @@ details.desc textarea:focus{border-color:var(--green)}
     if (navigator.vibrate) navigator.vibrate(60);
     if (scanMode === 'qr') {
       const o = curOrder, now = new Date();
-      // Что «зашито» в QR: номер заказа, магазин, позиции, сумма и код статуса
       $('#scan-ok-b').textContent = 'Доставлено';
       $('#scan-ok-t').innerHTML = 'Из QR: заказ № ' + o.n + ' · ' + SHOPS[o.shop].name + '<br>' + o.items.length + ' ' + plural(o.items.length, 'позиция', 'позиции', 'позиций') + ' · ' + fmt(oSum(o)) + ' сом · статус DELIVERED';
       $('#scan-ok').hidden = false;
       o.st = 'done'; o.deliver = 0; o.deliveredAt = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
       notify('Заказ № ' + o.n + ' доставлен', o);
       scanT = setTimeout(() => { renderOrder(true); renderOrders(); go(hist.pop() || 's-order', 'back'); toast('Доставлено · магазин получил подтверждение'); }, 1600);
+    } else if (scanMode === 'code') {
+      const code = ean13();
+      $('#scan-ok-b').textContent = 'Штрихкод распознан'; $('#scan-ok-t').textContent = code; $('#scan-ok').hidden = false;
+      scanT = setTimeout(() => { $('#ed-code').value = code; go(hist.pop() || 's-editor', 'back'); }, 900);
     } else {
-      const p = byKey('milk');
-      $('#scan-ok-b').textContent = 'Товар найден'; $('#scan-ok-t').textContent = p.name + ', ' + p.vol; $('#scan-ok').hidden = false;
-      // Сканер заменяется карточкой товара: «назад» из карточки ведёт в ленту, а не обратно в сканер
+      const p = byKeyD('milk');
+      $('#scan-ok-b').textContent = 'Товар найден'; $('#scan-ok-t').textContent = p.code + ' · ' + nameVol(p); $('#scan-ok').hidden = false;
+      // Сканер заменяется карточкой товара: «назад» из карточки ведёт туда, откуда открыли сканер
       scanT = setTimeout(() => { openItem(p.id); go('m-item', 'push'); hist.pop(); }, 1000);
     }
   });
@@ -1514,32 +1574,33 @@ details.desc textarea:focus{border-color:var(--green)}
   // ---------- Поставщик: товары и шаблон карточки ----------
   function renderProducts() {
     const q = ($('#p-search').value || '').trim().toLowerCase();
-    const list = products.filter(p => !q || (p.name + ' ' + p.vol).toLowerCase().includes(q));
+    const list = products.filter(p => matchQ(p, q));
     const box = $('#p-list'); box.className = 'plist' + (view.products === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(p => {
       const st = p.avail ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
       const price = '<span class="p-price">' + fmt(p.price) + ' сом <small>/ ' + unitOf(p) + '</small></span>';
       return view.products === 'grid'
-        ? '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + esc(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span></button>'
-        : '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow" style="gap:4px"><span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + esc(p.vol) + '</span></span><span>' + st + '</span></span>' + price + '</button>';
-    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
+        ? '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + volText(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span></button>'
+        : '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow" style="gap:4px"><span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + volText(p.vol) + '</span></span><span>' + st + '</span></span>' + price + '</button>';
+    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено — ищите по названию или штрихкоду</span></div>';
   }
   $('#p-search').addEventListener('input', renderProducts);
   $('#p-list').addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if (b) { openEditor(+b.dataset.pid); go('s-editor', 'push'); } });
+  // «+» прячется при прокрутке списка товаров вниз и возвращается при прокрутке вверх
+  (() => { let last = 0; const body = $('#s-products .body'); body.addEventListener('scroll', () => { const y = body.scrollTop; if (y > last + 6 && y > 40) setFab(true); else if (y < last - 6 || y < 20) setFab(false); last = y; }, { passive: true }); })();
 
   let edId = null, ed = null;
   function openEditor(id) {
     edId = id; const p = id ? prod(id) : null;
-    ed = p ? { photos: p.photos.slice(), type: p.type, ret: p.ret, avail: p.avail } : { photos: [], type: 'box', ret: true, avail: true };
-    const editing = !!p;
-    $('#ed-title').textContent = editing ? 'Карточка товара' : 'Новый товар';
-    $('#ed-back').hidden = !editing; $('#ed-del').hidden = !editing; $('#ed-nav').hidden = editing;
-    $('#s-editor').dataset.tab = editing ? '' : 'add';
-    $('#ed-name').value = p ? p.name : ''; $('#ed-vol').value = p ? p.vol : '';
+    ed = p ? { photos: p.photos.slice(), type: p.type, ret: p.ret, avail: p.avail, unit: p.vol.u } : { photos: [], type: 'box', ret: true, avail: true, unit: 'л' };
+    $('#ed-title').textContent = p ? 'Карточка товара' : 'Новый товар';
+    $('#ed-del').hidden = !p;
+    $('#ed-name').value = p ? p.name : ''; $('#ed-code').value = p ? p.code || '' : ''; $('#ed-cat').value = p ? p.cat : '';
+    $('#ed-vol').value = p ? String(p.vol.n).replace('.', ',') : '';
     $('#ed-desc').value = p ? p.desc : ''; $('#ed-desc-box').open = !!(p && p.desc);
     $('#ed-pack').value = p && TYPE[p.type].packL ? p.pack : ''; $('#ed-price').value = p ? p.price : '';
-    $('#ed-err').hidden = true; $('#ed-save').textContent = editing ? 'Сохранить изменения' : 'Сохранить товар';
-    renderEditor(); renderNav(); $('#ed-form').scrollTop = 0;
+    $('#ed-err').hidden = true; $('#ed-save').textContent = p ? 'Сохранить изменения' : 'Сохранить товар';
+    renderEditor();
   }
   function renderEditor() {
     const n = ed.photos.length;
@@ -1547,7 +1608,10 @@ details.desc textarea:focus{border-color:var(--green)}
       '<button type="button" class="ph-del" data-phdel="' + i + '" aria-label="Удалить фото">×</button></div>').join('') +
       (n < 5 ? '<label class="ph-add" for="ph-input"><svg class="ic"><use href="#i-camera"/></svg>' + (n ? 'Ещё фото' : 'Добавить') + '</label>' : '');
     const c = $('#ph-count'); c.textContent = n + ' из 5' + (n < 1 ? ' · нужно минимум 1' : ''); c.className = 'ph-count ' + (n < 1 ? 'bad' : 'ok');
+    const curCat = $('#ed-cat').value.trim();
+    $('#ed-cats').innerHTML = CATS_DIR.map(k => '<button type="button" class="chip sm' + (k === curCat ? ' on' : '') + '" data-ecat="' + k + '">' + k + '</button>').join('');
     $$('#ed-type button').forEach(b => { const on = b.dataset.t === ed.type; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    $$('#ed-unit button').forEach(b => b.classList.toggle('on', b.dataset.u === ed.unit));
     const T = TYPE[ed.type]; $('#ed-pack-f').hidden = !T.packL; if (T.packL) $('#ed-pack-l').textContent = T.packL; $('#ed-price-s').textContent = T.per;
     $('#ed-ret').setAttribute('aria-checked', ed.ret); $('#ed-avail').setAttribute('aria-checked', ed.avail);
     $('#ed-avail-h').textContent = ed.avail ? 'Магазины видят товар и могут заказать' : 'Товар скрыт, магазины не могут заказать';
@@ -1559,23 +1623,32 @@ details.desc textarea:focus{border-color:var(--green)}
     e.target.value = ''; renderEditor();
   });
   $('#ed-photos').addEventListener('click', e => { const d = e.target.closest('[data-phdel]'); if (d) { ed.photos.splice(+d.dataset.phdel, 1); renderEditor(); } });
+  $('#ed-cats').addEventListener('click', e => { const b = e.target.closest('[data-ecat]'); if (b) { $('#ed-cat').value = b.dataset.ecat; renderEditor(); } });
+  $('#ed-cat').addEventListener('input', renderEditor);
   $('#ed-type').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { ed.type = b.dataset.t; renderEditor(); } });
+  $('#ed-unit').addEventListener('click', e => { const b = e.target.closest('[data-u]'); if (b) { ed.unit = b.dataset.u; renderEditor(); } });
   $('#ed-ret').addEventListener('click', () => { ed.ret = !ed.ret; renderEditor(); });
   $('#ed-avail').addEventListener('click', () => { ed.avail = !ed.avail; renderEditor(); });
+  $('#ed-scan').addEventListener('click', () => { openScan('code'); go('s-scan', 'push'); });
   $$('#ed-price, #ed-pack').forEach(i => i.addEventListener('input', () => { i.value = i.value.replace(/\D/g, '').slice(0, 7); }));
+  $('#ed-code').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 13); });
+  $('#ed-vol').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^\d.,]/g, '').slice(0, 7); });
   $('#ed-form').addEventListener('submit', e => {
     e.preventDefault();
-    const name = $('#ed-name').value.trim(), vol = $('#ed-vol').value.trim(), price = parseInt($('#ed-price').value, 10);
+    const name = $('#ed-name').value.trim(), code = $('#ed-code').value.trim(), cat = $('#ed-cat').value.trim();
+    const volN = parseFloat($('#ed-vol').value.replace(',', '.')), price = parseInt($('#ed-price').value, 10);
     const T = TYPE[ed.type], pack = T.packL ? parseInt($('#ed-pack').value, 10) : 1, errs = [];
     if (ed.photos.length < 1) errs.push('добавьте хотя бы 1 фото');
     if (!name) errs.push('укажите наименование');
-    if (!vol) errs.push('укажите объём или вес');
-    if (T.packL && !(pack > 0)) errs.push('укажите, сколько штук в упаковке');
+    if (code && code.length !== 13) errs.push('штрихкод EAN-13 — 13 цифр');
+    if (!cat) errs.push('укажите категорию');
+    if (T.packL && !(pack > 0)) errs.push('укажите кол-во в упаковке');
+    if (!(volN > 0)) errs.push('укажите объём или вес');
     if (!(price > 0)) errs.push('укажите цену');
     if (errs.length) { const er = $('#ed-err'); er.textContent = 'Чтобы сохранить: ' + errs.join(', ') + '.'; er.hidden = false; er.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    const data = { name, vol, type: ed.type, pack, price, avail: ed.avail, ret: ed.ret, desc: $('#ed-desc').value.trim(), photos: ed.photos.slice() };
+    const data = { name, code, cat, vol: { n: volN, u: ed.unit }, type: ed.type, pack, price, avail: ed.avail, ret: ed.ret, desc: $('#ed-desc').value.trim(), photos: ed.photos.slice() };
     if (edId) { Object.assign(prod(edId), data); toast('Сохранено · магазины увидят изменения сразу'); renderProducts(); back(); }
-    else { products.unshift(Object.assign({ id: ++pid, key: 'new' + pid, cat: 'Бакалея', dist: true, isNew: 1 }, data)); toast('Товар добавлен · он уже в каталоге магазинов'); $('#p-search').value = ''; openTab('products'); }
+    else { products.unshift(Object.assign({ id: ++pid, key: 'new' + pid, sup: DIST, isNew: 1 }, data)); toast('Товар добавлен · он уже в каталоге магазинов'); $('#p-search').value = ''; openTab('products'); }
   });
   $('#ed-del').addEventListener('click', () => {
     sheet('<span class="h2">Удалить товар?</span><span class="small muted" style="text-align:center">Магазины больше не увидят его в каталоге</span><button type="button" class="btn lg danger" id="del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
@@ -1585,19 +1658,19 @@ details.desc textarea:focus{border-color:var(--green)}
   // =====================================================================
   //                               МАГАЗИН
   // =====================================================================
-  let smart = false;
-  const cart = [];   // { pid, sup, price, q, urgent, day }
-  // Карточка товара для магазина: фото, название, цена/тип, наличие, «+» в корзину
+  // Каталог — товары конкретных поставщиков: у одного и того же товара может быть несколько карточек
+  const cart = [];   // { pid, q, day }
   function shopCard(p, grid) {
-    const off = bestOffer(p), av = !!off;
     const flag = p.promo ? '<span class="flag promo">Акция</span>' : p.isNew ? '<span class="flag new">Новинка</span>' : '';
-    const old = p.promo && off ? '<span class="old">' + fmt(p.promo) + '</span>' : '';
-    const price = '<span class="p-price">' + old + (av ? (p.dist ? 'от ' : '') + fmt(off.price) : '—') + ' сом <small>/ ' + unitOf(p) + '</small></span>';
-    const st = av ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
-    const add = av ? '<span class="add" role="button" tabindex="0" data-quick="' + p.id + '" aria-label="В корзину"><svg class="ic"><use href="#i-add"/></svg></span>' : '';
+    const old = p.promo ? '<span class="old">' + fmt(p.promo) + '</span>' : '';
+    const price = '<span class="p-price">' + old + fmt(p.price) + ' сом <small>/ ' + TYPE[p.type].name.toLowerCase() + '</small></span>';
+    const sup = '<span class="xs muted">' + p.sup + '</span>';
+    const add = p.avail ? '<span class="add" role="button" tabindex="0" data-quick="' + p.id + '" aria-label="В корзину"><svg class="ic"><use href="#i-add"/></svg></span>'
+      : '<span class="pill out" style="font-size:11px">Нет в наличии</span>';
+    const foot = '<span class="card-foot">' + price + add + '</span>';
     return grid
-      ? '<button type="button" class="pcard scard rise' + (av ? '' : ' off') + '" data-item="' + p.id + '">' + flag + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + esc(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span>' + add + '</button>'
-      : '<button type="button" class="pcard scard rise' + (av ? '' : ' off') + '" data-item="' + p.id + '">' + zimg(p) + '<span class="grow" style="gap:4px">' + flag + '<span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + esc(p.vol) + '</span></span>' + price + '</span>' + add + '</button>';
+      ? '<button type="button" class="pcard scard rise' + (p.avail ? '' : ' off') + '" data-item="' + p.id + '">' + flag + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + volText(p.vol) + '</span>' + sup + '</span>' + foot + '</button>'
+      : '<button type="button" class="pcard scard row-card rise' + (p.avail ? '' : ' off') + '" data-item="' + p.id + '"><span class="row" style="gap:12px;align-items:flex-start">' + zimg(p) + '<span class="grow" style="gap:3px">' + flag + '<span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + volText(p.vol) + '</span></span>' + sup + '</span></span>' + foot + '</button>';
   }
   function cardClick(e) {
     const q = e.target.closest('[data-quick]');
@@ -1605,14 +1678,10 @@ details.desc textarea:focus{border-color:var(--green)}
     const b = e.target.closest('[data-item]');
     if (b) { openItem(+b.dataset.item); go('m-item', 'push'); }
   }
-  function quickAdd(id) {
-    const p = prod(id), o = bestOffer(p); if (!o) return;
-    addToCart({ pid: id, sup: o.sup, price: o.price, q: 1, urgent: false, day: 1 });
-    toast('В корзине: ' + p.name + ' · ' + o.sup);
-  }
+  function quickAdd(id) { const p = prod(id); addToCart({ pid: id, q: 1, day: 1 }); toast('В корзине: ' + p.name + ' · ' + p.sup); }
   function addToCart(it) {
-    const ex = cart.find(c => c.pid === it.pid && c.sup === it.sup);
-    if (ex) { ex.q += it.q; ex.urgent = ex.urgent || it.urgent; ex.day = Math.min(ex.day, it.day); } else cart.push(it);
+    const ex = cart.find(c => c.pid === it.pid);
+    if (ex) { ex.q += it.q; ex.day = Math.min(ex.day, it.day); } else cart.push(it);
     renderNav();
   }
 
@@ -1620,13 +1689,10 @@ details.desc textarea:focus{border-color:var(--green)}
   const FEED_F = [['all', 'Все'], ['promo', 'Акции'], ['new', 'Новинки']];
   let feedF = 'all';
   function renderFeed() {
-    $('#smart-box').innerHTML = smart
-      ? '<div class="smart rise"><span class="s-ic"><svg class="ic"><use href="#i-spark"/></svg></span><span class="grow"><b>SmartOrder подключён</b><span>Заканчивается: молоко (4 шт), сметана (3 шт). Подсказки — в карточках товаров.</span></span></div>'
-      : '<div class="smart rise"><span class="s-ic"><svg class="ic"><use href="#i-spark"/></svg></span><span class="grow"><b>SmartOrder</b><span>Подключите учёт склада — подскажем, что пора заказать</span></span><button type="button" class="btn" id="smart-on">Подключить</button></div>';
     $('#f-filter').innerHTML = FEED_F.map(([k, t]) => '<button type="button" class="chip' + (k === feedF ? ' on' : '') + '" data-ff="' + k + '">' + t + '</button>').join('');
     const q = ($('#f-search').value || '').trim().toLowerCase();
-    let list = allItems().filter(p => isAvail(p));
-    if (q) list = list.filter(p => (p.name + ' ' + p.vol).toLowerCase().includes(q));
+    let list = listings().filter(p => p.avail);
+    if (q) list = list.filter(p => matchQ(p, q));
     else if (feedF === 'promo') list = list.filter(p => p.promo);
     else if (feedF === 'new') list = list.filter(p => p.isNew);
     else list = list.filter(p => p.pop).sort((a, b) => a.pop - b.pop).concat(list.filter(p => !p.pop)).slice(0, 8);
@@ -1639,17 +1705,15 @@ details.desc textarea:focus{border-color:var(--green)}
   $('#f-filter').addEventListener('click', e => { const b = e.target.closest('[data-ff]'); if (b) { feedF = b.dataset.ff; $('#f-search').value = ''; renderFeed(); } });
   $('#f-search').addEventListener('input', renderFeed);
   $('#f-list').addEventListener('click', cardClick);
-  $('#smart-box').addEventListener('click', e => { if (e.target.closest('#smart-on')) { smart = true; renderFeed(); toast('SmartOrder подключён (демо)'); } });
   $('#open-barcode').addEventListener('click', () => { openScan('barcode'); go('s-scan', 'push'); });
 
   // Каталог
-  const CATS = ['Все', 'Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'];
+  const CATS = ['Все'].concat(CATS_DIR);
   let cat = 'Все';
   function renderCatalog() {
-    $('#c-cats').innerHTML = CATS.map(c => '<button type="button" class="chip' + (c === cat ? ' on' : '') + '" data-cat="' + c + '">' + c + '<span class="cnt">' + allItems().filter(p => c === 'Все' || p.cat === c).length + '</span></button>').join('');
+    $('#c-cats').innerHTML = CATS.map(c => '<button type="button" class="chip' + (c === cat ? ' on' : '') + '" data-cat="' + c + '">' + c + '<span class="cnt">' + listings().filter(p => c === 'Все' || p.cat === c).length + '</span></button>').join('');
     const q = ($('#c-search').value || '').trim().toLowerCase();
-    const list = allItems().filter(p => (cat === 'Все' || p.cat === cat) && (!q || (p.name + ' ' + p.vol).toLowerCase().includes(q)))
-      .sort((a, b) => isAvail(b) - isAvail(a));
+    const list = listings().filter(p => (cat === 'Все' || p.cat === cat) && matchQ(p, q)).sort((a, b) => b.avail - a.avail || a.name.localeCompare(b.name) || a.price - b.price);
     const box = $('#c-list'); box.className = 'plist' + (view.catalog === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(p => shopCard(p, view.catalog === 'grid')).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
   }
@@ -1657,42 +1721,38 @@ details.desc textarea:focus{border-color:var(--green)}
   $('#c-search').addEventListener('input', renderCatalog);
   $('#c-list').addEventListener('click', cardClick);
 
-  // Подробнее о товаре
+  // Подробнее о товаре (товар одного поставщика)
   let it = null;
-  function openItem(id) {
-    const p = prod(id), offs = offersOf(p), best = bestOffer(p);
-    it = { p, sup: best ? best.sup : null, q: 1, urgent: false, day: 1 };
-    $('#it-img').src = p.photos[0]; $('#it-img').dataset.zoom = p.photos[0]; $('#it-img').dataset.zname = p.name + ', ' + p.vol;
-    $('#it-name').textContent = p.name;
-    $('#it-meta').textContent = p.vol + ' · ' + TYPE[p.type].name.toLowerCase() + (TYPE[p.type].packL ? ' по ' + p.pack + ' шт' : '') + (p.ret ? ' · обмен и возврат' : ' · без возврата');
-    $('#it-tip').innerHTML = smart ? '<div class="smart-tip"><svg class="ic"><use href="#i-spark"/></svg><span>Совет SmartOrder: на складе осталось 4 шт. Обычно вы берёте 3 ' + unitOf(p) + ' в неделю — хватит до ' + dm(day(5)) + '.</span></div>' : '';
+  function openItem(id, cartIdx) {
+    const p = prod(id), c = cartIdx != null ? cart[cartIdx] : null;
+    it = { p, q: c ? c.q : 1, day: c ? c.day : 1, cartIdx: c ? cartIdx : null };
+    $('#it-img').src = p.photos[0]; $('#it-img').dataset.zoom = p.photos[0]; $('#it-img').dataset.zname = nameVol(p);
+    $('#it-name').textContent = nameVol(p);
+    $('#it-sup').textContent = p.sup;
+    $('#it-price').innerHTML = (p.promo ? '<span class="old">' + fmt(p.promo) + '</span>' : '') + fmt(p.price) + ' сом <small>' + TYPE[p.type].per + '</small>';
+    $('#it-avail').innerHTML = p.avail ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
+    $('#it-desc').textContent = p.desc || 'Поставщик пока не добавил описание.';
+    $('#it-desc-box').open = false;
+    $('#it-props').innerHTML = [['Штрихкод', p.code || '—'], ['Категория', p.cat], ['Тип фасовки', TYPE[p.type].name], ['Кол-во в упак.', TYPE[p.type].packL ? p.pack + ' шт' : '—'], ['Обмен и возврат', p.ret ? 'Возможен' : 'Нет']]
+      .map(([k, v]) => '<div class="kv"><span>' + k + '</span><span>' + esc(v) + '</span></div>').join('');
     $('#it-unit').textContent = 'в ' + ({ кор: 'коробках', бл: 'блоках', шт: 'штуках', кг: 'килограммах' })[unitOf(p)];
-    $('#it-urgent').setAttribute('aria-checked', 'false'); $('#it-urgent-box').classList.remove('on');
-    renderItem(offs);
-    $('#m-item .body').scrollTop = 0;
+    $('#it-add').textContent = it.cartIdx != null ? 'Обновить в корзине' : 'В корзину';
+    renderItem();
   }
-  function renderItem(offs) {
-    const p = it.p; offs = offs || offersOf(p);
-    $('#it-offers').innerHTML = offs.map(o => '<button type="button" class="offer' + (o.sup === it.sup ? ' on' : '') + '" data-sup="' + esc(o.sup) + '"' + (o.avail ? '' : ' disabled') + '><span class="radio"></span>' +
-      '<span class="grow" style="gap:3px"><span class="row" style="gap:6px;flex-wrap:wrap"><span class="bold" style="font-size:15px">' + o.sup + '</span>' + (o.tags || []).map(t => '<span class="tag ' + t[0] + '">' + t[1] + '</span>').join('') + '</span>' +
-      '<span class="small muted">' + (o.avail ? 'Доставка ' + (o.days === 0 ? 'сегодня' : 'завтра') + (o.defer ? ' · отсрочка оплаты ' + o.defer + ' дн.' : ' · оплата при получении') : 'Нет в наличии') + '</span></span>' +
-      '<span class="price" style="font-size:16px;font-weight:800;white-space:nowrap">' + fmt(o.price) + ' сом</span></button>').join('');
-    $('#it-dates').innerHTML = DAYS.map(([t, k]) => '<button type="button" class="date-opt' + (it.day === k ? ' on' : '') + '" data-iday="' + k + '"><b>' + t + '</b><span>' + dm(day(k)) + '</span></button>').join('');
-    const o = offs.find(x => x.sup === it.sup);
+  function renderItem() {
+    const p = it.p;
+    $('#it-dates').innerHTML = DAYS.map(([t, k]) => '<button type="button" class="date-opt' + (it.day === k ? ' on' : '') + (k === 0 ? ' urgent' : '') + '" data-iday="' + k + '"><b>' + t + '</b><span>' + dm(day(k)) + (k === 0 ? ' · срочно' : '') + '</span></button>').join('');
     $('#it-q').value = it.q; $('#it-minus').disabled = it.q <= 1;
-    $('#it-total').textContent = o ? fmt(o.price * it.q) + ' сом' : '—';
-    $('#it-add').disabled = !o;
+    $('#it-total').textContent = fmt(p.price * it.q) + ' сом';
+    $('#it-add').disabled = !p.avail;
   }
-  $('#it-offers').addEventListener('click', e => { const b = e.target.closest('[data-sup]'); if (b && !b.disabled) { it.sup = b.dataset.sup; renderItem(); } });
   $('#it-dates').addEventListener('click', e => { const b = e.target.closest('[data-iday]'); if (b) { it.day = +b.dataset.iday; renderItem(); } });
   $('#it-minus').addEventListener('click', () => { if (it.q > 1) { it.q--; renderItem(); } });
   $('#it-plus').addEventListener('click', () => { it.q++; renderItem(); });
   $('#it-q').addEventListener('change', e => { it.q = Math.max(1, parseInt(e.target.value, 10) || 1); renderItem(); });
-  $('#it-urgent').addEventListener('click', () => { it.urgent = !it.urgent; $('#it-urgent').setAttribute('aria-checked', it.urgent); $('#it-urgent-box').classList.toggle('on', it.urgent); });
   $('#it-add').addEventListener('click', () => {
-    const o = offersOf(it.p).find(x => x.sup === it.sup); if (!o) return;
-    addToCart({ pid: it.p.id, sup: o.sup, price: o.price, q: it.q, urgent: it.urgent, day: it.day });
-    toast('Добавлено в корзину' + (it.urgent ? ' · срочно' : ''));
+    if (it.cartIdx != null) { Object.assign(cart[it.cartIdx], { q: it.q, day: it.day }); toast('Корзина обновлена'); renderCart(); }
+    else { addToCart({ pid: it.p.id, q: it.q, day: it.day }); toast('Добавлено в корзину' + (it.day === 0 ? ' · срочно на сегодня' : '')); }
     back();
   });
 
@@ -1704,62 +1764,49 @@ details.desc textarea:focus{border-color:var(--green)}
       body.innerHTML = '<div class="empty" style="padding-top:60px"><svg class="ic"><use href="#i-cart"/></svg><span>Корзина пуста</span><button type="button" class="btn" data-tabgo="catalog" style="margin-top:6px">Перейти в каталог</button></div>';
       renderNav(); return;
     }
-    const groups = {};
-    cart.forEach((c, i) => (groups[c.sup] = groups[c.sup] || []).push([c, i]));
-    body.innerHTML = Object.keys(groups).map(sup => {
-      const rows = groups[sup], sum = rows.reduce((s, [c]) => s + c.price * c.q, 0);
-      return '<div class="card cart-group rise"><div class="between"><span class="bold" style="font-size:16px">' + sup + '</span><span class="xs muted">' + fmt(sum) + ' сом</span></div>' +
-        rows.map(([c, i]) => { const p = prod(c.pid); return '<div class="cart-row">' + zimg(p, 'sm') + '<span class="grow"><span class="bold" style="font-size:14px">' + esc(p.name) + (c.urgent ? '<span class="u-mark">СРОЧНО</span>' : '') + '</span>' +
-          '<span class="xs muted">' + fmt(c.price) + ' сом × ' + c.q + ' ' + unitOf(p) + ' · ' + dayWord(c.day) + ', ' + dm(day(c.day)) + '</span></span>' +
-          '<span class="stepper sm"><button type="button" data-cq="' + i + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><input class="qin" type="number" min="1" value="' + c.q + '" data-cin="' + i + '" aria-label="Количество"><button type="button" data-cq="' + i + ':1" aria-label="Больше">+</button></span>' +
-          '<button type="button" class="eye" data-cdel="' + i + '" aria-label="Убрать"><svg class="ic"><use href="#i-trash"/></svg></button></div>'; }).join('') + '</div>';
-    }).join('') + '<span class="xs muted" style="text-align:center">Заказ уйдёт каждому поставщику отдельно</span>';
-    const total = cart.reduce((s, c) => s + c.price * c.q, 0), nSup = Object.keys(groups).length;
+    body.innerHTML = '<div class="card" style="gap:12px;padding:12px 14px">' + cart.map((c, i) => {
+      const p = prod(c.pid);
+      return (i ? '<div class="divider"></div>' : '') + '<div class="cart-row"><button type="button" class="cart-open" data-copen="' + i + '">' + zimg(p, 'sm') +
+        '<span class="grow" style="gap:2px"><span class="bold" style="font-size:14px">' + esc(p.name) + (c.day === 0 ? '<span class="u-mark">СРОЧНО</span>' : '') + '</span>' +
+        '<span class="xs muted">' + p.sup + ' · ' + dayWord(c.day) + ', ' + dm(day(c.day)) + '</span><span class="small bold">' + fmt(p.price) + ' сом × ' + c.q + ' = ' + fmt(p.price * c.q) + ' сом</span></span></button>' +
+        '<span class="cart-ctl"><span class="stepper sm"><button type="button" data-cq="' + i + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><input class="qin" type="number" min="1" value="' + c.q + '" data-cin="' + i + '" aria-label="Количество"><button type="button" data-cq="' + i + ':1" aria-label="Больше">+</button></span>' +
+        '<button type="button" class="eye" data-cdel="' + i + '" aria-label="Удалить"><svg class="ic"><use href="#i-trash"/></svg></button></span></div>';
+    }).join('') + '</div><span class="xs muted" style="text-align:center">После оформления товары одного поставщика соберутся в один заказ</span>';
+    const total = cart.reduce((s, c) => s + prod(c.pid).price * c.q, 0), nSup = new Set(cart.map(c => prod(c.pid).sup)).size;
     $('#cart-total').textContent = fmt(total) + ' сом';
-    $('#cart-n').textContent = 'Итого · ' + nSup + ' ' + plural(nSup, 'поставщик', 'поставщика', 'поставщиков');
+    $('#cart-sups').textContent = nSup;
     renderNav();
   }
   $('#cart-body').addEventListener('click', e => {
-    const s = e.target.closest('[data-cq]'), d = e.target.closest('[data-cdel]');
+    const s = e.target.closest('[data-cq]'), d = e.target.closest('[data-cdel]'), o = e.target.closest('[data-copen]');
     if (s) { const [i, k] = s.dataset.cq.split(':'); cart[+i].q = Math.max(1, cart[+i].q + +k); renderCart(); }
-    if (d) { cart.splice(+d.dataset.cdel, 1); renderCart(); }
+    else if (d) { cart.splice(+d.dataset.cdel, 1); renderCart(); }
+    else if (o && !e.target.closest('[data-zoom]')) { const i = +o.dataset.copen; openItem(cart[i].pid, i); go('m-item', 'push'); }
   });
   $('#cart-body').addEventListener('change', e => { const i = e.target.closest('[data-cin]'); if (i) { cart[+i.dataset.cin].q = Math.max(1, parseInt(i.value, 10) || 1); renderCart(); } });
-  $('#cart-clear').addEventListener('click', () => { cart.length = 0; renderCart(); });
+  $('#cart-clear').addEventListener('click', () => {
+    sheet('<span class="h2">Очистить корзину?</span><button type="button" class="btn lg danger" id="clr-yes">Очистить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#clr-yes').onclick = () => { cart.length = 0; closeSheet(); renderCart(); };
+  });
   $('#cart-send').addEventListener('click', () => {
     const groups = {};
-    cart.forEach(c => (groups[c.sup] = groups[c.sup] || []).push(c));
+    cart.forEach(c => { const p = prod(c.pid); (groups[p.sup] = groups[p.sup] || []).push([c, p]); });
     const made = Object.keys(groups).map(sup => {
-      const rows = groups[sup], urgentRows = rows.filter(c => c.urgent);
-      const o = { n: String(oNum++).padStart(4, '0'), sup, shop: MY_SHOP, ago: 'только что', st: 'new', want: Math.min(...rows.map(c => c.day)),
-        items: rows.map(c => snap(prod(c.pid), c.q, c.price)) };
-      if (urgentRows.length) o.urgent = Math.min(...urgentRows.map(c => c.day));
+      const rows = groups[sup], want = Math.min(...rows.map(([c]) => c.day));
+      const o = { n: String(oNum++).padStart(4, '0'), sup, shop: MY_SHOP, ago: 'только что', st: 'new', want, items: rows.map(([c, p]) => snap(p, c.q)) };
+      if (want === 0) o.urgent = 0;   // «Сегодня» = срочно
       orders.unshift(o);
-      // Другие поставщики в макете подтверждают сами; наш дистрибьютор — вручную в своём кабинете
+      // Другие поставщики в макете принимают заказ сами; наш дистрибьютор — вручную в своём кабинете
       if (sup !== DIST) setTimeout(() => { if (o.st === 'new') { acceptOrder(o, o.want); if (role === 'shop') { toast(sup + ' принял заказ № ' + o.n); refreshShop(); } } }, 6000);
       return o;
     });
     cart.length = 0;
-    toast(made.length === 1 ? 'Заказ № ' + made[0].n + ' отправлен' : 'Отправлено заказов: ' + made.length);
-    soFilter = 'active'; openTab('sorders');
+    toast(made.length === 1 ? 'Заказ № ' + made[0].n + ' отправлен' : 'Отправлено заказов: ' + made.length + ' (по поставщикам)');
+    openTab('sorders');
   });
 
-  // Заказы магазина
-  let soFilter = 'active';
+  // Заказы магазина: каждая карточка — заказ одного поставщика, накладная и QR сворачиваются
   const myOrders = () => orders.filter(o => o.shop === MY_SHOP);
-  function renderShopOrders() {
-    const act = myOrders().filter(o => o.st !== 'done'), done = myOrders().filter(o => o.st === 'done');
-    $('#so-filter').innerHTML = [['active', 'Активные', act.length], ['done', 'Завершённые', done.length]].map(([k, t, n]) => '<button type="button" class="chip' + (k === soFilter ? ' on' : '') + '" data-sof="' + k + '">' + t + '<span class="cnt">' + n + '</span></button>').join('');
-    const list = soFilter === 'active' ? act : done;
-    $('#so-list').innerHTML = list.length ? list.map(o => '<button type="button" class="ocard rise' + (o.st === 'new' && o.urgent != null ? ' is-urgent' : '') + '" data-sorder="' + o.n + '">' +
-      '<span class="between"><span class="o-name">' + o.sup + '</span>' + pillOf(o, true) + '</span><span class="o-items">' + esc(summary(o)) + '</span>' +
-      '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>').join('')
-      : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (soFilter === 'active' ? 'Активных заказов нет' : 'Пока нет завершённых заказов') + '</span></div>';
-    renderNav();
-  }
-  $('#so-filter').addEventListener('click', e => { const b = e.target.closest('[data-sof]'); if (b) { soFilter = b.dataset.sof; renderShopOrders(); } });
-  $('#so-list').addEventListener('click', e => { const b = e.target.closest('[data-sorder]'); if (b) { openShopOrder(b.dataset.sorder); go('m-order', 'push'); } });
-  let curSO = null;
   // Условный QR (макет): узор зависит от номера заказа, считать его камерой нельзя
   function qrArt(seed) {
     let x = 0; for (const ch of seed) x = (x * 31 + ch.charCodeAt(0)) >>> 0;
@@ -1769,24 +1816,33 @@ details.desc textarea:focus{border-color:var(--green)}
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const f = finder(r, c); cells.push(f === -1 ? (rnd() > .52 ? 1 : 0) : f); }
     return '<div class="qr" role="img" aria-label="QR-код заказа">' + cells.map(v => v ? '<i></i>' : '<i class="o"></i>').join('') + '</div>';
   }
-  function openShopOrder(n) { curSO = findOrder(n); renderShopOrder(); }
-  function renderShopOrder() {
-    const o = curSO, at = o.st === 'new' ? 0 : o.st === 'work' ? 1 : 2;
-    $('#mo-title').textContent = 'Заказ № ' + o.n; $('#mo-pill').innerHTML = pillOf(o, true);
-    const steps = [['Заказ отправлен', o.ago], ['Поставщик принял', o.st !== 'new' ? 'поставка ' + dm(day(o.deliver)) : 'ждём подтверждения'], ['Доставлен', o.st === 'done' ? dm(day(o.deliver)) + ' в ' + o.deliveredAt + ' · по QR' : '']];
-    let h = '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + o.sup + '</span><span class="small muted">№ ' + o.n + ' · ' + o.ago + (o.urgent != null && o.st === 'new' ? ' · <b style="color:#D8392C">срочно до ' + dm(day(o.urgent)) + '</b>' : '') + '</span></div>' +
-      '<div class="steps">' + steps.map(([t, s], j) => '<div class="step' + (j <= at ? ' done' : '') + '"><div class="mk"><span class="c"></span>' + (j < 2 ? '<span class="ln"></span>' : '') + '</div><div class="grow"><span class="bold" style="font-size:14px">' + t + '</span>' + (s ? '<span class="xs muted">' + s + '</span>' : '') + '</div></div>').join('') + '</div>' +
-      contactRow('Телефон поставщика') + '</div>';
-    if (o.st === 'work') h += '<div class="card qr-card rise"><span class="bold" style="font-size:16px">QR для подтверждения доставки</span>' + qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45">Покажите этот код экспедитору при получении товара. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div>';
-    h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Товары</span>' + itemRows(o) + '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div></div>';
-    if (o.st !== 'new') h += invoiceBlock(o);
-    else h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-pdf"/></svg>Накладная появится, когда поставщик примет заказ</div>';
-    $('#mo-body').innerHTML = h;
-    if (o.st !== 'new') prepareInv($('#mo-body .inv'), o);
+  const openSO = new Set();   // какие свёрнутые блоки открыты: «n:inv», «n:qr»
+  function renderShopOrders() {
+    const list = myOrders();
+    $('#so-list').innerHTML = list.length ? list.map(o => {
+      const st = o.st === 'new' ? 'Ждёт подтверждения поставщика' + (o.urgent != null ? ' · <b style="color:#D8392C">срочно на сегодня</b>' : '')
+        : o.st === 'work' ? 'Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dm(day(o.deliver))
+        : o.st === 'done' ? 'Доставлено ' + dm(day(o.deliver)) + ' в ' + o.deliveredAt + ' · по QR' : 'Причина: ' + esc(o.reason);
+      let h = '<div class="card so-card rise' + (o.st === 'rejected' ? ' rej' : '') + '" data-so="' + o.n + '">' +
+        '<div class="between" style="align-items:flex-start"><span class="grow" style="gap:2px"><span style="font-size:17px;font-weight:800">' + o.sup + '</span><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span></span>' + pillOf(o, true) + '</div>' +
+        '<span class="small muted">' + st + '</span>' + contactRow('Контакты поставщика') +
+        '<div class="so-items">' + itemRows(o) + '</div><div class="total-row"><span class="bold">Итого</span><span class="price" style="font-size:18px">' + fmt(oSum(o)) + ' сом</span></div>';
+      if (hasInvoice(o)) h += '<details class="fold" data-fold="' + o.n + ':inv"' + (openSO.has(o.n + ':inv') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-pdf"/></svg>Накладная<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in">' +
+        invoiceCard(o) + '<div class="inv-actions"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div></div></details>';
+      if (o.st === 'work') h += '<details class="fold" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR для подтверждения доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
+        qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45;text-align:center">Покажите код экспедитору при получении. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div></details>';
+      return h + '</div>';
+    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>Заказов пока нет</span></div>';
+    renderNav();
   }
+  $('#so-list').addEventListener('toggle', e => {
+    const d = e.target.closest && e.target.closest('details[data-fold]'); if (!d) return;
+    const key = d.dataset.fold;
+    if (d.open) { openSO.add(key); if (key.endsWith(':inv')) prepareInv($('.inv', d), findOrder(key.split(':')[0])); }
+    else openSO.delete(key);
+  }, true);
   function refreshShop() {
     if (cur === 'm-orders') renderShopOrders();
-    if (cur === 'm-order' && curSO) renderShopOrder();
     if (cur === 'm-feed') renderFeed();
     renderNav();
   }
@@ -1797,7 +1853,7 @@ details.desc textarea:focus{border-color:var(--green)}
     { t: 'Новинка: Ряженка 4%, 0,5 л', s: DIST, ago: '2 дня назад', ic: 'i-spark', read: false },
     { t: 'Заказ № 0213 доставлен', s: DIST, ago: '4 дня назад', ic: 'i-truck', read: true }
   ];
-  function notify(text, o) { if (o.shop === MY_SHOP) notifs.unshift({ t: text, s: o.sup, ago: 'только что', ic: o.st === 'done' ? 'i-truck' : 'i-check', read: false }); }
+  function notify(text, o) { if (o.shop === MY_SHOP) notifs.unshift({ t: text, s: o.sup, ago: 'только что', ic: o.st === 'done' ? 'i-truck' : o.st === 'rejected' ? 'i-x' : 'i-check', read: false }); }
   function renderNotifs() {
     $('#notif-list').innerHTML = notifs.map(n => '<div class="card row rise" style="flex-direction:row;padding:14px;gap:12px"><span class="notif-i" style="background:' + (n.read ? 'var(--soft);color:var(--muted)' : 'var(--green-bg);color:var(--green)') + '"><svg class="ic"><use href="#' + n.ic + '"/></svg></span>' +
       '<span class="grow"><span class="bold" style="font-size:14px">' + esc(n.t) + '</span><span class="xs muted">' + esc(n.s) + ' · ' + n.ago + '</span></span></div>').join('');
@@ -1830,7 +1886,7 @@ details.desc textarea:focus{border-color:var(--green)}
       $('#logout-yes').onclick = () => { closeSheet(); $('#login-form').reset(); go('a-login', 'fade'); };
     }
   });
-  const invOrders = () => orders.filter(o => o.st !== 'new' && (role === 'dist' ? o.sup === DIST : o.shop === MY_SHOP));
+  const invOrders = () => orders.filter(o => hasInvoice(o) && (role === 'dist' ? o.sup === DIST : o.shop === MY_SHOP));
   function renderInvoices() {
     const list = invOrders().sort((a, b) => b.n.localeCompare(a.n));
     $('#inv-list').innerHTML = list.length ? list.map(o => '<button type="button" class="pcard" data-invopen="' + o.n + '"><span class="pimg" style="background:var(--green-bg);border:none;color:var(--green);cursor:pointer"><svg class="ic"><use href="#i-pdf"/></svg></span>' +

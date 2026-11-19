@@ -590,6 +590,40 @@ details.fold[open] .chev2{transform:rotate(180deg)}
 .fab{top:auto;bottom:calc(100% + 12px);width:64px;height:64px;border-radius:32px;box-shadow:0 0 0 5px var(--bg),var(--sh-green),0 10px 26px rgba(22,128,60,.35)}
 .fab .ic{width:30px;height:30px}
 .fab.hide{transform:translate(-50%,30px) scale(.5);opacity:0;pointer-events:none}
+
+/* ===== Магазин v3: счётчик на карточке, линия статусов заказа ===== */
+.mini-step{display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:12px;background:var(--green-bg);flex-shrink:0}
+.mini-step span{width:30px;height:30px;border-radius:9px;background:var(--grad-green);color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
+.mini-step span:active{transform:scale(.9)}
+.mini-step b{min-width:26px;text-align:center;font-size:15px;color:var(--green);font-variant-numeric:tabular-nums}
+.lineup{display:grid;grid-template-columns:repeat(3,1fr);position:relative;margin-top:4px}
+.lineup.two{grid-template-columns:repeat(2,1fr)}
+.lu{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;position:relative;min-width:0}
+.lu::before{content:"";position:absolute;top:11px;right:50%;width:100%;height:3px;background:var(--line);z-index:0}
+.lu:first-child::before{display:none}
+.lu.done::before{background:var(--green)}
+.lu.bad::before{background:#D8392C}
+.lu-dot{width:24px;height:24px;border-radius:12px;background:var(--card);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;z-index:1;margin-bottom:2px}
+.lu.done .lu-dot{background:var(--green);border-color:var(--green);color:#fff}
+.lu.bad .lu-dot{background:#D8392C;border-color:#D8392C}
+.lu.cur .lu-dot{box-shadow:0 0 0 4px var(--green-bg)}
+.lu.bad.cur .lu-dot{box-shadow:0 0 0 4px var(--red-bg)}
+.lu-dot .ic{width:14px;height:14px;stroke-width:3}
+.lu b{font-size:12px}
+.lu span{font-size:11px;color:var(--muted);line-height:1.25;overflow:hidden;text-overflow:ellipsis;max-width:100%;white-space:nowrap}
+.lu.bad b{color:#D8392C}
+.so-card[role=button]{cursor:pointer;transition:transform .12s}
+.so-card[role=button]:active{transform:scale(.985)}
+.so-ct{display:flex;gap:6px;flex-shrink:0}
+.c-btn.sm{width:38px;height:38px;border-radius:19px}
+.c-btn.sm .ic{width:17px;height:17px}.c-btn.wa.sm svg{width:20px;height:20px}
+.so-more{display:flex;align-items:center;justify-content:flex-end;gap:2px;font-size:13px;font-weight:700;color:var(--green)}
+.so-more .ic{width:16px;height:16px}
+details.fold.first{border-top:none}
+.plist.grid .card-foot{flex-direction:column;align-items:stretch;gap:8px}
+.plist.grid .card-foot .add{align-self:flex-end}
+.plist.grid .card-foot .mini-step{justify-content:space-between;width:100%}
+.plist.grid .card-foot .pill.out{align-self:flex-start}
 </style>
 </head>
 <body>
@@ -836,9 +870,13 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   </section>
 
   <section class="screen" id="m-orders" data-tab="sorders" data-role="shop" hidden>
-    <header class="top"><span class="h1">Заказы</span></header>
-    <div class="body" id="so-list"></div>
+    <header class="top"><span class="h1">Заказы</span><div class="chips" id="so-filter" role="tablist" aria-label="Статус заказов"></div></header>
+    <div class="body"><div class="olist" id="so-list"></div></div>
     <nav class="tabbar five" data-nav></nav>
+  </section>
+  <section class="screen" id="m-order" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub" id="mo-title">Заказ</span></div></header>
+    <div class="body" id="mo-body"></div>
   </section>
 
   <section class="screen" id="m-notifs" hidden>
@@ -1699,8 +1737,10 @@ details.fold[open] .chev2{transform:rotate(180deg)}
     const old = p.promo ? '<span class="old">' + fmt(p.promo) + '</span>' : '';
     const price = '<span class="p-price">' + old + fmt(p.price) + ' сом <small>/ ' + TYPE[p.type].name.toLowerCase() + '</small></span>';
     const sup = '<span class="xs muted">' + p.sup + '</span>';
-    const add = p.avail ? '<span class="add" role="button" tabindex="0" data-quick="' + p.id + '" aria-label="В корзину"><svg class="ic"><use href="#i-add"/></svg></span>'
-      : '<span class="pill out" style="font-size:11px">Нет в наличии</span>';
+    const inCart = cart.find(c => c.pid === p.id);
+    const add = !p.avail ? '<span class="pill out" style="font-size:11px">Нет в наличии</span>'
+      : inCart ? '<span class="mini-step" aria-label="Количество в корзине"><span role="button" tabindex="0" data-cstep="' + p.id + ':-1" aria-label="Меньше">−</span><b>' + inCart.q + '</b><span role="button" tabindex="0" data-cstep="' + p.id + ':1" aria-label="Больше">+</span></span>'
+      : '<span class="add" role="button" tabindex="0" data-quick="' + p.id + '" aria-label="В корзину"><svg class="ic"><use href="#i-add"/></svg></span>';
     const foot = '<span class="card-foot">' + price + add + '</span>';
     return grid
       ? '<button type="button" class="pcard scard rise' + (p.avail ? '' : ' off') + '" data-item="' + p.id + '">' + flag + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + volText(p.vol) + '</span>' + sup + '</span>' + foot + '</button>'
@@ -1708,10 +1748,20 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   }
   function cardClick(e) {
     const q = e.target.closest('[data-quick]');
-    if (q) { e.stopPropagation(); quickAdd(+q.dataset.quick); return; }
+    if (q) { e.stopPropagation(); quickAdd(+q.dataset.quick); refreshCards(); return; }
+    const st = e.target.closest('[data-cstep]');
+    if (st) {
+      e.stopPropagation();
+      const [id, k] = st.dataset.cstep.split(':').map(Number), i = cart.findIndex(c => c.pid === id);
+      if (i > -1) { cart[i].q += k; if (cart[i].q < 1) cart.splice(i, 1); }
+      refreshCards(); renderNav(); return;
+    }
+    if (e.target.closest('.mini-step')) return;
     const b = e.target.closest('[data-item]');
     if (b) { openItem(+b.dataset.item); go('m-item', 'push'); }
   }
+  // Перерисовать карточки в ленте и каталоге (прокрутка списка не сбивается)
+  function refreshCards() { if (!$('#m-feed').hidden) renderFeed(); if (!$('#m-catalog').hidden) renderCatalog(); }
   function quickAdd(id) { const p = prod(id); addToCart({ pid: id, q: 1, day: 1 }); toast('В корзине: ' + p.name + ' · ' + p.sup); }
   function addToCart(it) {
     const ex = cart.find(c => c.pid === it.pid);
@@ -1836,7 +1886,7 @@ details.fold[open] .chev2{transform:rotate(180deg)}
     });
     cart.length = 0;
     toast(made.length === 1 ? 'Заказ № ' + made[0].n + ' отправлен' : 'Отправлено заказов: ' + made.length + ' (по поставщикам)');
-    openTab('sorders');
+    soFilter = 'sent'; openTab('sorders');
   });
 
   // Заказы магазина: каждая карточка — заказ одного поставщика, накладная и QR сворачиваются
@@ -1850,26 +1900,59 @@ details.fold[open] .chev2{transform:rotate(180deg)}
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const f = finder(r, c); cells.push(f === -1 ? (rnd() > .52 ? 1 : 0) : f); }
     return '<div class="qr" role="img" aria-label="QR-код заказа">' + cells.map(v => v ? '<i></i>' : '<i class="o"></i>').join('') + '</div>';
   }
-  const openSO = new Set();   // какие свёрнутые блоки открыты: «n:inv», «n:qr»
+  // Фильтр: отправлен запрос · принят / отказ · доставлено
+  const SO_F = [['sent', 'Отправлен запрос', o => o.st === 'new'], ['acc', 'Принят / Отказ', o => o.st === 'work' || o.st === 'rejected'], ['done', 'Доставлено', o => o.st === 'done']];
+  let soFilter = 'sent';
+  // Линия статусов: весь путь заказа от отправки до доставки (или отказа)
+  function lineup(o) {
+    const steps = o.st === 'rejected'
+      ? [['Отправлен', o.ago, 1], ['Отказ', o.reason, 1, 'bad']]
+      : [['Отправлен', o.ago, 1], ['Принят', o.st !== 'new' ? 'поставка ' + dm(day(o.deliver)) : 'ждём', o.st !== 'new'], ['Доставлен', o.st === 'done' ? dm(day(o.deliver)) + ' ' + o.deliveredAt : '', o.st === 'done']];
+    return '<div class="lineup' + (o.st === 'rejected' ? ' two' : '') + '">' + steps.map(([t, sub, done, bad], i) =>
+      '<div class="lu' + (done ? ' done' : '') + (bad ? ' bad' : '') + (done && (!steps[i + 1] || !steps[i + 1][2]) ? ' cur' : '') + '"><span class="lu-dot">' + (done ? '<svg class="ic"><use href="#' + (bad ? 'i-x' : 'i-check') + '"/></svg>' : '') + '</span>' +
+      '<b>' + t + '</b><span>' + esc(sub || '') + '</span></div>').join('') + '</div>';
+  }
+  function supContacts() {
+    const d = DEMO_PHONE.replace(/\D/g, ''), hi = encodeURIComponent('Здравствуйте! Пишу по заказу в Zakup.KG');
+    return '<span class="so-ct"><a class="c-btn call sm" href="tel:+' + d + '" aria-label="Позвонить поставщику"><svg class="ic"><use href="#i-call"/></svg></a>' +
+      '<a class="c-btn wa sm" href="https://wa.me/' + d + '?text=' + hi + '" target="_blank" rel="noopener" aria-label="WhatsApp поставщика"><svg viewBox="0 0 24 24"><use href="#i-wa"/></svg></a></span>';
+  }
+  const soHead = o => '<div class="between" style="align-items:flex-start;gap:10px"><span class="grow" style="gap:2px"><span style="font-size:17px;font-weight:800">' + o.sup + '</span>' +
+    '<span class="xs muted">Заказ № ' + o.n + ' · ' + fmt(oSum(o)) + ' сом' + (o.urgent != null && o.st === 'new' ? ' · <b style="color:#D8392C">срочно</b>' : '') + '</span></span>' + supContacts() + '</div>' + lineup(o);
   function renderShopOrders() {
-    const list = myOrders();
-    $('#so-list').innerHTML = list.length ? list.map(o => {
-      const st = o.st === 'new' ? 'Ждёт подтверждения поставщика' + (o.urgent != null ? ' · <b style="color:#D8392C">срочно на сегодня</b>' : '')
-        : o.st === 'work' ? 'Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dm(day(o.deliver))
-        : o.st === 'done' ? 'Доставлено ' + dm(day(o.deliver)) + ' в ' + o.deliveredAt + ' · по QR' : 'Причина: ' + esc(o.reason);
-      let h = '<div class="card so-card rise' + (o.st === 'rejected' ? ' rej' : '') + '" data-so="' + o.n + '">' +
-        '<div class="between" style="align-items:flex-start"><span class="grow" style="gap:2px"><span style="font-size:17px;font-weight:800">' + o.sup + '</span><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span></span>' + pillOf(o, true) + '</div>' +
-        '<span class="small muted">' + st + '</span>' + contactRow('Контакты поставщика') +
-        '<div class="so-items">' + itemRows(o) + '</div><div class="total-row"><span class="bold">Итого</span><span class="price" style="font-size:18px">' + fmt(oSum(o)) + ' сом</span></div>';
-      if (hasInvoice(o)) h += '<details class="fold" data-fold="' + o.n + ':inv"' + (openSO.has(o.n + ':inv') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-pdf"/></svg>Накладная<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in">' +
-        invoiceCard(o) + '<div class="inv-actions"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div></div></details>';
-      if (o.st === 'work') h += '<details class="fold" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR для подтверждения доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
-        qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45;text-align:center">Покажите код экспедитору при получении. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div></details>';
-      return h + '</div>';
-    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>Заказов пока нет</span></div>';
+    const mine = myOrders();
+    $('#so-filter').innerHTML = SO_F.map(([k, t, f]) => '<button type="button" class="chip' + (k === soFilter ? ' on' : '') + '" data-sof="' + k + '" role="tab" aria-selected="' + (k === soFilter) + '">' + t + '<span class="cnt">' + mine.filter(f).length + '</span></button>').join('');
+    const list = mine.filter(SO_F.find(f => f[0] === soFilter)[2]);
+    $('#so-list').innerHTML = list.length ? list.map(o => '<div class="card so-card rise' + (o.st === 'rejected' ? ' rej' : '') + '" role="button" tabindex="0" data-so="' + o.n + '">' + soHead(o) +
+      '<span class="so-more">Подробнее<svg class="ic"><use href="#i-next"/></svg></span></div>').join('')
+      : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + ({ sent: 'Нет отправленных запросов', acc: 'Нет принятых или отклонённых заказов', done: 'Пока нет доставленных заказов' })[soFilter] + '</span></div>';
     renderNav();
   }
-  $('#so-list').addEventListener('toggle', e => {
+  $('#so-filter').addEventListener('click', e => { const b = e.target.closest('[data-sof]'); if (b) { soFilter = b.dataset.sof; renderShopOrders(); } });
+  $('#so-list').addEventListener('click', e => {
+    if (e.target.closest('a')) return;   // звонок / WhatsApp
+    const c = e.target.closest('[data-so]'); if (c) { openShopOrder(c.dataset.so); go('m-order', 'push'); }
+  });
+  // Подробнее: шапка с линией, товары, накладная и QR (сворачиваются)
+  let curSO = null;
+  const openSO = new Set();
+  function openShopOrder(n) { curSO = findOrder(n); renderShopOrder(); }
+  function renderShopOrder() {
+    const o = curSO;
+    $('#mo-title').textContent = 'Заказ № ' + o.n;
+    let h = '<div class="card rise so-card' + (o.st === 'rejected' ? ' rej' : '') + '">' + soHead(o) + '</div>';
+    if (o.st === 'rejected') h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>Поставщик отклонил заказ · ' + esc(o.reason) + '</div>';
+    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + o.items.length + ' поз.</span></div>' + itemRows(o) +
+      '<div class="divider"></div><div class="total-row"><span class="bold">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div></div>';
+    if (hasInvoice(o)) h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':inv"' + (openSO.has(o.n + ':inv') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-pdf"/></svg>Накладная<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in">' +
+      invoiceCard(o) + '<div class="inv-actions"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div></div></details></div>';
+    else if (o.st === 'new') h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-pdf"/></svg>Накладная появится, когда поставщик примет заказ</div>';
+    if (o.st === 'work') h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR для подтверждения доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
+      qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45;text-align:center">Покажите код экспедитору при получении. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div></details></div>';
+    $('#mo-body').innerHTML = h;
+    const inv = $('#mo-body details[open] .inv'); if (inv) prepareInv(inv, o);
+  }
+  $('#mo-body').addEventListener('toggle', e => {
     const d = e.target.closest && e.target.closest('details[data-fold]'); if (!d) return;
     const key = d.dataset.fold;
     if (d.open) { openSO.add(key); if (key.endsWith(':inv')) prepareInv($('.inv', d), findOrder(key.split(':')[0])); }
@@ -1877,6 +1960,7 @@ details.fold[open] .chev2{transform:rotate(180deg)}
   }, true);
   function refreshShop() {
     if (cur === 'm-orders') renderShopOrders();
+    if (cur === 'm-order' && curSO) renderShopOrder();
     if (cur === 'm-feed') renderFeed();
     renderNav();
   }

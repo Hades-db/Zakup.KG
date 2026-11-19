@@ -1,0 +1,1878 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>Zakup.KG MVP</title>
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zakup.KG">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<script>
+  try { var t = localStorage.getItem('zk-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+
+/* =========================================================
+   MVP · Кабинет дистрибьютора (макет)
+   Заказы · Товары · Добавить товар (+) · Профиль
+   ========================================================= */
+:root{
+  --green:#16803C; --green-dark:#0F6B31; --green-hi:#22A350; --green-bg:#E6F4EA;
+  --bg:#EEF2EF; --card:#FFFFFF; --soft:#F2F5F2; --line:#E4E9E5; --border:#D3DAD5;
+  --text:#14201A; --muted:#58645D; --page:#DDE4DF;
+  --warn:#B4410C; --warn-bg:#FFEBDD; --amber:#8A5A12; --amber-bg:#FBEFD9;
+  --red:#B42318; --red-bg:#FDE8E6; --blue:#1D5FA8; --blue-bg:#E6EFFA;
+  --sh-1:0 1px 2px rgba(20,40,28,.05),0 2px 8px rgba(20,40,28,.05);
+  --sh-2:0 2px 4px rgba(20,40,28,.05),0 8px 22px rgba(20,40,28,.08);
+  --sh-green:0 4px 12px rgba(22,128,60,.30),0 1px 2px rgba(22,128,60,.25);
+  --grad-green:linear-gradient(180deg,var(--green-hi) 0%,var(--green) 100%);
+  --photo-bg:#FFFFFF;
+  --font: Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --green:#2FA65C; --green-dark:#24884A; --green-hi:#3DBD6C; --green-bg:#16301F;
+    --bg:#0E1411; --card:#171F1A; --soft:#1F2923; --line:#26312A; --border:#34413A;
+    --text:#E7EEE9; --muted:#97A59C; --page:#070A08;
+    --warn:#F2945A; --warn-bg:#3A2316; --amber:#E2B661; --amber-bg:#36291A;
+    --red:#F07468; --red-bg:#3B1C19; --blue:#7FB3F0; --blue-bg:#182A3F;
+    --sh-1:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
+    --sh-2:0 2px 4px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
+    --sh-green:0 4px 14px rgba(47,166,92,.25);
+    --photo-bg:#F4F6F5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --green:#2FA65C; --green-dark:#24884A; --green-hi:#3DBD6C; --green-bg:#16301F;
+  --bg:#0E1411; --card:#171F1A; --soft:#1F2923; --line:#26312A; --border:#34413A;
+  --text:#E7EEE9; --muted:#97A59C; --page:#070A08;
+  --warn:#F2945A; --warn-bg:#3A2316; --amber:#E2B661; --amber-bg:#36291A;
+  --red:#F07468; --red-bg:#3B1C19; --blue:#7FB3F0; --blue-bg:#182A3F;
+  --sh-1:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
+  --sh-2:0 2px 4px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
+  --sh-green:0 4px 14px rgba(47,166,92,.25);
+  --photo-bg:#F4F6F5;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+body{background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden;font-size:14px}
+button,input,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;-webkit-user-select:none;user-select:none}
+img{max-width:100%}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Приложение: на телефоне во весь экран, на компьютере — телефон по центру */
+.app{position:fixed;inset:0;background:var(--bg);overflow:hidden}
+@media (min-width:700px){
+  body{background:var(--page)}
+  .app{inset:16px auto;left:50%;width:420px;transform:translateX(-50%);border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+}
+
+/* Экраны и переходы */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);will-change:transform}
+.screen.in-right{animation:inRight .36s cubic-bezier(.2,.8,.2,1) both}
+.screen.out-left{animation:outLeft .36s cubic-bezier(.2,.8,.2,1) both}
+.screen.in-left{animation:inLeft .36s cubic-bezier(.2,.8,.2,1) both}
+.screen.out-right{animation:outRight .36s cubic-bezier(.2,.8,.2,1) both;z-index:2}
+.screen.fade-in{animation:fadeIn .28s ease both}
+@keyframes inRight{from{transform:translateX(100%)}to{transform:none}}
+@keyframes outLeft{from{transform:none}to{transform:translateX(-28%);filter:brightness(.92)}}
+@keyframes inLeft{from{transform:translateX(-28%);filter:brightness(.92)}to{transform:none}}
+@keyframes outRight{from{transform:none}to{transform:translateX(100%)}}
+@keyframes fadeIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.screen.anim .rise{animation:rise .42s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:.001;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Шапка, контент */
+.top{background:var(--card);padding:calc(18px + env(safe-area-inset-top, 0px)) 16px 14px;display:flex;flex-direction:column;gap:12px;flex-shrink:0;
+  border-radius:0 0 22px 22px;box-shadow:0 1px 0 var(--line),0 6px 16px rgba(20,40,28,.05);position:relative;z-index:2}
+.top-row{display:flex;align-items:center;gap:10px;min-height:44px}
+.h1{font-size:24px;font-weight:800;flex:1;min-width:0}
+.h-sub{font-size:18px;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:14px 16px 20px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.body > *{flex-shrink:0}
+.icon-btn{width:44px;height:44px;border-radius:22px;border:none;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:var(--sh-1),inset 0 0 0 1px var(--line);transition:transform .12s}
+.icon-btn:active{transform:scale(.92)}
+.muted{color:var(--muted)} .small{font-size:13px} .xs{font-size:12px} .bold{font-weight:700}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.card{background:var(--card);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh-1)}
+.divider{height:1px;background:var(--line)}
+.section-h{font-size:13px;font-weight:800;color:var(--muted);padding:4px 2px 0}
+
+/* Кнопки */
+.btn{height:44px;padding:0 16px;border-radius:14px;border:none;background:var(--grad-green);color:#fff;font-size:15px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--sh-green);transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.lg{height:54px;border-radius:16px;font-size:17px;font-weight:800;width:100%}
+.btn.ghost{background:var(--card);color:var(--text);box-shadow:var(--sh-1),inset 0 0 0 1px var(--line)}
+.btn.danger{background:linear-gradient(180deg,#C8352A 0%,#A3201A 100%);box-shadow:0 4px 12px rgba(180,35,24,.28)}
+.btn:disabled{opacity:.45;box-shadow:none;cursor:default}
+.btn:disabled:active{transform:none}
+.linkbtn{border:none;background:none;color:var(--green);font-weight:700;font-size:14px;padding:0}
+
+/* Статусы */
+.pill{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.pill.urgent{color:#fff;background:linear-gradient(180deg,#E0483B,#C02E22);box-shadow:0 2px 6px rgba(192,46,34,.3)}
+.pill.new{color:var(--warn);background:var(--warn-bg)}
+.pill.work{color:var(--green);background:var(--green-bg)}
+.pill.done{color:var(--muted);background:var(--soft)}
+.pill.in{color:var(--green);background:var(--green-bg)}
+.pill.out{color:var(--red);background:var(--red-bg)}
+
+/* Чипы-фильтры и сегменты */
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;flex-shrink:0;
+  box-shadow:var(--sh-1);display:inline-flex;align-items:center;gap:6px;transition:background .2s,color .2s}
+.chip.on{background:var(--grad-green);border-color:transparent;color:#fff;font-weight:700;box-shadow:var(--sh-green)}
+.chip .cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.chip.on .cnt{background:rgba(255,255,255,.25);color:#fff}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:14px;background:var(--soft);box-shadow:inset 0 1px 3px rgba(20,40,28,.08)}
+.seg button{height:38px;border:none;border-radius:10px;background:transparent;font-size:14px;font-weight:700;color:var(--muted);transition:background .2s,color .2s}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 2px rgba(20,40,28,.08),0 3px 8px rgba(20,40,28,.08)}
+
+/* Переключатель вида: список / блоки */
+.view-sw{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--soft);flex-shrink:0}
+.view-sw button{width:38px;height:34px;border:none;border-radius:9px;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.view-sw button.on{background:var(--card);color:var(--green);box-shadow:0 1px 3px rgba(20,40,28,.12)}
+.view-sw .ic{width:19px;height:19px}
+
+/* Поиск и поля */
+.search{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border-radius:14px;background:var(--soft);color:var(--muted);box-shadow:inset 0 1px 3px rgba(20,40,28,.08)}
+.search input{flex:1;border:none;background:transparent;font-size:16px;outline:none;min-width:0}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field > label,.field .label{font-size:13px;font-weight:700;color:var(--muted)}
+.field input,.field textarea{border-radius:14px;border:1px solid var(--border);background:var(--card);padding:0 14px;height:50px;font-size:16px;min-width:0;width:100%;
+  box-shadow:inset 0 1px 2px rgba(20,40,28,.05);outline:none}
+.field textarea{height:auto;min-height:96px;padding:12px 14px;font-size:15px;line-height:1.45;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,128,60,.14)}
+.field .hint{font-size:12px;color:var(--muted)}
+.field .err{font-size:12px;color:var(--red);font-weight:600}
+.suffix{position:relative}
+.suffix input{padding-right:110px}
+.suffix span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);font-weight:600;pointer-events:none}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+
+/* Переключатель */
+.switch{width:50px;height:30px;border-radius:15px;border:none;background:var(--border);position:relative;flex-shrink:0;transition:background .2s;padding:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--green)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.opt{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:16px;box-shadow:var(--sh-1)}
+
+/* Нижнее меню: Заказы · Товары · (+) · Профиль */
+.tabbar{height:calc(70px + env(safe-area-inset-bottom, 0px));padding-bottom:env(safe-area-inset-bottom, 0px);background:var(--card);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  flex-shrink:0;position:relative;z-index:2;box-shadow:0 -1px 0 var(--line),0 -6px 20px rgba(20,40,28,.07)}
+.tab{border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11px;font-weight:600;position:relative;isolation:isolate}
+.tab.on{color:var(--green);font-weight:700}
+.tab.on::before{content:"";position:absolute;inset:6px 8px;border-radius:14px;background:rgba(0,0,0,.06);z-index:-1}
+:root[data-theme="dark"] .tab.on::before{background:rgba(255,255,255,.07)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .tab.on::before{background:rgba(255,255,255,.07)} }
+.tab .badge-n{position:absolute;top:9px;left:calc(50% + 5px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card)}
+.tab-add .plus{width:50px;height:50px;border-radius:17px;background:var(--grad-green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-green);transition:transform .12s}
+.tab-add .plus .ic{width:26px;height:26px;stroke-width:2.6}
+.tab-add:active .plus{transform:scale(.92)}
+.tab-add.on .plus{box-shadow:0 0 0 3px var(--green-bg),var(--sh-green)}
+.tab-add::before{display:none}
+
+/* Фото товара */
+.pimg{width:52px;height:52px;border-radius:12px;background:var(--photo-bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--muted);cursor:zoom-in}
+.pimg img{width:100%;height:100%;object-fit:contain;padding:2px}
+.pimg.sm{width:44px;height:44px;border-radius:10px}
+.pimg .ic{width:22px;height:22px}
+
+/* ===== Заказы ===== */
+.olist{display:flex;flex-direction:column;gap:10px}
+.olist.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ocard{background:var(--card);border-radius:18px;padding:14px;border:2px solid transparent;text-align:left;width:100%;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh-1);transition:transform .12s}
+.ocard:active{transform:scale(.98)}
+.ocard.is-new{border-color:var(--green);box-shadow:0 8px 22px rgba(22,128,60,.16),0 1px 3px rgba(20,40,28,.06)}
+.ocard.is-urgent{border-color:#D8392C;box-shadow:0 8px 22px rgba(200,50,40,.16),0 1px 3px rgba(20,40,28,.06)}
+.ocard .o-name{font-size:15px;font-weight:700}
+.ocard .o-items{font-size:13px;color:var(--muted);line-height:1.35}
+.ocard .o-sum{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.olist:not(.grid) .o-items{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.olist.grid .ocard{padding:12px;gap:8px}
+.olist.grid .o-items{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.olist.grid .o-foot{margin-top:auto;flex-direction:column;align-items:flex-start;gap:2px}
+.empty{text-align:center;color:var(--muted);padding:36px 12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.empty .ic{width:36px;height:36px;stroke-width:1.6;opacity:.6}
+
+/* Подробно о заказе */
+.contact{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft);box-shadow:inset 0 1px 2px rgba(20,40,28,.06)}
+.contact-num{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;-webkit-user-select:text;user-select:text}
+.c-btn{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;transition:transform .12s}
+.c-btn:active{transform:scale(.92)}
+.c-btn .ic{width:20px;height:20px}
+.c-btn.call{background:var(--grad-green);box-shadow:var(--sh-green)}
+.c-btn.wa{background:linear-gradient(180deg,#34DE76 0%,#1FBF5B 100%);box-shadow:0 4px 12px rgba(37,211,102,.35)}
+.c-btn.wa svg{width:24px;height:24px}
+.urgent-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,#E0483B,#C02E22);color:#fff;box-shadow:0 6px 16px rgba(192,46,34,.25)}
+.urgent-bar b{font-size:15px;letter-spacing:.04em}
+.item{display:flex;align-items:center;gap:10px}
+.item .i-sum{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.total-row{display:flex;align-items:baseline;justify-content:space-between}
+.total-row .price{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.dates{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.date-opt{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:border-color .2s,background .2s}
+.date-opt b{font-size:15px}
+.date-opt span{font-size:12px;color:var(--muted);font-weight:600}
+.date-opt.on{border-color:var(--green);background:var(--green-bg)}
+.date-opt.on b{color:var(--green)}
+.bottom-bar{background:var(--card);padding:12px 16px calc(16px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:8px;flex-shrink:0;position:relative;z-index:2;
+  box-shadow:0 -1px 0 var(--line),0 -6px 20px rgba(20,40,28,.07)}
+.bar-hint{font-size:12px;color:var(--muted);text-align:center;font-weight:600}
+.info-line{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--green-bg);color:var(--green);font-weight:700;font-size:14px}
+.info-line.grey{background:var(--soft);color:var(--muted)}
+
+/* Накладная — документ, всегда светлая (как бумага) */
+.inv{--text:#14201A;--muted:#58645D;--line:#E4E9E5;--green:#16803C;
+  background:#fff;color:var(--text);border:1px solid #E4E9E5;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:9px;font-size:13px;position:relative;overflow:hidden;box-shadow:var(--sh-1)}
+.inv > *:not(.inv-glow){position:relative}
+.inv-glow{position:absolute;top:-80px;right:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,#E3F6E8 0%,#EEF9F1 55%,rgba(255,255,255,0) 72%);pointer-events:none}
+.inv-logo{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:800}
+.inv-demo{font-size:10px;font-weight:800;letter-spacing:.08em;color:#B42318;border:1.5px solid #E8A39C;border-radius:6px;padding:1px 5px}
+.inv-h{font-size:18px;font-weight:800}
+.inv-sum{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.inv-sum small{font-size:15px;font-weight:700}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inv-party{display:flex;flex-direction:column;gap:2px}
+.inv-t{width:100%;border-collapse:collapse;font-size:12px}
+.inv-t th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;padding:4px 4px 6px}
+.inv-t td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:top;font-variant-numeric:tabular-nums}
+.inv-t .r{text-align:right;white-space:nowrap}
+.inv-t .tot td{font-weight:800;font-size:13px}
+.inv-sign{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:6px}
+.inv-sign div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.inv-sign .line{height:14px;border-bottom:1px solid var(--text)}
+.inv-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px}
+.html2pdf__overlay{pointer-events:none!important}
+
+/* Экран накладной из архива — как чек */
+.inv-screen{background:#0F1512!important}
+.inv-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;padding:calc(14px + env(safe-area-inset-top, 0px)) 16px 8px;flex-shrink:0}
+.inv-back{width:44px;height:44px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;display:flex;align-items:center;justify-content:center}
+.inv-head-t{color:#fff;font-size:18px;font-weight:800;text-align:center}
+.inv-stage{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:12px 16px;scrollbar-width:none}
+.inv-stage > .inv{margin:auto 0;flex-shrink:0;border:none;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.inv-foot{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 16px calc(18px + env(safe-area-inset-bottom, 0px));flex-shrink:0}
+.inv-send{border:none;background:none;color:#5EE08E;font-size:17px;font-weight:800;padding:10px 24px}
+.inv-foot .btn{width:100%}
+
+/* ===== Товары ===== */
+.plist{display:flex;flex-direction:column;gap:10px}
+.plist.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pcard{background:var(--card);border-radius:18px;padding:12px;border:none;text-align:left;width:100%;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-1);transition:transform .12s}
+.pcard:active{transform:scale(.98)}
+.pcard .p-name{font-size:15px;font-weight:700;line-height:1.3}
+.pcard .p-vol{font-size:13px;color:var(--muted);font-weight:600}
+.pcard .p-price{font-size:16px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pcard .p-price small{font-size:12px;color:var(--muted);font-weight:600}
+.pcard.off{opacity:.72}
+.plist.grid .pcard{flex-direction:column;align-items:stretch;gap:8px}
+.plist.grid .pimg{width:100%;height:120px;border-radius:14px}
+.plist.grid .pimg img{padding:6px}
+.plist.grid .p-foot{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:auto}
+
+/* ===== Шаблон карточки товара ===== */
+.photos{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px}
+.photos::-webkit-scrollbar{display:none}
+.ph{position:relative;width:96px;height:96px;border-radius:16px;background:var(--photo-bg);border:1px solid var(--line);flex-shrink:0;overflow:visible}
+.ph img{width:100%;height:100%;object-fit:contain;border-radius:15px;padding:4px;cursor:zoom-in}
+.ph .ph-main{position:absolute;left:6px;bottom:6px;font-size:10px;font-weight:800;color:#fff;background:rgba(20,32,26,.7);padding:2px 6px;border-radius:6px}
+.ph .ph-del{position:absolute;top:-7px;right:-7px;width:26px;height:26px;border-radius:13px;border:2px solid var(--card);background:#2A332E;color:#fff;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.ph-add{width:96px;height:96px;border-radius:16px;border:2px dashed var(--border);background:var(--soft);color:var(--muted);flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;cursor:pointer}
+.ph-add .ic{width:26px;height:26px}
+.ph-count{font-size:12px;font-weight:700;color:var(--muted)}
+.ph-count.bad{color:var(--red)}
+.ph-count.ok{color:var(--green)}
+details.desc{background:var(--card);border-radius:16px;box-shadow:var(--sh-1);overflow:hidden}
+details.desc summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:14px;font-weight:700;cursor:pointer}
+details.desc summary::-webkit-details-marker{display:none}
+details.desc summary .ic{transition:transform .2s;color:var(--muted)}
+details.desc[open] summary .ic{transform:rotate(180deg)}
+details.desc .desc-in{padding:0 14px 14px}
+details.desc textarea{width:100%;border-radius:12px;border:1px solid var(--border);background:var(--soft);padding:12px;font-size:15px;line-height:1.45;min-height:110px;resize:vertical;outline:none}
+details.desc textarea:focus{border-color:var(--green)}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.types button{height:42px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:700;color:var(--text);transition:all .2s}
+.types button.on{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+
+/* ===== Профиль ===== */
+.avatar-wrap{position:relative;width:76px;height:76px;flex-shrink:0}
+.avatar{width:76px;height:76px;border-radius:24px;background:linear-gradient(145deg,var(--green-hi),var(--green-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;overflow:hidden;box-shadow:var(--sh-green)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-edit{position:absolute;right:-6px;bottom:-6px;width:32px;height:32px;border-radius:16px;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--sh-2),inset 0 0 0 1px var(--line);cursor:pointer}
+.avatar-edit .ic{width:17px;height:17px}
+.list{background:var(--card);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-1)}
+.li{display:flex;align-items:center;gap:12px;padding:14px 16px;border:none;background:none;text-align:left;width:100%;font-size:15px;font-weight:600;color:var(--text)}
+.li + .li{border-top:1px solid var(--line)}
+.li > .ic:first-child{color:var(--muted)}
+.li .chev{color:var(--muted);width:18px;height:18px}
+.li.red{color:var(--red)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.kv span:first-child{color:var(--muted)}
+.kv span:last-child{font-weight:700;text-align:right}
+.doc{font-size:14px;line-height:1.55}
+.doc h2{font-size:16px;font-weight:800;margin:18px 0 6px}
+.doc h2:first-child{margin-top:0}
+.doc p{margin:0 0 10px}
+.doc ul{margin:0 0 10px;padding-left:20px}
+.doc li{margin-bottom:4px}
+
+/* ===== QR — макет сканера ===== */
+.scan{background:#060908!important;color:#fff}
+.scan-view{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,#26302A 0%,#101512 60%,#060908 100%)}
+.scan-frame{width:240px;height:240px;position:relative}
+.scan-frame i{position:absolute;width:44px;height:44px;border:4px solid #5EE08E;border-radius:6px}
+.scan-frame i:nth-child(1){top:0;left:0;border-right:none;border-bottom:none;border-radius:16px 0 0 0}
+.scan-frame i:nth-child(2){top:0;right:0;border-left:none;border-bottom:none;border-radius:0 16px 0 0}
+.scan-frame i:nth-child(3){bottom:0;left:0;border-right:none;border-top:none;border-radius:0 0 0 16px}
+.scan-frame i:nth-child(4){bottom:0;right:0;border-left:none;border-top:none;border-radius:0 0 16px 0}
+.scan-line{position:absolute;left:14px;right:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,#5EE08E,transparent);box-shadow:0 0 12px #5EE08E;animation:scanl 2.2s ease-in-out infinite}
+@keyframes scanl{0%,100%{top:18px}50%{top:calc(100% - 21px)}}
+.scan-qr{position:absolute;inset:44px;opacity:.13;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.scan-qr span{background:#fff;border-radius:2px}
+.scan-qr span.o{background:transparent}
+.scan-cap{position:absolute;left:0;right:0;bottom:28px;text-align:center;padding:0 28px;display:flex;flex-direction:column;gap:6px}
+.scan-cap b{font-size:17px}
+.scan-cap span{font-size:13px;color:rgba(255,255,255,.7);line-height:1.4}
+.scan-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top, 0px)) 16px 8px;z-index:2}
+.scan-top .inv-back{flex-shrink:0}
+.scan-top .t{font-size:17px;font-weight:800;flex:1;text-align:center;margin-right:54px}
+.scan-ok{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(6,9,8,.86);animation:fadeIn .25s ease both}
+.scan-ok .circle{width:92px;height:92px;border-radius:46px;background:var(--grad-green);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(47,166,92,.45);animation:pop .45s cubic-bezier(.3,1.5,.5,1) both}
+.scan-ok .circle .ic{width:46px;height:46px;stroke-width:2.8;color:#fff}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.scan-foot{padding:14px 16px calc(18px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:8px;background:#060908}
+.scan-note{font-size:11px;color:rgba(255,255,255,.45);text-align:center}
+
+/* Вход */
+.auth{gap:12px;padding:calc(30px + env(safe-area-inset-top, 0px)) 20px 24px;justify-content:center}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.brand img{width:44px;height:44px;border-radius:12px;box-shadow:var(--sh-green)}
+.brand-name{font-size:32px;font-weight:800;letter-spacing:-.04em}
+.brand-name b{color:var(--green)}
+.auth-head{text-align:center;display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.inp{display:flex;align-items:center;gap:10px;height:52px;padding:0 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:inset 0 1px 2px rgba(20,40,28,.05)}
+.inp:focus-within{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,128,60,.14)}
+.inp .ic{color:var(--muted);width:20px;height:20px}
+.inp input{flex:1;border:none;background:none;height:100%;font-size:16px;min-width:0;outline:none;padding:0}
+.inp .cc{font-weight:700;font-size:16px}
+
+/* Шторка, тост, фото крупно */
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:40;display:flex;align-items:flex-end;animation:fadeIn .2s ease both}
+.sheet{background:var(--bg);border-radius:22px 22px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom, 0px));width:100%;display:flex;flex-direction:column;gap:12px}
+.sheet .handle{width:40px;height:4px;border-radius:2px;background:var(--border);align-self:center}
+.sheet .h2{font-size:17px;font-weight:800;text-align:center}
+.toast{position:absolute;left:16px;right:16px;top:calc(12px + env(safe-area-inset-top, 0px));z-index:70;background:#1C1E1B;color:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:10px;
+  font-size:14px;font-weight:600;transform:translateY(-160%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.toast.show{transform:none;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast .ic{color:#6EE7A0}
+.lightbox{position:absolute;inset:0;z-index:60;background:rgba(15,17,15,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;animation:fadeIn .22s ease both}
+.lb-img{width:min(82vw,340px);aspect-ratio:1;background:#fff;border-radius:24px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.lb-img img{width:100%;height:100%;object-fit:contain}
+.lb-name{color:#fff;font-size:18px;font-weight:800;text-align:center;max-width:340px}
+.lb-close{position:absolute;top:calc(16px + env(safe-area-inset-top, 0px));right:16px;width:44px;height:44px;border-radius:22px;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:26px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+}
+
+
+/* ================= MVP: логотип, заставка, вход, регистрация, магазин ================= */
+:root{ --mint:#03F48D; --mint-ink:#00A862; --logo-bg:#FFFFFF; --logo-fg:#000000; --logo-border:#E4E9E5 }
+:root[data-theme="dark"]{ --mint-ink:#03F48D; --logo-bg:#0B0B13; --logo-fg:#FFFFFF; --logo-border:#1E2620 }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --mint-ink:#03F48D; --logo-bg:#0B0B13; --logo-fg:#FFFFFF; --logo-border:#1E2620 } }
+
+/* Логотип: v1.svg — тёмный фон / v1.1.svg — светлый */
+.logo-plate{display:inline-flex;align-items:center;justify-content:center;background:var(--logo-bg);color:var(--logo-fg);border-radius:22%;box-shadow:0 0 0 1px var(--logo-border),var(--sh-2);flex-shrink:0}
+.logo-plate svg{width:76%;height:76%}
+.brand-name{font-size:32px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
+.brand-name b{color:var(--mint-ink);font-weight:800}
+
+/* Заставка (Boot Animation, 1,8 с) */
+.boot{position:absolute;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--logo-fg)}
+.boot-stack{display:flex;flex-direction:column;align-items:center;gap:14px;animation:bootLift .4s cubic-bezier(.16,1,.3,1) 1.2s both}
+.boot-mark{width:150px;height:110px;position:relative}
+.boot-mark svg{width:100%;height:100%;overflow:visible}
+.b-left,.b-right{transform-box:fill-box;transform-origin:center}
+.b-left{animation:bLeft .5s cubic-bezier(.16,1,.3,1) .2s both}
+.b-right{animation:bRight .5s cubic-bezier(.16,1,.3,1) .2s both}
+@keyframes bLeft{from{opacity:0;transform:translateX(255px)}to{opacity:1;transform:none}}
+@keyframes bRight{from{opacity:0;transform:translateX(-255px)}to{opacity:1;transform:none}}
+.b-dot{transform-box:fill-box;transform-origin:center;animation:bDot .3s ease .7s both}
+@keyframes bDot{0%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.4)}70%{opacity:.4}100%{opacity:0;transform:scale(1)}}
+.b-line{transform-box:fill-box;transform-origin:center;animation:bLine .4s cubic-bezier(.16,1,.3,1) .8s both}
+@keyframes bLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.b-glow{transform-box:fill-box;transform-origin:center;animation:bGlow .5s ease .85s both}
+@keyframes bGlow{0%{opacity:0;transform:scaleX(.3)}45%{opacity:1;transform:scaleX(1.05)}100%{opacity:.55;transform:scaleX(1)}}
+@keyframes bootLift{from{transform:none}to{transform:translateY(-14px)}}
+.boot-title{font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--text);animation:upIn .4s cubic-bezier(.16,1,.3,1) 1.2s both}
+.boot-title b{color:var(--mint-ink)}
+.boot-sub{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.02em;animation:subInOut .7s ease 1.3s both}
+@keyframes upIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes subInOut{0%{opacity:0;transform:translateY(8px)}35%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0}}
+.boot.fly .boot-title,.boot.fly .boot-sub{opacity:0!important;transition:opacity .2s}
+.boot.fly .boot-mark{transition:transform .45s cubic-bezier(.65,0,.35,1)}
+.boot.gone{opacity:0;transition:opacity .25s ease;pointer-events:none}
+
+/* Вход / восстановление / регистрация */
+.auth{gap:12px;padding:calc(18px + env(safe-area-inset-top, 0px)) 20px 24px;justify-content:flex-start}
+.auth-logo{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 4px}
+.auth-h{font-size:22px;font-weight:800;text-align:center}
+.auth-p{font-size:14px;color:var(--muted);text-align:center;line-height:1.45;margin:0 0 4px}
+.auth-top{display:flex;align-items:center;gap:10px;min-height:44px}
+.auth-top .t{flex:1;text-align:center;font-size:17px;font-weight:800;margin-right:54px}
+.eye{border:none;background:none;color:var(--muted);padding:4px;display:flex}
+.eye.on{color:var(--green)}
+.auth-links{display:flex;justify-content:space-between;align-items:center}
+.auth-switch{text-align:center;font-size:14px;color:var(--muted)}
+.demo-roles{display:flex;justify-content:center;gap:18px;margin-top:6px}
+.demo-roles .linkbtn{color:var(--muted);font-weight:600}
+.code{display:grid;grid-template-columns:repeat(4,58px);gap:12px;justify-content:center}
+.code input{width:58px;height:64px;border-radius:16px;border:1.5px solid var(--border);background:var(--card);text-align:center;font-size:26px;font-weight:800;outline:none;box-shadow:inset 0 1px 2px rgba(20,40,28,.05)}
+.code input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,128,60,.14)}
+.strength{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.strength i{height:6px;border-radius:3px;background:var(--line);transition:background .25s}
+.strength.s1 i:nth-child(-n+1){background:#D8392C}
+.strength.s2 i:nth-child(-n+2){background:#E08A1E}
+.strength.s3 i:nth-child(-n+3){background:#7BBF3A}
+.strength.s4 i{background:var(--green)}
+.str-l{font-size:12px;font-weight:700;color:var(--muted)}
+.role-sw{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:16px;background:var(--soft);box-shadow:inset 0 1px 3px rgba(20,40,28,.08)}
+.role-sw button{height:46px;border:none;border-radius:12px;background:transparent;font-size:15px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s}
+.role-sw button.on{background:var(--card);color:var(--mint-ink);box-shadow:0 0 0 2px var(--mint),0 0 18px rgba(3,244,141,.35)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+.check input{width:22px;height:22px;accent-color:var(--green);flex-shrink:0;margin:0}
+.agree-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--soft)}
+.agree-tabs button{height:36px;border:none;border-radius:10px;background:transparent;font-size:12px;font-weight:700;color:var(--muted)}
+.agree-tabs button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(20,40,28,.1)}
+.agree-doc{max-height:46vh;overflow-y:auto;background:var(--card);border-radius:16px;padding:14px}
+.sheet .linkbtn.top{align-self:flex-end}
+
+/* Магазин: лента, каталог, товар, корзина */
+.feed-top{display:flex;align-items:center;gap:10px}
+.mini-av{width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,var(--green-hi),var(--green-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;overflow:hidden;border:none;flex-shrink:0;box-shadow:var(--sh-green)}
+.mini-av img{width:100%;height:100%;object-fit:cover}
+.feed-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.feed-name b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn .dot-n{position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:5px;background:var(--red);box-shadow:0 0 0 2px var(--card)}
+.icon-btn{position:relative}
+.smart{background:linear-gradient(135deg,#0F1B14 0%,#17301F 100%);color:#fff;border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-2)}
+.smart .s-ic{width:42px;height:42px;border-radius:12px;background:rgba(3,244,141,.14);color:var(--mint);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.smart b{font-size:15px}
+.smart span{font-size:12.5px;opacity:.75;line-height:1.35}
+.smart .btn{height:36px;font-size:13px;padding:0 12px;border-radius:11px;background:var(--mint);color:#06281A;box-shadow:0 0 14px rgba(3,244,141,.4)}
+.smart-tip{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--blue-bg);color:var(--blue);font-size:13px;font-weight:600;line-height:1.4}
+.smart-tip .ic{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+.scard{position:relative}
+.scard .add{position:absolute;right:10px;bottom:10px;width:38px;height:38px;border-radius:12px;border:none;background:var(--grad-green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-green);transition:transform .12s}
+.scard .add:active{transform:scale(.9)}
+.scard .add .ic{width:20px;height:20px;stroke-width:2.6}
+.plist:not(.grid) .scard .add{position:static;margin-left:4px}
+.plist.grid .scard{padding-bottom:12px}
+.plist.grid .scard .p-foot{padding-right:44px}
+.flag{position:absolute;top:8px;left:8px;z-index:1;font-size:10px;font-weight:800;color:#fff;padding:3px 7px;border-radius:7px}
+.flag.promo{background:#D8392C}.flag.new{background:var(--blue)}
+.plist:not(.grid) .flag{position:static;display:inline-block;margin-bottom:2px}
+.old{font-size:12px;color:var(--muted);text-decoration:line-through;font-weight:600;margin-right:4px}
+.hero-img{height:210px;border-radius:0 0 26px 26px;background:var(--photo-bg);display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;box-shadow:var(--sh-1)}
+.hero-img img{cursor:zoom-in;height:180px;width:auto;max-width:80%;object-fit:contain}
+.hero-back{position:absolute;top:calc(12px + env(safe-area-inset-top, 0px));left:16px}
+.offer{text-align:left;background:var(--card);border:2px solid var(--card);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;width:100%;box-shadow:var(--sh-1);transition:border-color .2s}
+.offer.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green),var(--sh-2)}
+.offer:disabled{opacity:.5}
+.radio{width:22px;height:22px;border-radius:11px;border:2px solid #A3A8AE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.radio::after{content:"";width:12px;height:12px;border-radius:6px;background:var(--green);transform:scale(0);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.offer.on .radio{border-color:var(--green)}.offer.on .radio::after{transform:scale(1)}
+.tag{font-size:10px;font-weight:700;line-height:1;padding:3px 6px;border-radius:6px;white-space:nowrap}
+.tag.green{color:var(--green);background:var(--green-bg)}.tag.blue{color:var(--blue);background:var(--blue-bg)}.tag.amber{color:var(--amber);background:var(--amber-bg)}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:42px;height:42px;border-radius:12px;border:none;background:var(--card);font-size:22px;font-weight:700;box-shadow:var(--sh-1),inset 0 0 0 1px var(--line)}
+.stepper button:disabled{opacity:.4}
+.qin{width:58px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--card);text-align:center;font-size:17px;font-weight:800;padding:0;-moz-appearance:textfield;appearance:textfield;outline:none}
+.qin::-webkit-inner-spin-button,.qin::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.stepper.sm button{width:34px;height:34px;font-size:18px;border-radius:10px}
+.stepper.sm .qin{width:44px;height:34px;font-size:15px;border-radius:10px}
+.urgent-opt{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:var(--card);box-shadow:var(--sh-1);border:2px solid transparent;transition:border-color .2s}
+.urgent-opt.on{border-color:#D8392C}
+.urgent-opt .switch[aria-checked="true"]{background:#D8392C}
+.sum-bar{display:flex;align-items:center;gap:14px}
+.sum-bar .s{display:flex;flex-direction:column;gap:1px}
+.sum-bar .s b{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sum-bar .btn{flex:1}
+.cart-group{gap:10px}
+.cart-row{display:flex;align-items:center;gap:10px}
+.u-mark{font-size:10px;font-weight:800;color:#fff;background:#D8392C;border-radius:6px;padding:2px 6px;margin-left:4px}
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:12px}
+.step .mk{width:22px;display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.step .c{width:14px;height:14px;border-radius:7px;border:2px solid var(--border);background:var(--card);margin-top:3px}
+.step.done .c{background:var(--green);border-color:var(--green)}
+.step .ln{width:2px;height:24px;background:var(--line)}
+.step.done .ln{background:var(--green)}
+.qr-card{align-items:center;text-align:center}
+.qr{width:200px;height:200px;background:#fff;border-radius:16px;padding:12px;display:grid;grid-template-columns:repeat(25,1fr);grid-template-rows:repeat(25,1fr);box-shadow:0 0 0 1px var(--line)}
+.qr i{background:#0B0B13}
+.qr i.o{background:transparent}
+.notif-i{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scan-frame.bar{width:280px;height:150px}
+.bars-art{position:absolute;inset:34px 30px;display:flex;gap:3px;opacity:.16}
+.bars-art span{background:#fff;flex:1}
+.bars-art span:nth-child(3n){flex:.4}.bars-art span:nth-child(4n){flex:2}
+.tabbar.five{grid-template-columns:repeat(5,1fr)}
+.tabbar.five .tab{font-size:10.5px}
+.tab .badge-n.green{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===== Заставка ===== -->
+  <div class="boot" id="boot" aria-hidden="true">
+    <div class="boot-stack">
+      <div class="boot-mark" id="boot-mark">
+        <svg viewBox="100 212 824 600">
+          <path class="b-left" fill="currentColor" d="M127.008 239.197H339.349V308.386H198.45V523.861V715.614H339.349V784.803H127.008V239.197Z"/>
+          <path class="b-right" fill="currentColor" d="M896.992 784.803H684.651V715.614H825.55V500.139V308.386H684.651V239.197H896.992V784.803Z"/>
+          <circle class="b-dot" cx="512" cy="513" r="26" fill="#03F48D"/>
+          <rect class="b-glow" x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D" filter="url(#mint-glow)"/>
+          <rect class="b-line" x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D"/>
+        </svg>
+      </div>
+      <div class="boot-title">Zakup<b>.KG</b></div>
+      <div class="boot-sub">B2B Экосистема Поставок</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic"><use href="#i-check"/></svg><span id="toast-text">Готово</span></div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Фото товара" hidden>
+    <button type="button" class="lb-close" aria-label="Закрыть">×</button>
+    <div class="lb-img" id="lb-img"></div><span class="lb-name" id="lb-name"></span>
+  </div>
+  <div class="sheet-bg" id="sheet" hidden><div class="sheet" id="sheet-in"></div></div>
+
+  <!-- ===================== ВХОД ===================== -->
+  <section class="screen" id="a-login" hidden>
+    <form class="body auth" id="login-form" novalidate style="justify-content:center">
+      <div class="auth-logo"><span class="logo-plate" id="login-logo" style="width:92px;height:92px"><svg><use href="#logo-mark"/></svg></span><span class="brand-name">Zakup<b>.KG</b></span></div>
+      <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" inputmode="numeric" placeholder="Номер телефона" data-phone id="login-phone" autocomplete="tel"></label>
+      <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Пароль" data-pw id="login-pw" autocomplete="current-password"><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+      <div class="auth-links"><button type="button" class="linkbtn" data-auth="a-forgot">Забыли пароль?</button><span></span></div>
+      <button type="submit" class="btn lg">Войти</button>
+      <p class="auth-switch">Нет аккаунта? <button type="button" class="linkbtn" data-auth="a-register">Зарегистрироваться</button></p>
+      <div class="demo-roles"><span class="xs muted">Демо:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button></div>
+    </form>
+  </section>
+
+  <!-- Восстановление пароля: номер → код → новый пароль -->
+  <section class="screen" id="a-forgot" hidden>
+    <form class="body auth" id="forgot-form" novalidate>
+      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-login" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Восстановление пароля</span></div>
+      <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
+      <p class="auth-p">Пожалуйста, введите номер телефона — мы отправим SMS-код для восстановления аккаунта</p>
+      <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" inputmode="numeric" placeholder="Номер телефона" data-phone id="forgot-phone"></label>
+      <button type="submit" class="btn lg">Получить SMS-код</button>
+      <button type="button" class="linkbtn" data-auth="a-login" style="align-self:center">Вернуться ко входу</button>
+    </form>
+  </section>
+  <section class="screen" id="a-code" hidden>
+    <form class="body auth" id="code-form" novalidate>
+      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-forgot" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Подтверждение номера</span></div>
+      <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
+      <p class="auth-p">Введите 4-значный код, отправленный на номер <b id="code-phone" style="color:var(--text)"></b></p>
+      <div class="code" id="code"><input inputmode="numeric" maxlength="1" aria-label="Цифра 1"><input inputmode="numeric" maxlength="1" aria-label="Цифра 2"><input inputmode="numeric" maxlength="1" aria-label="Цифра 3"><input inputmode="numeric" maxlength="1" aria-label="Цифра 4"></div>
+      <p class="xs muted" style="text-align:center;margin:0">Демо: подойдёт любой код</p>
+      <button type="button" class="linkbtn" id="resend" style="align-self:center">Отправить код повторно</button>
+      <button type="submit" class="btn lg" id="code-ok" disabled>Подтвердить номер</button>
+      <button type="button" class="linkbtn" data-auth="a-login" style="align-self:center">Вернуться ко входу</button>
+    </form>
+  </section>
+  <section class="screen" id="a-newpw" hidden>
+    <form class="body auth" id="newpw-form" novalidate>
+      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-login" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Создание нового пароля</span></div>
+      <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
+      <p class="auth-p">Пожалуйста, установите новый надёжный пароль для вашей учётной записи Zakup.KG</p>
+      <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Новый пароль" data-pw id="np-pw" autocomplete="new-password"><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+      <div class="strength" id="np-str"><i></i><i></i><i></i><i></i></div>
+      <span class="str-l" id="np-str-l">Минимум 8 символов, цифры и буквы</span>
+      <button type="submit" class="btn lg" id="np-ok" disabled>Применить и войти</button>
+    </form>
+  </section>
+
+  <!-- Регистрация -->
+  <section class="screen" id="a-register" hidden>
+    <form class="body auth" id="reg-form" novalidate>
+      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-login" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Регистрация</span></div>
+      <div class="auth-logo"><span class="logo-plate" style="width:64px;height:64px"><svg><use href="#logo-mark"/></svg></span></div>
+      <p class="auth-h" style="margin:0">Добро пожаловать в B2B платформу!</p>
+      <div class="role-sw" id="reg-role" role="radiogroup" aria-label="Роль"><button type="button" class="on" data-r="shop"><svg class="ic"><use href="#i-store"/></svg>Магазин</button><button type="button" data-r="dist"><svg class="ic"><use href="#i-truck"/></svg>Поставщик</button></div>
+      <label class="inp"><svg class="ic"><use href="#i-store"/></svg><input type="text" id="reg-name" placeholder="Название магазина"></label>
+      <label class="inp"><svg class="ic"><use href="#i-doc"/></svg><input type="text" id="reg-inn" inputmode="numeric" placeholder="ИНН / ПИН (14 цифр)"></label>
+      <label class="inp"><svg class="ic"><use href="#i-pin"/></svg><input type="text" id="reg-addr" placeholder="Адрес магазина / доставки"></label>
+      <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" inputmode="numeric" placeholder="Номер телефона" data-phone id="reg-phone"></label>
+      <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Придумайте пароль" data-pw id="reg-pw" autocomplete="new-password"><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
+      <label class="check"><input type="checkbox" id="reg-agree"><span>Согласен с <button type="button" class="linkbtn" id="agree-open">условиями использования, публичной офертой и политикой конфиденциальности</button></span></label>
+      <span class="err" id="reg-err" hidden style="color:var(--red);font-weight:700;font-size:13px"></span>
+      <button type="submit" class="btn lg">Зарегистрироваться</button>
+      <button type="button" class="linkbtn" data-auth="a-login" style="align-self:center">Вернуться ко входу</button>
+    </form>
+  </section>
+
+  <!-- ===================== ДИСТРИБЬЮТОР ===================== -->
+  <section class="screen" id="s-orders" data-tab="orders" data-role="dist" hidden>
+    <header class="top">
+      <div class="top-row"><span class="h1">Заказы</span>
+        <div class="view-sw" role="group" aria-label="Вид списка" data-view="orders"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+      </div>
+      <div class="chips" id="o-filter" role="tablist" aria-label="Статус заказов"></div>
+    </header>
+    <div class="body"><div class="olist" id="o-list"></div></div>
+    <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <section class="screen" id="s-order" hidden>
+    <header class="top"><div class="top-row">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h-sub" id="od-title">Заказ</span><span id="od-pill"></span>
+    </div></header>
+    <div class="body" id="od-body"></div>
+    <div class="bottom-bar" id="od-bar" hidden></div>
+  </section>
+
+  <!-- Сканер: QR доставки (поставщик) и штрихкод (магазин) — макет без камеры -->
+  <section class="screen scan" id="s-scan" hidden>
+    <div class="scan-view">
+      <div class="scan-top"><button class="inv-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t" id="scan-title">Доставка по QR</span></div>
+      <div class="scan-frame" id="scan-frame" aria-hidden="true"><i></i><i></i><i></i><i></i><div class="scan-qr" id="scan-art"></div><span class="scan-line"></span></div>
+      <div class="scan-cap"><b id="scan-cap-b"></b><span id="scan-cap-s"></span></div>
+      <div class="scan-ok" id="scan-ok" hidden><span class="circle"><svg class="ic"><use href="#i-check"/></svg></span><b style="font-size:20px" id="scan-ok-b">Доставлено</b><span class="small" style="color:rgba(255,255,255,.8);text-align:center;padding:0 30px;line-height:1.5" id="scan-ok-t"></span></div>
+    </div>
+    <div class="scan-foot">
+      <button type="button" class="btn lg" id="scan-demo">Код отсканирован (демо)</button>
+      <span class="scan-note">Макет: камера не включается. В приложении здесь будет сканер.</span>
+    </div>
+  </section>
+
+  <section class="screen" id="s-products" data-tab="products" data-role="dist" hidden>
+    <header class="top">
+      <div class="top-row"><span class="h1">Товары</span>
+        <div class="view-sw" role="group" aria-label="Вид списка" data-view="products"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+      </div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="p-search" type="search" placeholder="Поиск товара" aria-label="Поиск товара"></label>
+    </header>
+    <div class="body"><div class="plist" id="p-list"></div></div>
+    <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <section class="screen" id="s-editor" data-tab="add" data-role="dist" hidden>
+    <header class="top"><div class="top-row">
+      <button class="icon-btn" data-back aria-label="Назад" id="ed-back"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h1" id="ed-title" style="font-size:22px">Новый товар</span>
+      <button class="icon-btn" id="ed-del" aria-label="Удалить товар" hidden><svg class="ic" style="color:var(--red)"><use href="#i-trash"/></svg></button>
+    </div></header>
+    <form class="body" id="ed-form" novalidate>
+      <div class="field">
+        <div class="between"><span class="label">Фото товара</span><span class="ph-count" id="ph-count"></span></div>
+        <div class="photos" id="ed-photos"></div>
+        <span class="hint">От 1 до 5 фото. Первое — главное, его видят магазины в списке.</span>
+        <input type="file" accept="image/*" multiple hidden id="ph-input">
+      </div>
+      <div class="field"><label for="ed-name">Наименование товара</label><input id="ed-name" type="text" placeholder="Например: Молоко «Моё» 3,2%"></div>
+      <details class="desc" id="ed-desc-box"><summary>Описание <svg class="ic"><use href="#i-down"/></svg></summary>
+        <div class="desc-in"><textarea id="ed-desc" placeholder="Состав, срок хранения, условия поставки…"></textarea></div></details>
+      <div class="field"><span class="label">Тип</span>
+        <div class="types" id="ed-type" role="radiogroup" aria-label="Тип товара">
+          <button type="button" data-t="box">Коробка</button><button type="button" data-t="block">Блок</button><button type="button" data-t="weight">Весовой</button><button type="button" data-t="piece">Штучный</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field" id="ed-pack-f"><label for="ed-pack" id="ed-pack-l">Штук в коробке</label><input id="ed-pack" type="text" inputmode="numeric" placeholder="12"></div>
+        <div class="field"><label for="ed-vol">Объём / грамм</label><input id="ed-vol" type="text" placeholder="1 л, 500 г"></div>
+      </div>
+      <div class="field"><label for="ed-price">Цена, сом</label><div class="suffix"><input id="ed-price" type="text" inputmode="numeric" placeholder="0"><span id="ed-price-s">за коробку</span></div></div>
+      <div class="opt"><span class="grow"><span class="bold">Обмен и возврат</span><span class="small muted">Магазин может вернуть или обменять товар</span></span><button type="button" class="switch" id="ed-ret" role="switch" aria-checked="true" aria-label="Обмен и возврат"></button></div>
+      <div class="opt"><span class="grow"><span class="bold">В наличии</span><span class="small muted" id="ed-avail-h">Магазины видят товар и могут заказать</span></span><button type="button" class="switch" id="ed-avail" role="switch" aria-checked="true" aria-label="В наличии"></button></div>
+      <span class="err" id="ed-err" style="font-size:13px;color:var(--red);font-weight:700" hidden></span>
+      <button type="submit" class="btn lg" id="ed-save">Сохранить товар</button>
+    </form>
+    <nav class="tabbar" data-nav id="ed-nav"></nav>
+  </section>
+
+  <!-- ===================== МАГАЗИН ===================== -->
+  <section class="screen" id="m-feed" data-tab="feed" data-role="shop" hidden>
+    <header class="top">
+      <div class="feed-top">
+        <button type="button" class="mini-av" data-tabgo="profile" aria-label="Профиль" id="feed-av">А</button>
+        <span class="feed-name"><span class="xs muted">Добрый день!</span><b>Магазин «Айдана»</b></span>
+        <button type="button" class="icon-btn" data-go="m-notifs" aria-label="Уведомления"><svg class="ic"><use href="#i-bell"/></svg><span class="dot-n" id="notif-dot"></span></button>
+        <button type="button" class="icon-btn" id="open-barcode" aria-label="Сканер штрихкодов"><svg class="ic"><use href="#i-barcode"/></svg></button>
+      </div>
+      <div class="row" style="gap:10px">
+        <label class="search" style="flex:1"><svg class="ic"><use href="#i-search"/></svg><input id="f-search" type="search" placeholder="Молоко, хлеб, масло…" aria-label="Поиск товара"></label>
+        <div class="view-sw" role="group" aria-label="Вид списка" data-view="feed"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+      </div>
+    </header>
+    <div class="body">
+      <div id="smart-box"></div>
+      <div class="chips" id="f-filter" role="tablist" aria-label="Фильтр"></div>
+      <span class="section-h" id="f-title">Популярные товары</span>
+      <div class="plist" id="f-list"></div>
+    </div>
+    <nav class="tabbar five" data-nav></nav>
+  </section>
+
+  <section class="screen" id="m-catalog" data-tab="catalog" data-role="shop" hidden>
+    <header class="top">
+      <div class="top-row"><span class="h1">Каталог</span>
+        <div class="view-sw" role="group" aria-label="Вид списка" data-view="catalog"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+      </div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="c-search" type="search" placeholder="Найти товар" aria-label="Поиск в каталоге"></label>
+      <div class="chips" id="c-cats" role="tablist" aria-label="Категории"></div>
+    </header>
+    <div class="body"><div class="plist" id="c-list"></div></div>
+    <nav class="tabbar five" data-nav></nav>
+  </section>
+
+  <!-- Подробнее о товаре (магазин) -->
+  <section class="screen" id="m-item" hidden>
+    <div class="body" style="padding:0 0 20px;gap:12px">
+      <div class="hero-img" id="it-hero"><button class="icon-btn hero-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><img alt="" id="it-img"></div>
+      <div style="padding:0 16px;display:flex;flex-direction:column;gap:12px">
+        <div class="grow" style="gap:4px"><span style="font-size:21px;font-weight:800;line-height:1.25" id="it-name"></span><span class="small muted" id="it-meta"></span></div>
+        <div id="it-tip"></div>
+        <span class="bold" style="font-size:16px">Поставщик</span>
+        <div id="it-offers" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div class="card" style="flex-direction:row;align-items:center;justify-content:space-between;padding:12px 14px">
+          <span class="grow"><span class="bold">Количество</span><span class="xs muted" id="it-unit"></span></span>
+          <div class="stepper"><button type="button" id="it-minus" aria-label="Меньше">−</button><input class="qin" id="it-q" type="number" inputmode="numeric" min="1" value="1" aria-label="Количество"><button type="button" id="it-plus" aria-label="Больше">+</button></div>
+        </div>
+        <div class="urgent-opt" id="it-urgent-box"><svg class="ic" style="color:#D8392C"><use href="#i-fire"/></svg><span class="grow"><span class="bold">Срочно</span><span class="small muted">Поставщик увидит пометку «Срочно» с датой</span></span><button type="button" class="switch" id="it-urgent" role="switch" aria-checked="false" aria-label="Срочно"></button></div>
+        <div class="card" style="gap:10px"><span class="bold" style="font-size:16px">Желаемая дата поставки</span><div class="dates" id="it-dates" role="radiogroup" aria-label="Дата поставки"></div></div>
+      </div>
+    </div>
+    <div class="bottom-bar"><div class="sum-bar"><span class="s"><span class="xs muted bold">Итого</span><b id="it-total">0 сом</b></span><button type="button" class="btn lg" id="it-add">В корзину</button></div></div>
+  </section>
+
+  <section class="screen" id="m-cart" data-tab="cart" data-role="shop" hidden>
+    <header class="top"><div class="top-row"><span class="h1">Корзина</span><button type="button" class="linkbtn" id="cart-clear" style="color:var(--red)">Очистить</button></div></header>
+    <div class="body" id="cart-body"></div>
+    <div class="bottom-bar" id="cart-bar" hidden><div class="sum-bar"><span class="s"><span class="xs muted bold" id="cart-n">Итого</span><b id="cart-total">0 сом</b></span><button type="button" class="btn lg" id="cart-send">Оформить заказ</button></div></div>
+    <nav class="tabbar five" data-nav></nav>
+  </section>
+
+  <section class="screen" id="m-orders" data-tab="sorders" data-role="shop" hidden>
+    <header class="top"><span class="h1">Заказы</span><div class="chips" id="so-filter" role="tablist" aria-label="Статус"></div></header>
+    <div class="body"><div class="olist" id="so-list"></div></div>
+    <nav class="tabbar five" data-nav></nav>
+  </section>
+
+  <section class="screen" id="m-order" hidden>
+    <header class="top"><div class="top-row">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h-sub" id="mo-title">Заказ</span><span id="mo-pill"></span>
+    </div></header>
+    <div class="body" id="mo-body"></div>
+  </section>
+
+  <section class="screen" id="m-notifs" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Уведомления</span></div></header>
+    <div class="body" id="notif-list" style="gap:10px"></div>
+  </section>
+
+  <!-- ===================== ОБЩЕЕ: профиль, накладные, настройки ===================== -->
+  <section class="screen" id="s-profile" data-tab="profile" hidden>
+    <header class="top"><div class="row" style="padding-top:4px">
+      <div class="avatar-wrap">
+        <div class="avatar" id="avatar">Д</div>
+        <label class="avatar-edit" aria-label="Изменить аватар"><svg class="ic"><use href="#i-camera"/></svg><input type="file" accept="image/*" hidden id="avatar-input"></label>
+      </div>
+      <div class="grow" style="gap:4px"><span style="font-size:20px;font-weight:800" id="pr-name"></span><span class="small muted" id="pr-sub"></span></div>
+    </div></header>
+    <div class="body">
+      <div class="card rise" style="gap:10px">
+        <span class="bold" style="font-size:16px">Реквизиты</span>
+        <div class="kv"><span>ИНН</span><span id="pr-inn"></span></div>
+        <div class="kv"><span id="pr-addr-l">Адрес склада</span><span id="pr-addr"></span></div>
+        <div class="kv"><span>Телефон</span><span>+996 500 99 16 20</span></div>
+        <span class="xs muted">Эти данные печатаются в накладной</span>
+      </div>
+      <div class="list rise">
+        <button class="li" data-support><svg class="ic"><use href="#i-help"/></svg><span class="grow">Служба поддержки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="li" data-go="s-invoices"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><span class="small muted" id="inv-count"></span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="li" data-go="s-settings"><svg class="ic"><use href="#i-gear"/></svg><span class="grow">Настройки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="li" data-go="s-docs"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Договоры и правила</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+      </div>
+      <div class="list rise"><button class="li red" data-logout><svg class="ic" style="color:var(--red)"><use href="#i-logout"/></svg><span class="grow">Выйти</span></button></div>
+    </div>
+    <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <section class="screen" id="s-invoices" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Накладные</span></div></header>
+    <div class="body" id="inv-list"></div>
+  </section>
+  <section class="screen inv-screen" id="s-invoice" hidden>
+    <header class="inv-head"><button class="inv-back" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="inv-head-t" id="iv-title">Накладная</span><span></span></header>
+    <div class="inv-stage" id="iv-stage"></div>
+    <div class="inv-foot"><button type="button" class="inv-send" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div>
+  </section>
+  <section class="screen" id="s-settings" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Настройки</span></div></header>
+    <div class="body">
+      <div class="list"><button class="li" data-go="s-password"><svg class="ic"><use href="#i-lock"/></svg><span class="grow">Сменить пароль</span><svg class="ic chev"><use href="#i-next"/></svg></button></div>
+      <div class="field"><span class="label">Язык</span><div class="seg" id="set-lang" role="radiogroup" aria-label="Язык"><button type="button" class="on" data-l="ru">Русский</button><button type="button" data-l="ky">Кыргызча</button></div></div>
+      <div class="field"><span class="label">Тема оформления</span><div class="seg" id="set-theme" role="radiogroup" aria-label="Тема"><button type="button" data-t="light">Светлая</button><button type="button" data-t="dark">Тёмная</button><button type="button" data-t="auto">Как в системе</button></div></div>
+    </div>
+  </section>
+  <section class="screen" id="s-password" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Сменить пароль</span></div></header>
+    <form class="body" id="pw-form" novalidate>
+      <div class="field"><label for="pw-old">Текущий пароль</label><input id="pw-old" type="password" autocomplete="current-password"></div>
+      <div class="field"><label for="pw-new">Новый пароль</label><input id="pw-new" type="password" autocomplete="new-password"><span class="hint">Не меньше 8 символов</span></div>
+      <div class="field"><label for="pw-new2">Повторите новый пароль</label><input id="pw-new2" type="password" autocomplete="new-password"></div>
+      <span class="err" id="pw-err" style="color:var(--red);font-weight:700;font-size:13px" hidden></span>
+      <button type="submit" class="btn lg">Сохранить пароль</button>
+    </form>
+  </section>
+  <section class="screen" id="s-docs" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Договоры и правила</span></div></header>
+    <div class="body"><div class="list">
+      <button class="li" data-doc="user_agreement_zakup_kg"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Условия использования</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+      <button class="li" data-doc="oferta"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Публичная оферта</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+      <button class="li" data-doc="privacy"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Политика конфиденциальности</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+    </div></div>
+  </section>
+  <section class="screen" id="s-doc" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub" id="doc-title"></span></div></header>
+    <div class="body"><div class="card doc" id="doc-body"></div></div>
+  </section>
+</div>
+
+<template id="doc-oferta">
+<p><b>на оказание услуг по предоставлению доступа к B2B-платформе «Zakup.KG»</b></p>
+<p>г. Бишкек, Кыргызская Республика<br>Редакция от «13» Ноябрь 2026 г.</p>
+<p>Индивидуальный предприниматель <b>Бакытбек уулу Бексултан</b>, действующий на основании Свидетельства о государственной регистрации № <b>003-2024-169-8638</b> от <b>2024-11-26</b>, ИНН <b>12345678901234</b> (далее — <b>«Исполнитель»</b>), публикует настоящую Публичную оферту (далее — <b>«Оферта»</b>) в адрес юридических лиц и индивидуальных предпринимателей (далее — <b>«Пользователи»</b>).</p>
+<h2>1. Термины и определения</h2>
+<p>1.1. <b>Платформа</b> — программный комплекс (мобильное приложение и веб-сервис) «Zakup.KG», предназначенный для размещения оптовых прайс-листов и оформления заявок на поставку товаров.<br>1.2. <b>Магазин (Покупатель)</b> — ИП или юридическое лицо, приобретающее товары через Платформу для осуществления розничной торговли.<br>1.3. <b>Поставщик</b> — ИП или юридическое лицо, размещающее на Платформе информацию о своих товарах и ценах для получения заявок от Магазинов.<br>1.4. <b>Акцепт Оферты</b> — полное и безоговорочное принятие условий Оферты путем регистрации на Платформе, нажатия кнопки подтверждения или оплаты выбранного тарифа.</p>
+<h2>2. Предмет договора</h2>
+<p>2.1. Исполнитель предоставляет Пользователю право использования функционала Платформы на условиях простой (неисключительной) лицензии, а также оказывает информационно-технические услуги по продвижению товаров на Платформе.<br>2.2. Исполнитель <b>не является</b> стороной договоров купли-продажи (поставки), заключаемых между Магазином и Поставщиком, не участвует в расчетах за товар, не осуществляет доставку и не несет ответственности за качество, сроки и комплектность поставляемого товара.</p>
+<h2>3. Тарифы и порядок расчетов</h2>
+<p>3.1. <b>Для Магазинов:</b> использование базового функционала Платформы (просмотр каталога, оформление заявок) предоставляется на безвозмездной основе (<b>0 сомов</b>).<br>3.2. <b>Для Поставщиков:</b> доступ к функционалу приема заявок предоставляется на выбор по одному из следующих тарифных планов:</p>
+<ul><li><b>Тариф «Процент с заказа»:</b> абонентская плата составляет <b>0 сомов</b>. С внутреннего баланса Поставщика списывается комиссия в размере <b>3% (трех процентов)</b> от общей суммы каждой заявки, подтвержденной Поставщиком (нажатием кнопки «Принять заказ»). Поставщик обязан поддерживать положительный баланс для получения контактов Магазина и принятия заявок.</li><li><b>Тариф «Безлимит»:</b> фиксированная абонентская плата в размере <b>2 500 (две тысячи пятьсот) сомов</b> за 30 (тридцать) календарных дней. Предоставляет право на прием неограниченного количества заявок без списания комиссии с суммы заказа.</li></ul>
+<p>3.3. <b>Дополнительные рекламные услуги для Поставщиков</b> (подключаются по желанию и при наличии технической возможности):</p>
+<ul><li>Закрепление карточки Поставщика или товара в верхней части категории («Топ») — <b>1 500 сомов</b> за 7 календарных дней.</li><li>Отправка информационного Push-уведомления об акциях по базе Магазинов — от <b>500 до 1 000 сомов</b> за одну рассылку согласно актуальным тарифам в личном кабинете.</li></ul>
+<p>3.4. Оплата услуг производится в национальной валюте Кыргызской Республики (сомах) путем безналичного перечисления на расчетный счет Исполнителя либо через платежные сервисы (QR-код, электронные кошельки, банковские карты).<br>3.5. Услуги считаются оказанными надлежащим образом в момент зачисления средств на внутренний баланс Поставщика или активации выбранного тарифного плана. Денежные средства за активированные периоды подписки и принятые заявки возврату не подлежат.</p>
+<h2>4. Права и обязанности сторон</h2>
+<p>4.1. <b>Поставщик обязуется:</b></p>
+<ul><li>Размещать достоверную информацию о товарах, их наличии и актуальных оптовых ценах в сомах.</li><li>Своевременно обрабатывать поступающие заявки и не допускать умышленного занижения суммы заказа с целью уменьшения комиссии по тарифу «Процент с заказа».</li></ul>
+<p>4.2. <b>Исполнитель вправе:</b></p>
+<ul><li>Приостановить доступ Поставщика к Платформе при нулевом балансе, нарушении условий Оферты или поступлении обоснобленных жалоб от Магазинов на несоответствие цен.</li><li>В одностороннем порядке изменять тарифы, уведомив Пользователей через Платформу не менее чем за 5 (пять) календарных дней до вступления изменений в силу.</li></ul>
+<h2>5. Ответственность и разрешение споров</h2>
+<p>5.1. Платформа предоставляется по принципу «как есть» (as is). Исполнитель не несет ответственности за временные технические сбои в работе сети Интернет или мобильных операторов.<br>5.2. Все споры разрешаются путем переговоров, а при недостижении согласия — в судебном порядке в соответствии с законодательством Кыргызской Республики по месту регистрации Исполнителя.</p>
+<h2>6. Реквизиты Исполнителя</h2>
+<ul><li><b>Наименование:</b> ИП Бакытбек уулу Бексултан</li><li><b>ИНН:</b> 12345678901234</li><li><b>Юридический адрес:</b> Кыргызская Республика, г. Бишкек, Свердловский р-н, Полевая (с. Нижняя Аларча) ул., дом .</li><li><b>Расчетный счет:</b> 80800320003655417, БИК 808003</li><li><b>Телефон / WhatsApp:</b> +996 500 99 16 20</li><li><b>Email:</b> test@test.test</li></ul>
+</template>
+<template id="doc-user_agreement_zakup_kg">
+<p><b>Дата вступления в силу:</b> 13 Ноябрь 2026 г.<br><b>Территория действия:</b> Кыргызская Республика</p>
+<h2>1. Общие положения</h2>
+<p>1.1. Настоящее Пользовательское соглашение (далее — «Соглашение») регулирует порядок использования кроссплатформенного B2B-сервиса <b>Zakup.KG</b> (далее — «Платформа»).<br>1.2. Платформа предназначена для автоматизации процессов закупки и поставки товаров между розничными торговыми точками (магазинами, павильонами, ларьками, гипермаркетами — далее «Магазины») и оптовыми дистрибьюторами или производителями товаров (далее — «Поставщики»).<br>1.3. Прохождение процедуры регистрации в приложении означает полное и безоговорочное принятие Пользователем (Магазином или Поставщиком) всех условий настоящего Соглашения.</p>
+<h2>2. Статус Платформы</h2>
+<p>2.1. <b>Zakup.KG</b> выступает исключительно в качестве информационно-технологического посредника («цифрового моста»), обеспечивающего передачу заявок и обмен данными между Магазинами и Поставщиками.<br>2.2. Администрация Платформы не является стороной договоров купли-продажи или поставки, не выступает продавцом товаров, не осуществляет их хранение, транспортировку и прием денежных средств за отгруженную продукцию.<br>2.3. Все коммерческие условия (цены, минимальная сумма заказа, сроки доставки, формы оплаты и порядок возврата брака) согласовываются и исполняются напрямую между Магазином и Поставщиком.</p>
+<h2>3. Регистрация и учетная запись</h2>
+<p>3.1. Для доступа к функционалу Платформы Пользователь обязуется выбрать соответствующую роль («Магазин» или «Поставщик») и предоставить достоверные регистрационные данные:</p>
+<ul><li>Для Магазина: наименование торговой точки, ИНН/ПИН, фактический адрес доставки и контактный номер телефона.</li><li>Для Поставщика: официальное наименование организации, ИНН, юридический/складской адрес и контактные данные.</li></ul>
+<p>3.2. Пользователь несет полную ответственность за сохранность своего пароля и за все действия, совершенные под его учетной записью.<br>3.3. Администрация Платформы оставляет за собой право заблокировать или удалить учетную запись при выявлении недостоверных реквизитов, фиктивных заказов или нарушении правил работы сервиса.</p>
+<h2>4. Порядок формирования и исполнения заявок</h2>
+<p>4.1. Оформление и отправка заявки через интерфейс <b>Zakup.KG</b> является официальным подтверждением намерения Магазина принять и оплатить заказанный ассортимент на условиях выбранного Поставщика.<br>4.2. Поставщик обязуется своевременно обрабатывать поступающие заявки, поддерживать актуальность своего цифрового каталога, остатков и цен в системе.<br>4.3. Платформа не несет ответственности за задержки доставки, недовложения или ненадлежащее качество товара со стороны Поставщика, а также за отказ Магазина от приемки и оплаты подтвержденного заказа.</p>
+<h2>5. Интеллектуальная собственность</h2>
+<p>5.1. Все элементы дизайна, логотип <b>Zakup.KG</b>, программный код, базы данных, архитектура и текстовые материалы Платформы являются интеллектуальной собственностью правообладателя и охраняются законодательством Кыргызской Республики.<br>5.2. Запрещается копирование, декомпиляция, парсинг каталогов, модификация или коммерческое использование материалов Платформы без письменного согласия Администрации.</p>
+<h2>6. Конфиденциальность и обработка данных</h2>
+<p>6.1. Принимая настоящее Соглашение, Пользователь дает согласие на сбор, хранение и обработку предоставленных регистрационных и контактных данных в соответствии с Законом Кыргызской Республики «Об информации персонального характера».<br>6.2. Пользователь соглашается на передачу своих контактных данных, реквизитов и адреса доставки контрагентам (Поставщикам или Магазинам) исключительно в рамках исполнения оформленных через Платформу заявок.</p>
+<h2>7. Заключительные положения</h2>
+<p>7.1. На этапе тестирования и запуска (MVP) базовый функционал Платформы предоставляется по принципу «как есть» (as is).<br>7.2. Администрация вправе в одностороннем порядке вносить изменения в настоящее Соглашение. Новая редакция вступает в силу с момента ее публикации в приложении <b>Zakup.KG</b>.<br>7.3. Все споры и разногласия разрешаются путем переговоров, а при недостижении согласия — в порядке, установленном действующим законодательством Кыргызской Республики.</p>
+</template>
+<template id="doc-privacy">
+<p><b>и обработки персональных данных пользователей Платформы «Zakup.KG»</b></p>
+<p>г. Бишкек, Кыргызская Республика<br>Редакция от «13» Ноябрь 2026 г.</p>
+<p>Настоящая Политика конфиденциальности разработана в соответствии с Законом Кыргызской Республики «Об информации персонального характера» и определяет порядок сбора, хранения и защиты данных пользователей мобильного приложения и сервиса «Zakup.KG» (далее — <b>«Платформа»</b>).</p>
+<h2>1. Какие данные мы собираем</h2>
+<p>1.1. При регистрации и использовании Платформы ИП <b>Бакытбек уулу Бексултан</b> (далее — <b>«Оператор»</b>) собирает следующие данные:</p>
+<ul><li>Фамилия, имя, отчество контактного лица или руководителя;</li><li>Наименование торговой точки или компании, ИНН;</li><li>Номер контактного телефона (в том числе привязанный к мессенджерам WhatsApp/Telegram);</li><li>Фактический адрес доставки / расположения магазина или склада, геолокация (для отображения на карте и формирования маршрутов доставки);</li><li>История оформленных и принятых заявок, сведения о платежах за услуги Платформы.</li></ul>
+<p>1.2. Технические данные: IP-адрес, модель устройства, версия операционной системы, push-токены для отправки уведомлений.</p>
+<h2>2. Цели сбора и обработки данных</h2>
+<p>2.1. Оператор обрабатывает данные исключительно для:</p>
+<ul><li>Регистрации и идентификации Магазинов и Поставщиков на Платформе;</li><li>Передачи контактных данных и адреса Магазина выбранному Поставщику в целях исполнения оформленной заявки на поставку товара;</li><li>Ведения взаиморасчетов, учета баланса и формирования бухгалтерской отчетности;</li><li>Отправки сервисных и рекламных Push-уведомлений (об изменении статуса заказа, новых прайс-листах и акциях Поставщиков);</li><li>Технической поддержки и предотвращения мошеннических действий.</li></ul>
+<h2>3. Передача данных третьим лицам</h2>
+<p>3.1. Оператор не продает и не передает персональные данные третьим лицам, за исключением случаев, прямо необходимых для работы Платформы:</p>
+<ul><li>Передача имени, телефона и адреса Магазина конкретному Поставщику в момент оформления заказа;</li><li>Передача сведений государственным органам КР по официальному запросу в рамках действующего законодательства.</li></ul>
+<h2>4. Защита и хранение данных</h2>
+<p>4.1. Оператор принимает необходимые технические и организационные меры для защиты данных от неправомерного доступа, утечки или уничтожения.<br>4.2. Данные хранятся в течение всего срока действия учетной записи Пользователя на Платформе.</p>
+<h2>5. Права пользователя и отзыв согласия</h2>
+<p>5.1. Пользователь вправе в любой момент обновить свои данные в личном кабинете, отказаться от получения рекламных уведомлений или потребовать удаления своей учетной записи и персональных данных, направив запрос на электронную почту <b>test@test.test</b> или в службу поддержки в WhatsApp по номеру <b>+996 500 99 16 20</b>.</p>
+</template>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-bottle" viewBox="0 0 24 24"><path d="M9 2h6v3l2 3v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8l2-3z"/><path d="M7 12h10"/></symbol>
+  <symbol id="i-bread" viewBox="0 0 24 24"><path d="M5 11a7 4 0 0 1 14 0v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M9 9v3M12 8v3M15 9v3"/></symbol>
+  <symbol id="i-butter" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="2"/><path d="M7 8V6h10v2"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+  <symbol id="i-call" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6-7-11.5a7 7 0 0 1 14 0C19 15 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4.5M12 17.5v.01"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 22c4 0 7-2.7 7-6.8 0-3.6-2.4-6-4.2-8.2-.4 2-1.4 3.3-2.8 3.8.3-3-1-6.1-3.6-7.8.2 3.3-1.6 5-3 6.8C4.3 11.3 5 13 5 15.2 5 19.3 8 22 12 22z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></symbol>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="mint-glow" x="-30%" y="-200%" width="160%" height="500%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="22"/></filter>
+  </defs>
+  <!-- Знак логотипа из v1.svg / v1.1.svg: скобы цвета темы + мятная линия со свечением -->
+  <symbol id="logo-mark" viewBox="100 212 824 600">
+    <path fill="currentColor" d="M127.008 239.197H339.349V308.386H198.45V523.861V715.614H339.349V784.803H127.008V239.197Z"/>
+    <path fill="currentColor" d="M896.992 784.803H684.651V715.614H825.55V500.139V308.386H684.651V239.197H896.992V784.803Z"/>
+    <rect x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D" filter="url(#mint-glow)" opacity=".8"/>
+    <rect x="261.953" y="478.395" width="500.093" height="69.1892" rx="2" fill="#03F48D"/>
+  </symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.5 3h2.6l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.8a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></symbol>
+  <symbol id="i-barcode" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10 8v8M13 8v8M16.5 8v8"/></symbol>
+  <symbol id="i-feed" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+</svg>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const fmt = n => Math.round(n).toLocaleString('ru-RU');
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } },
+    set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  };
+  const plural = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? b : c;
+
+  // ---------- Даты ----------
+  const day = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + n); return d; };
+  const dm = d => String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
+  const dmy = d => dm(d) + '.' + d.getFullYear();
+  const DAYS = [['Сегодня', 0], ['Завтра', 1], ['Послезавтра', 2]];
+  const dayWord = k => k === 0 ? 'сегодня' : k === 1 ? 'завтра' : k === 2 ? 'послезавтра' : '';
+  const DEMO_PHONE = '+996 500 99 16 20';
+
+  // ---------- Участники ----------
+  const DIST = 'ОсОО «Дистрибьютор»';
+  const SUPS = {
+    [DIST]: { details: 'ИНН 02305199010045 · г. Бишкек, пр. Чуй, 154', days: 1 },
+    'ОсОО «Азия Трейд»': { details: 'ИНН 01811201610025 · г. Бишкек, ул. Ахунбаева, 99', days: 0 },
+    'ИП «Айгерим Опт»': { details: 'ИНН 21503199800318 · г. Бишкек, Дордой', days: 1, defer: 7 }
+  };
+  const OTHERS = Object.keys(SUPS).filter(s => s !== DIST);
+  const MY_SHOP = 'aidana';
+  const SHOPS = {
+    aidana: { name: 'Магазин «Айдана»', addr: 'ул. Исанова, 61, Свердловский р-н' },
+    dostuk: { name: 'Магазин «Достук»', addr: 'ул. Московская, 203, Октябрьский р-н' },
+    alatoo: { name: 'Минимаркет «Ала-Тоо»', addr: 'ул. Боконбаева, 17, Октябрьский р-н' },
+    nur: { name: 'Продукты «Нур»', addr: 'ул. Ахунбаева, 112, Первомайский р-н' },
+    jibek: { name: 'Магазин «Жибек»', addr: 'ул. Фрунзе, 88, Ленинский р-н' },
+    bereke: { name: 'Магазин «Береке»', addr: 'ул. Токтогула, 45, Ленинский р-н' },
+    aigul: { name: 'Магазин «Айгуль»', addr: 'ул. Жибек Жолу, 310, Свердловский р-н' }
+  };
+  const PROFILE = {
+    dist: { name: DIST, sub: 'Поставщик · Бишкек', inn: '02305199010045', addrL: 'Адрес склада', addr: 'г. Бишкек, пр. Чуй, 154', av: 'Д' },
+    shop: { name: SHOPS[MY_SHOP].name, sub: 'Магазин · Свердловский р-н', inn: '01204198700123', addrL: 'Адрес магазина', addr: 'г. Бишкек, ул. Исанова, 61', av: 'А' }
+  };
+
+  // ---------- Товары ----------
+  const TYPE = {
+    box: { name: 'Коробка', unit: 'кор', per: 'за коробку', packL: 'Штук в коробке' },
+    block: { name: 'Блок', unit: 'бл', per: 'за блок', packL: 'Штук в блоке' },
+    weight: { name: 'Весовой', unit: 'кг', per: 'за кг', packL: null },
+    piece: { name: 'Штучный', unit: 'шт', per: 'за шт', packL: null }
+  };
+  let pid = 100;
+  // Товары нашего дистрибьютора (вкладка «Товары» у поставщика)
+  const P = (key, name, vol, type, pack, price, cat, extra) => Object.assign({
+    id: ++pid, key, name, vol, type, pack, price, cat, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], dist: true
+  }, extra || {});
+  const products = [
+    P('milk', 'Молоко «Моё» 3,2%', '1 л', 'box', 12, 864, 'Молочка', { desc: 'Ультрапастеризованное, срок хранения 6 месяцев. В коробке 12 пакетов.', pop: 1 }),
+    P('kefir', 'Кефир 2,5%', '1 л', 'box', 12, 780, 'Молочка', { desc: 'Срок хранения 10 дней при +2…+6 °C.', pop: 2 }),
+    P('smetana', 'Сметана 20%', '400 г', 'piece', 1, 90, 'Молочка', { promo: 98 }),
+    P('butter', 'Масло сливочное 82,5%', '180 г', 'block', 20, 2900, 'Молочка', { ret: false, desc: 'Высший сорт, ГОСТ.' }),
+    P('ryazhenka', 'Ряженка 4%', '0,5 л', 'piece', 1, 68, 'Молочка', { isNew: 1 }),
+    P('tvorog', 'Творог 9%', '200 г', 'piece', 1, 120, 'Молочка'),
+    P('juice', 'Сок яблочный', '1 л', 'box', 12, 1140, 'Напитки', { desc: 'Восстановленный, без добавления сахара.', pop: 3 }),
+    P('juice_orange', 'Сок апельсиновый', '1 л', 'box', 12, 1176, 'Напитки', { promo: 1250 }),
+    P('sugar', 'Сахар белый', '50 кг (мешок)', 'weight', 1, 82, 'Бакалея', { ret: false, desc: 'Цена за 1 кг, отгрузка мешками.', pop: 4 }),
+    P('flour', 'Мука пшеничная в/с', '2 кг', 'piece', 1, 130, 'Бакалея', { avail: false, ret: false }),
+    P('rice', 'Рис пропаренный', '900 г', 'piece', 1, 110, 'Бакалея'),
+    P('cookie', 'Печенье овсяное', '300 г', 'block', 12, 816, 'Сладости', { ret: false, isNew: 1 })
+  ];
+  // Товары, которых нет у нашего дистрибьютора — только у других поставщиков (для каталога магазина)
+  const X = (key, name, vol, type, price, cat, extra) => Object.assign({ id: ++pid, key, name, vol, type, pack: 1, price, cat, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], dist: false }, extra || {});
+  const extras = [
+    X('bread', 'Хлеб «Экстра»', '500 г', 'piece', 38, 'Хлеб', { pop: 5 }),
+    X('baton', 'Батон нарезной', '400 г', 'piece', 35, 'Хлеб', { isNew: 1 }),
+    X('lemonade', 'Лимонад «Holiday»', '1 л', 'box', 840, 'Напитки', { promo: 900 }),
+    X('juice_cherry', 'Сок вишнёвый', '1 л', 'box', 1188, 'Напитки'),
+    X('yogurt', 'Йогурт питьевой', '0,3 л', 'piece', 55, 'Молочка', { isNew: 1 }),
+    X('milk25', 'Молоко 2,5%', '1 л', 'box', 816, 'Молочка'),
+    X('pryaniki', 'Пряники «Тульские»', '140 г', 'piece', 75, 'Сладости', { promo: 85 }),
+    X('cookie_choc', 'Печенье шоколадное', '250 г', 'block', 1020, 'Сладости')
+  ];
+  const allItems = () => products.concat(extras);
+  const prod = id => allItems().find(p => p.id === id);
+  const byKey = k => allItems().find(p => p.key === k);
+  const unitOf = p => TYPE[p.type].unit;
+  // Предложения поставщиков для товара (магазин сравнивает). Метки — по правилам: самая низкая цена, самая быстрая доставка, отсрочка.
+  function offersOf(p) {
+    let list;
+    if (p.dist) list = [
+      { sup: DIST, price: p.price, avail: p.avail },
+      { sup: OTHERS[0], price: Math.round(p.price * 1.04), avail: true },
+      { sup: OTHERS[1], price: Math.round(p.price * 1.07), avail: true }];
+    else list = [{ sup: OTHERS[0], price: p.price, avail: true }, { sup: OTHERS[1], price: Math.round(p.price * 1.03), avail: true }];
+    list.forEach(o => { o.days = SUPS[o.sup].days; o.defer = SUPS[o.sup].defer || 0; });
+    const av = list.filter(o => o.avail);
+    if (av.length) {
+      const minP = Math.min(...av.map(o => o.price)), minD = Math.min(...av.map(o => o.days));
+      av.forEach(o => { o.tags = []; });
+      av.filter(o => o.price === minP).slice(0, 1).forEach(o => o.tags.push(['green', 'Дешевле']));
+      const fast = av.filter(o => o.days === minD);
+      if (fast.length < av.length) fast.slice(0, 1).forEach(o => o.tags.push(['blue', 'Быстрее']));
+      av.filter(o => o.defer).forEach(o => o.tags.push(['amber', 'Удобнее']));
+    }
+    return list;
+  }
+  const bestOffer = p => offersOf(p).filter(o => o.avail).sort((a, b) => a.price - b.price)[0];
+  const isAvail = p => offersOf(p).some(o => o.avail);
+
+  // ---------- Заказы (общие для магазина и поставщика) ----------
+  // st: new — отправлен/новый, work — принят (в работе), done — доставлен
+  const snap = (p, q, price) => ({ pid: p.id, name: p.name, vol: p.vol, photo: p.photos[0], unit: unitOf(p), price: price == null ? p.price : price, q });
+  const L = (k, q) => snap(byKey(k), q);
+  let oNum = 222;
+  const orders = [
+    { n: '0221', sup: DIST, shop: 'dostuk', ago: '5 мин назад', urgent: 1, want: 1, st: 'new', items: [L('milk', 3), L('kefir', 2), L('smetana', 12)] },
+    { n: '0220', sup: DIST, shop: 'alatoo', ago: '25 мин назад', want: 1, st: 'new', items: [L('juice', 2), L('juice_orange', 1)] },
+    { n: '0219', sup: DIST, shop: 'nur', ago: '1 ч назад', urgent: 0, want: 0, st: 'new', items: [L('butter', 1), L('tvorog', 10), L('ryazhenka', 12)] },
+    { n: '0218', sup: DIST, shop: 'jibek', ago: '2 ч назад', want: 2, st: 'new', items: [L('sugar', 50), L('rice', 10)] },
+    { n: '0217', sup: DIST, shop: 'bereke', ago: 'вчера', st: 'work', deliver: 0, accepted: -1, items: [L('kefir', 2)] },
+    { n: '0216', sup: DIST, shop: MY_SHOP, ago: 'вчера', st: 'work', deliver: 1, accepted: -1, items: [L('milk', 2), L('ryazhenka', 12)] },
+    { n: '0214', sup: DIST, shop: 'aigul', ago: '3 дня назад', st: 'done', deliver: -2, accepted: -3, deliveredAt: '10:42', items: [L('cookie', 1)] },
+    { n: '0213', sup: DIST, shop: MY_SHOP, ago: '4 дня назад', st: 'done', deliver: -3, accepted: -4, deliveredAt: '15:05', items: [L('sugar', 25), L('juice', 1)] },
+    { n: '0212', sup: OTHERS[0], shop: MY_SHOP, ago: '5 дней назад', st: 'done', deliver: -4, accepted: -5, deliveredAt: '09:20', items: [snap(byKey('bread'), 30), snap(byKey('baton'), 20)] }
+  ];
+  const findOrder = n => orders.find(o => o.n === n);
+  const lineSum = l => l.q * l.price;
+  const oSum = o => o.items.reduce((s, l) => s + lineSum(l), 0);
+  const qtyText = l => l.q + ' ' + l.unit;
+  const summary = o => o.items.slice(0, 2).map(l => l.name + ' × ' + qtyText(l)).join(', ') + (o.items.length > 2 ? ' и ещё ' + (o.items.length - 2) : '');
+  function pillOf(o, forShop) {
+    if (o.st === 'new' && o.urgent != null) return '<span class="pill urgent"><svg class="ic" style="width:13px;height:13px"><use href="#i-fire"/></svg>Срочно · до ' + dm(day(o.urgent)) + '</span>';
+    if (o.st === 'new') return forShop ? '<span class="pill new">Отправлен</span>' : '<span class="pill new">Новый</span>';
+    if (o.st === 'work') return '<span class="pill work">' + (forShop ? 'Принят · ' : 'Поставка ') + dm(day(o.deliver)) + '</span>';
+    return '<span class="pill done">Доставлен</span>';
+  }
+
+  // ---------- Роль, навигация ----------
+  let role = store.get('zk-role', 'shop');
+  let cur = 'a-login';
+  const hist = [];
+  const TABS = {
+    dist: { orders: 's-orders', products: 's-products', add: 's-editor', profile: 's-profile' },
+    shop: { feed: 'm-feed', catalog: 'm-catalog', cart: 'm-cart', sorders: 'm-orders', profile: 's-profile' }
+  };
+  const HOME = { dist: 's-orders', shop: 'm-feed' };
+  function animIn(el, cls) { el.hidden = false; el.classList.remove('in-right', 'in-left', 'out-left', 'out-right', 'fade-in', 'anim'); void el.offsetWidth; el.classList.add(cls, 'anim'); }
+  function animOut(el, cls) {
+    el.classList.remove('in-right', 'in-left', 'out-left', 'out-right', 'fade-in', 'anim'); void el.offsetWidth; el.classList.add(cls);
+    setTimeout(() => { if (el.id !== cur) el.hidden = true; el.classList.remove(cls); }, 360);
+  }
+  function go(id, dir) {
+    if (id === cur) return;
+    const from = $('#' + cur), to = $('#' + id);
+    if (dir === 'push') { hist.push(cur); animOut(from, 'out-left'); animIn(to, 'in-right'); $$('.body', to).forEach(b => { b.scrollTop = 0; }); }
+    else if (dir === 'back') { animOut(from, 'out-right'); animIn(to, 'in-left'); }
+    else { hist.length = 0; from.hidden = true; animIn(to, 'fade-in'); }
+    cur = id;
+  }
+  const back = () => go(hist.pop() || HOME[role], 'back');
+  function openTab(t) {
+    if (t === 'add') openEditor(null);
+    const R = {
+      orders: renderOrders, products: renderProducts, profile: renderProfile,
+      feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: renderShopOrders
+    };
+    if (R[t]) R[t]();
+    go(TABS[role][t], 'fade');
+  }
+  function navHTML(active) {
+    const t = (k, ic, label, badge) => '<button type="button" class="tab' + (k === active ? ' on' : '') + '" data-tabgo="' + k + '"><svg class="ic"><use href="#' + ic + '"/></svg>' + label +
+      (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
+    if (role === 'dist') {
+      const newN = orders.filter(o => o.sup === DIST && o.st === 'new').length;
+      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') +
+        '<button type="button" class="tab tab-add' + (active === 'add' ? ' on' : '') + '" data-tabgo="add" aria-label="Добавить товар"><span class="plus"><svg class="ic"><use href="#i-add"/></svg></span></button>' +
+        t('profile', 'i-user', 'Профиль');
+    }
+    const cartN = cart.reduce((s, c) => s + 1, 0);
+    return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cartN) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
+  }
+  function renderNav() {
+    $$('[data-nav]').forEach(n => {
+      n.classList.toggle('five', role === 'shop');
+      n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
+    });
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-tabgo],[data-go],[data-back]');
+    if (!t) return;
+    if (t.dataset.tabgo) openTab(t.dataset.tabgo);
+    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') renderInvoices(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
+    else back();
+  });
+
+  let toastT;
+  function toast(text) { $('#toast-text').textContent = text; $('#toast').classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('show'), 2400); }
+  function sheet(html) { $('#sheet-in').innerHTML = '<span class="handle"></span>' + html; $('#sheet').hidden = false; }
+  const closeSheet = () => { $('#sheet').hidden = true; };
+  $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.closest('[data-close]')) closeSheet(); });
+
+  // Вид список / блоки — запоминается для каждого экрана
+  const view = {};
+  ['orders', 'products', 'feed', 'catalog'].forEach(k => { view[k] = store.get('zk-v-' + k, k === 'catalog' || k === 'feed' ? 'grid' : 'list'); });
+  function syncViewSw() { $$('.view-sw').forEach(sw => $$('button', sw).forEach(b => b.classList.toggle('on', b.dataset.v === view[sw.dataset.view]))); }
+  $$('.view-sw').forEach(sw => sw.addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    const k = sw.dataset.view; view[k] = b.dataset.v; store.set('zk-v-' + k, b.dataset.v); syncViewSw();
+    ({ orders: renderOrders, products: renderProducts, feed: renderFeed, catalog: renderCatalog })[k]();
+  }));
+
+  // Фото крупно
+  $('#lightbox').addEventListener('click', () => { $('#lightbox').hidden = true; });
+  document.addEventListener('click', e => {
+    const z = e.target.closest('[data-zoom]'); if (!z || e.target.closest('[data-back]')) return;
+    e.preventDefault(); e.stopPropagation();
+    $('#lb-img').innerHTML = '<img alt="" src="' + esc(z.dataset.zoom) + '">'; $('#lb-name').textContent = z.dataset.zname || ''; $('#lightbox').hidden = false;
+  }, true);
+  const zimg = (p, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '" data-zoom="' + esc(p.photos ? p.photos[0] : p.photo) + '" data-zname="' + esc(p.name + ', ' + p.vol) + '"><img alt="" loading="lazy" src="' + esc(p.photos ? p.photos[0] : p.photo) + '"></span>';
+
+  function contactRow(label) {
+    const d = DEMO_PHONE.replace(/\D/g, ''), hi = encodeURIComponent('Здравствуйте! Пишу по заказу в Zakup.KG');
+    return '<div class="contact"><span class="grow"><span class="xs muted">' + label + '</span><span class="contact-num">' + DEMO_PHONE + '</span></span>' +
+      '<a class="c-btn call" href="tel:+' + d + '" aria-label="Позвонить"><svg class="ic"><use href="#i-call"/></svg></a>' +
+      '<a class="c-btn wa" href="https://wa.me/' + d + '?text=' + hi + '" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><use href="#i-wa"/></svg></a></div>';
+  }
+  const itemRows = o => o.items.map(l =>
+    '<div class="item">' + zimg(l, 'sm') + '<span class="grow"><span class="bold" style="font-size:14px">' + esc(l.name) + ', ' + esc(l.vol) + '</span><span class="xs muted">' + qtyText(l) + ' × ' + fmt(l.price) + ' сом</span></span>' +
+    '<span class="i-sum">' + fmt(lineSum(l)) + ' сом</span></div>').join('');
+
+  // =====================================================================
+  //                         ЗАСТАВКА И ВХОД
+  // =====================================================================
+  function runBoot() {
+    const boot = $('#boot');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { boot.remove(); showAuth('a-login'); return; }
+    setTimeout(() => { if (navigator.vibrate) navigator.vibrate(8); }, 900);   // лёгкий отклик в момент свечения
+    setTimeout(() => {
+      // Кадр 5: логотип перелетает в шапку экрана входа
+      showAuth('a-login', true);
+      const mark = $('#boot-mark'), target = $('#login-logo');
+      const a = mark.getBoundingClientRect(), b = target.getBoundingClientRect();
+      boot.classList.add('fly'); void mark.offsetWidth;
+      const s = (b.width * .76) / a.width;
+      mark.style.transform = 'translate(' + ((b.left + b.width / 2) - (a.left + a.width / 2)) + 'px,' + ((b.top + b.height / 2) - (a.top + a.height / 2)) + 'px) scale(' + s + ')';
+      setTimeout(() => { boot.classList.add('gone'); }, 430);
+      setTimeout(() => { boot.remove(); }, 720);
+    }, 1900);
+  }
+  function showAuth(id, quiet) {
+    $$('.screen').forEach(s => { if (s.id !== id) s.hidden = true; });
+    const el = $('#' + id); el.hidden = false; cur = id; hist.length = 0;
+    if (!quiet) { el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); }
+  }
+  $$('[data-auth]').forEach(b => b.addEventListener('click', () => go(b.dataset.auth, b.dataset.auth === 'a-login' ? 'fade' : 'push')));
+
+  // Поля: телефон 555 123 456, глаз пароля
+  $$('[data-phone]').forEach(i => i.addEventListener('input', () => {
+    const d = i.value.replace(/\D/g, '').slice(0, 9); i.value = d.replace(/(\d{3})(?=\d)/g, '$1 ');
+  }));
+  $$('[data-eye]').forEach(b => b.addEventListener('click', () => {
+    const show = b.getAttribute('aria-pressed') !== 'true';
+    $$('[data-pw]', b.closest('form')).forEach(i => { i.type = show ? 'text' : 'password'; });
+    b.setAttribute('aria-pressed', show); b.classList.toggle('on', show); b.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+  }));
+  const digits = id => $(id).value.replace(/\D/g, '');
+
+  function enter(r, msg) {
+    role = r; store.set('zk-role', r);
+    syncViewSw(); renderAll();
+    openTab(r === 'dist' ? 'orders' : 'feed');
+    if (msg) toast(msg);
+  }
+  $('#login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (digits('#login-phone').length !== 9 || !$('#login-pw').value) { toast('Введите номер (9 цифр) и пароль'); return; }
+    enter(role, 'Добро пожаловать!');
+  });
+  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, b.dataset.demo === 'dist' ? 'Вход как поставщик (демо)' : 'Вход как магазин (демо)')));
+
+  // Восстановление пароля
+  let resendT = null;
+  function startResend() {
+    let s = 60; const b = $('#resend'); b.disabled = true; clearInterval(resendT);
+    const tick = () => { b.textContent = s > 0 ? 'Отправить повторно через ' + s + ' с' : 'Отправить код повторно'; b.disabled = s > 0; s--; if (s < -1) clearInterval(resendT); };
+    tick(); resendT = setInterval(tick, 1000);
+  }
+  $('#forgot-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const d = digits('#forgot-phone');
+    if (d.length !== 9) { toast('Введите номер телефона: 9 цифр'); return; }
+    $('#code-phone').textContent = '+996 ' + d.slice(0, 3) + ' **** ' + d.slice(7);
+    $$('#code input').forEach(i => { i.value = ''; }); $('#code-ok').disabled = true;
+    go('a-code', 'push'); startResend(); setTimeout(() => $('#code input').focus(), 400);
+    toast('SMS-код отправлен (демо)');
+  });
+  $('#resend').addEventListener('click', () => { startResend(); toast('Код отправлен повторно'); });
+  const codeInputs = $$('#code input');
+  codeInputs.forEach((i, k) => {
+    i.addEventListener('input', () => {
+      i.value = i.value.replace(/\D/g, '').slice(-1);
+      if (i.value && codeInputs[k + 1]) codeInputs[k + 1].focus();
+      $('#code-ok').disabled = codeInputs.some(x => !x.value);
+    });
+    i.addEventListener('keydown', ev => { if (ev.key === 'Backspace' && !i.value && codeInputs[k - 1]) codeInputs[k - 1].focus(); });
+  });
+  $('#code-form').addEventListener('submit', e => { e.preventDefault(); clearInterval(resendT); $('#np-pw').value = ''; pwStrength(); go('a-newpw', 'push'); });
+  function pwStrength() {
+    const v = $('#np-pw').value;
+    let s = 0;
+    if (v.length >= 8) s++;
+    if (/\d/.test(v) && /[a-zа-я]/i.test(v)) s++;
+    if (/[A-ZА-Я]/.test(v) && /[a-zа-я]/.test(v)) s++;
+    if (v.length >= 12 || /[^\w\s]/.test(v)) s++;
+    if (v.length < 8) s = Math.min(s, 1);
+    $('#np-str').className = 'strength' + (v ? ' s' + Math.max(1, s) : '');
+    $('#np-str-l').textContent = !v ? 'Минимум 8 символов, цифры и буквы' : ['Слабый пароль', 'Слабый пароль', 'Средний пароль', 'Хороший пароль', 'Надёжный пароль'][s];
+    $('#np-ok').disabled = v.length < 8;
+  }
+  $('#np-pw').addEventListener('input', pwStrength);
+  $('#newpw-form').addEventListener('submit', e => { e.preventDefault(); go('a-login', 'fade'); toast('Пароль изменён — войдите с новым паролем'); });
+
+  // Регистрация
+  let regRole = 'shop';
+  $('#reg-role').addEventListener('click', e => {
+    const b = e.target.closest('[data-r]'); if (!b) return;
+    regRole = b.dataset.r;
+    $$('#reg-role button').forEach(x => x.classList.toggle('on', x === b));
+    $('#reg-name').placeholder = regRole === 'shop' ? 'Название магазина' : 'Название поставщика';
+    $('#reg-addr').placeholder = regRole === 'shop' ? 'Адрес магазина / доставки' : 'Адрес склада';
+  });
+  $('#reg-inn').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 14); });
+  const AGREE = [['user_agreement_zakup_kg', 'Условия'], ['oferta', 'Оферта'], ['privacy', 'Политика']];
+  function openAgree(k) {
+    sheet('<button type="button" class="linkbtn top" id="agree-quick">Я уже ознакомился</button>' +
+      '<span class="h2">Условия, оферта и политика</span><div class="agree-tabs">' +
+      AGREE.map(([id, t]) => '<button type="button" data-agr="' + id + '"' + (id === k ? ' class="on"' : '') + '>' + t + '</button>').join('') + '</div>' +
+      '<div class="agree-doc doc" id="agree-doc"></div><button type="button" class="btn lg" id="agree-yes">Принять и продолжить</button>');
+    $('#agree-doc').replaceChildren($('#doc-' + k).content.cloneNode(true));
+    const accept = () => { $('#reg-agree').checked = true; closeSheet(); };
+    $('#agree-yes').onclick = accept; $('#agree-quick').onclick = accept;
+    $$('#sheet-in [data-agr]').forEach(b => b.onclick = () => openAgree(b.dataset.agr));
+  }
+  $('#agree-open').addEventListener('click', () => openAgree('user_agreement_zakup_kg'));
+  $('#reg-agree').addEventListener('click', e => { if ($('#reg-agree').checked) { e.preventDefault(); openAgree('user_agreement_zakup_kg'); } });
+  $('#reg-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const errs = [];
+    if (!$('#reg-name').value.trim()) errs.push('название');
+    if (digits('#reg-inn').length !== 14) errs.push('ИНН/ПИН из 14 цифр');
+    if (!$('#reg-addr').value.trim()) errs.push('адрес');
+    if (digits('#reg-phone').length !== 9) errs.push('номер телефона');
+    if ($('#reg-pw').value.length < 8) errs.push('пароль от 8 символов');
+    if (!$('#reg-agree').checked) errs.push('согласие с условиями');
+    const er = $('#reg-err');
+    if (errs.length) { er.textContent = 'Заполните: ' + errs.join(', ') + '.'; er.hidden = false; return; }
+    er.hidden = true;
+    enter(regRole, 'Регистрация прошла успешно');
+  });
+
+  // =====================================================================
+  //                          ПОСТАВЩИК: ЗАКАЗЫ
+  // =====================================================================
+  const FILTERS = [['new', 'Новые'], ['work', 'В работе'], ['done', 'Завершённые']];
+  let oFilter = 'new';
+  const distOrders = () => orders.filter(o => o.sup === DIST);
+  function renderOrders() {
+    $('#o-filter').innerHTML = FILTERS.map(([k, t]) => '<button type="button" class="chip' + (k === oFilter ? ' on' : '') + '" data-of="' + k + '" role="tab" aria-selected="' + (k === oFilter) + '">' + t + '<span class="cnt">' + distOrders().filter(o => o.st === k).length + '</span></button>').join('');
+    const rank = o => o.st === 'new' ? (o.urgent != null ? o.urgent - 10 : 0) : o.st === 'work' ? o.deliver : -o.deliver;
+    const list = distOrders().filter(o => o.st === oFilter).sort((a, b) => rank(a) - rank(b));
+    const box = $('#o-list');
+    box.className = 'olist' + (view.orders === 'grid' ? ' grid' : '');
+    box.innerHTML = list.length ? list.map(o => {
+      const s = SHOPS[o.shop], cls = o.st === 'new' ? (o.urgent != null ? ' is-urgent' : ' is-new') : '';
+      const head = view.orders === 'grid' ? '<span>' + pillOf(o) + '</span><span class="o-name">' + s.name + '</span>'
+        : '<span class="between"><span class="o-name">' + s.name + '</span>' + pillOf(o) + '</span>';
+      return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items">' + esc(summary(o)) + '</span>' +
+        '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>';
+    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет доставленных заказов') + '</span></div>';
+    renderNav();
+  }
+  $('#o-filter').addEventListener('click', e => { const b = e.target.closest('[data-of]'); if (b) { oFilter = b.dataset.of; renderOrders(); } });
+  $('#o-list').addEventListener('click', e => { const b = e.target.closest('[data-order]'); if (b) { openOrder(b.dataset.order); go('s-order', 'push'); } });
+
+  let curOrder = null, pickDay = null;
+  function openOrder(n) { curOrder = findOrder(n); pickDay = null; renderOrder(); }
+  function renderOrder(still) {
+    const o = curOrder, s = SHOPS[o.shop];
+    $('#od-title').textContent = 'Заказ № ' + o.n; $('#od-pill').innerHTML = pillOf(o);
+    let h = '';
+    if (o.st === 'new' && o.urgent != null) h += '<div class="urgent-bar rise"><svg class="ic"><use href="#i-fire"/></svg><span class="grow"><b>СРОЧНО</b><span class="small" style="opacity:.9">Магазин просит привезти до ' + dmy(day(o.urgent)) + '</span></span></div>';
+    h += '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + s.name + '</span><span class="small muted">' + s.addr + '</span></div>' + contactRow('Телефон магазина') + '</div>';
+    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + o.items.length + ' поз. · ' + o.ago + '</span></div>' + itemRows(o) +
+      '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div>' +
+      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
+      (o.want != null && o.st === 'new' ? '<div class="between small"><span class="muted">Магазин хочет получить</span><span class="bold">' + dayWord(o.want) + ', ' + dm(day(o.want)) + '</span></div>' : '') + '</div>';
+    const bar = $('#od-bar');
+    if (o.st === 'new') {
+      h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
+        DAYS.map(([t, k]) => { const late = o.urgent != null && k > o.urgent; return '<button type="button" class="date-opt' + (pickDay === k ? ' on' : '') + '" data-day="' + k + '" role="radio" aria-checked="' + (pickDay === k) + '"><b>' + t + '</b><span' + (late ? ' style="color:var(--red)"' : '') + '>' + dm(day(k)) + (late ? ' · позже срока' : '') + '</span></button>'; }).join('') + '</div></div>';
+      bar.innerHTML = '<button type="button" class="btn lg" id="od-accept"' + (pickDay == null ? ' disabled' : '') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять · поставка ' + dm(day(pickDay))) + '</button>' + (pickDay == null ? '<span class="bar-hint">Сначала выберите дату поставки</span>' : '');
+      bar.hidden = false;
+    } else if (o.st === 'work') {
+      h += '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>' + invoiceBlock(o);
+      bar.innerHTML = '<button type="button" class="btn lg" data-go-scan><svg class="ic"><use href="#i-qr"/></svg>Отметить доставку по QR</button><span class="bar-hint">Экспедитор сканирует QR-код у магазина</span>';
+      bar.hidden = false;
+    } else {
+      h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + ' · подтверждено по QR</div>' + invoiceBlock(o);
+      bar.hidden = true; bar.innerHTML = '';
+    }
+    $('#od-body').innerHTML = still ? h.replace(/ rise/g, '') : h;
+    if (o.st !== 'new') prepareInv($('#od-body .inv'), o);
+  }
+  $('#od-body').addEventListener('click', e => { const d = e.target.closest('[data-day]'); if (d) { pickDay = +d.dataset.day; renderOrder(true); } });
+  $('#od-bar').addEventListener('click', e => {
+    if (e.target.closest('#od-accept')) {
+      const o = curOrder; if (pickDay == null) return;
+      acceptOrder(o, pickDay);
+      toast('Заказ № ' + o.n + ' принят · магазин получил уведомление');
+      renderOrder(true); renderOrders();
+      setTimeout(() => { const inv = $('#od-body .inv'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+    } else if (e.target.closest('[data-go-scan]')) { openScan('qr'); go('s-scan', 'push'); }
+  });
+  function acceptOrder(o, k) { o.st = 'work'; o.deliver = k; o.accepted = 0; delete o.urgent; notify('Заказ № ' + o.n + ' принят · поставка ' + dm(day(k)), o); }
+
+  // ---------- Накладная ----------
+  function invoiceCard(o) {
+    const s = SHOPS[o.shop], sum = oSum(o), sup = SUPS[o.sup];
+    return '<div class="inv"><span class="inv-glow" aria-hidden="true"></span>' +
+      '<div class="between"><span class="inv-logo">' + o.sup + '<span class="inv-demo">ДЕМО</span></span><span class="xs muted">№ ' + o.n + '</span></div>' +
+      '<div class="between" style="align-items:flex-end"><span class="inv-party"><span class="xs muted">' + dmy(day(o.accepted || 0)) + ' · поставка ' + dm(day(o.deliver)) + '</span><span class="inv-h">Товарная накладная</span></span><span class="inv-sum">' + fmt(sum) + ' <small>сом</small></span></div>' +
+      '<div class="divider" style="background:#E4E9E5"></div>' +
+      '<div class="inv-parties"><div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + o.sup + '</span><span class="xs muted">' + sup.details + '</span></div>' +
+      '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + s.name + '</span><span class="xs muted">' + s.addr + '</span></div></div>' +
+      '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
+      o.items.map((l, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(l.name) + ', ' + esc(l.vol) + '</td><td class="r">' + qtyText(l) + '</td><td class="r">' + fmt(l.price) + '</td><td class="r">' + fmt(lineSum(l)) + '</td></tr>').join('') +
+      '<tr class="tot"><td></td><td>Итого</td><td></td><td></td><td class="r">' + fmt(sum) + '</td></tr></tbody></table>' +
+      '<div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">Склад / экспедитор</span><span class="line"></span></div><div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div></div>';
+  }
+  function invoiceBlock(o) {
+    return '<div class="between rise" style="padding:4px 2px 0"><span class="bold" style="font-size:16px">Накладная</span><span class="xs muted">сформирована при принятии</span></div>' +
+      invoiceCard(o).replace('<div class="inv">', '<div class="inv rise">') +
+      '<div class="inv-actions rise"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div>';
+  }
+  let invFiles = null, invJob = null, pdfLib = null;
+  function loadPdfLib() {
+    if (window.html2pdf) return Promise.resolve();
+    if (pdfLib) return pdfLib;
+    pdfLib = new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'vendor/html2pdf.bundle.min.js'; s.onload = ok; s.onerror = () => { pdfLib = null; no(new Error('нет связи')); }; document.head.appendChild(s); });
+    return pdfLib;
+  }
+  async function makeFiles(card, o) {
+    await loadPdfLib();
+    const base = 'Накладная_' + o.n, w = Math.max(340, Math.min(420, card.offsetWidth || 360));
+    const work = (async () => {
+      const canvas = await html2pdf().set({ margin: 0, jsPDF: { unit: 'px', format: [w, w * 2], orientation: 'portrait', hotfixes: ['px_scaling'] },
+        html2canvas: { scale: 2.5, backgroundColor: '#ffffff', imageTimeout: 5000, logging: false, ignoreElements: el => el.id === 'app' } }).from(card).toCanvas().get('canvas');
+      const png = await new Promise(ok => canvas.toBlob(ok, 'image/png'));
+      const pdf = await html2pdf().set({ margin: 8, image: { type: 'jpeg', quality: 0.96 }, jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' } }).from(canvas, 'canvas').outputPdf('blob');
+      return { img: new File([png], base + '.png', { type: 'image/png' }), pdf: new File([pdf], base + '.pdf', { type: 'application/pdf' }) };
+    })();
+    const late = new Promise((_, no) => setTimeout(() => no(new Error('слишком долго, попробуйте ещё раз')), 20000));
+    return Promise.race([work, late]);
+  }
+  function prepareInv(card, o) {
+    invFiles = null; if (!card) return;
+    const job = invJob = new Promise(r => setTimeout(r, 500)).then(() => { card.classList.remove('rise'); return makeFiles(card, o); }).then(f => { if (job === invJob) invFiles = f; return f; });
+    job.catch(() => {});
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const canShare = f => !!(navigator.canShare && navigator.canShare({ files: [f] }));
+  function download(file) { const url = URL.createObjectURL(file), a = document.createElement('a'); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); }
+  function deliver(files, save) {
+    const f = save ? files.img : files.pdf;
+    if (canShare(f)) {
+      if (save && isIOS) toast('Нажмите «Сохранить изображение»');
+      return navigator.share({ files: [f], title: f.name }).catch(err => { if (err && err.name === 'AbortError') return; if (err && err.name === 'NotAllowedError') { toast('Готово — нажмите ещё раз'); return; } throw err; });
+    }
+    download(f); toast(save ? 'Фото накладной сохранено' : 'PDF накладной скачан'); return Promise.resolve();
+  }
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-inv]'); if (!b) return;
+    const save = b.dataset.inv === 'save';
+    if (invFiles) { try { await deliver(invFiles, save); } catch (err) { toast('Не получилось: ' + (err && err.message || err)); } return; }
+    const label = b.textContent; b.disabled = true; b.textContent = 'Готовим…';
+    try { if (!invJob) throw new Error('нет накладной'); await deliver(await invJob, save); } catch (err) { toast('Не удалось сделать накладную: ' + (err && err.message || err)); }
+    b.disabled = false; b.textContent = label;
+  });
+
+  // ---------- Сканер (макет): QR доставки у поставщика, штрихкод у магазина ----------
+  let scanMode = 'qr', scanT = null;
+  function openScan(mode) {
+    scanMode = mode;
+    const qr = mode === 'qr';
+    $('#scan-title').textContent = qr ? 'Доставка по QR' : 'Сканер штрихкодов';
+    $('#scan-frame').classList.toggle('bar', !qr);
+    $('#scan-art').className = qr ? 'scan-qr' : 'bars-art';
+    $('#scan-art').innerHTML = qr ? Array.from({ length: 49 }, (_, i) => '<span' + ('1110111100100110111011010101101011011100111011001011100100101011101'[i] === '1' ? '' : ' class="o"') + '></span>').join('')
+      : Array.from({ length: 28 }, () => '<span></span>').join('');
+    $('#scan-cap-b').textContent = qr ? SHOPS[curOrder.shop].name + ' · № ' + curOrder.n : 'Штрихкод на упаковке';
+    $('#scan-cap-s').textContent = qr ? 'Наведите камеру на QR-код в приложении магазина. В коде — информация о заказе и статус «доставлено».' : 'Наведите камеру на штрихкод товара — откроем его карточку и предложения поставщиков.';
+    $('#scan-demo').textContent = qr ? 'Код отсканирован (демо)' : 'Штрихкод распознан (демо)';
+    $('#scan-ok').hidden = true; $('#scan-demo').disabled = false;
+  }
+  $('#scan-demo').addEventListener('click', () => {
+    $('#scan-demo').disabled = true;
+    if (navigator.vibrate) navigator.vibrate(60);
+    if (scanMode === 'qr') {
+      const o = curOrder, now = new Date();
+      // Что «зашито» в QR: номер заказа, магазин, позиции, сумма и код статуса
+      $('#scan-ok-b').textContent = 'Доставлено';
+      $('#scan-ok-t').innerHTML = 'Из QR: заказ № ' + o.n + ' · ' + SHOPS[o.shop].name + '<br>' + o.items.length + ' ' + plural(o.items.length, 'позиция', 'позиции', 'позиций') + ' · ' + fmt(oSum(o)) + ' сом · статус DELIVERED';
+      $('#scan-ok').hidden = false;
+      o.st = 'done'; o.deliver = 0; o.deliveredAt = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      notify('Заказ № ' + o.n + ' доставлен', o);
+      scanT = setTimeout(() => { renderOrder(true); renderOrders(); go(hist.pop() || 's-order', 'back'); toast('Доставлено · магазин получил подтверждение'); }, 1600);
+    } else {
+      const p = byKey('milk');
+      $('#scan-ok-b').textContent = 'Товар найден'; $('#scan-ok-t').textContent = p.name + ', ' + p.vol; $('#scan-ok').hidden = false;
+      // Сканер заменяется карточкой товара: «назад» из карточки ведёт в ленту, а не обратно в сканер
+      scanT = setTimeout(() => { openItem(p.id); go('m-item', 'push'); hist.pop(); }, 1000);
+    }
+  });
+
+  // ---------- Поставщик: товары и шаблон карточки ----------
+  function renderProducts() {
+    const q = ($('#p-search').value || '').trim().toLowerCase();
+    const list = products.filter(p => !q || (p.name + ' ' + p.vol).toLowerCase().includes(q));
+    const box = $('#p-list'); box.className = 'plist' + (view.products === 'grid' ? ' grid' : '');
+    box.innerHTML = list.length ? list.map(p => {
+      const st = p.avail ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
+      const price = '<span class="p-price">' + fmt(p.price) + ' сом <small>/ ' + unitOf(p) + '</small></span>';
+      return view.products === 'grid'
+        ? '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + esc(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span></button>'
+        : '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow" style="gap:4px"><span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + esc(p.vol) + '</span></span><span>' + st + '</span></span>' + price + '</button>';
+    }).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
+  }
+  $('#p-search').addEventListener('input', renderProducts);
+  $('#p-list').addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if (b) { openEditor(+b.dataset.pid); go('s-editor', 'push'); } });
+
+  let edId = null, ed = null;
+  function openEditor(id) {
+    edId = id; const p = id ? prod(id) : null;
+    ed = p ? { photos: p.photos.slice(), type: p.type, ret: p.ret, avail: p.avail } : { photos: [], type: 'box', ret: true, avail: true };
+    const editing = !!p;
+    $('#ed-title').textContent = editing ? 'Карточка товара' : 'Новый товар';
+    $('#ed-back').hidden = !editing; $('#ed-del').hidden = !editing; $('#ed-nav').hidden = editing;
+    $('#s-editor').dataset.tab = editing ? '' : 'add';
+    $('#ed-name').value = p ? p.name : ''; $('#ed-vol').value = p ? p.vol : '';
+    $('#ed-desc').value = p ? p.desc : ''; $('#ed-desc-box').open = !!(p && p.desc);
+    $('#ed-pack').value = p && TYPE[p.type].packL ? p.pack : ''; $('#ed-price').value = p ? p.price : '';
+    $('#ed-err').hidden = true; $('#ed-save').textContent = editing ? 'Сохранить изменения' : 'Сохранить товар';
+    renderEditor(); renderNav(); $('#ed-form').scrollTop = 0;
+  }
+  function renderEditor() {
+    const n = ed.photos.length;
+    $('#ed-photos').innerHTML = ed.photos.map((src, i) => '<div class="ph"><img alt="" src="' + esc(src) + '" data-zoom="' + esc(src) + '" data-zname="' + esc($('#ed-name').value) + '">' + (i === 0 ? '<span class="ph-main">Главное</span>' : '') +
+      '<button type="button" class="ph-del" data-phdel="' + i + '" aria-label="Удалить фото">×</button></div>').join('') +
+      (n < 5 ? '<label class="ph-add" for="ph-input"><svg class="ic"><use href="#i-camera"/></svg>' + (n ? 'Ещё фото' : 'Добавить') + '</label>' : '');
+    const c = $('#ph-count'); c.textContent = n + ' из 5' + (n < 1 ? ' · нужно минимум 1' : ''); c.className = 'ph-count ' + (n < 1 ? 'bad' : 'ok');
+    $$('#ed-type button').forEach(b => { const on = b.dataset.t === ed.type; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    const T = TYPE[ed.type]; $('#ed-pack-f').hidden = !T.packL; if (T.packL) $('#ed-pack-l').textContent = T.packL; $('#ed-price-s').textContent = T.per;
+    $('#ed-ret').setAttribute('aria-checked', ed.ret); $('#ed-avail').setAttribute('aria-checked', ed.avail);
+    $('#ed-avail-h').textContent = ed.avail ? 'Магазины видят товар и могут заказать' : 'Товар скрыт, магазины не могут заказать';
+  }
+  $('#ph-input').addEventListener('change', e => {
+    const files = Array.from(e.target.files || []).slice(0, 5 - ed.photos.length);
+    files.forEach(f => ed.photos.push(URL.createObjectURL(f)));
+    if ((e.target.files || []).length > files.length) toast('Максимум 5 фото');
+    e.target.value = ''; renderEditor();
+  });
+  $('#ed-photos').addEventListener('click', e => { const d = e.target.closest('[data-phdel]'); if (d) { ed.photos.splice(+d.dataset.phdel, 1); renderEditor(); } });
+  $('#ed-type').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { ed.type = b.dataset.t; renderEditor(); } });
+  $('#ed-ret').addEventListener('click', () => { ed.ret = !ed.ret; renderEditor(); });
+  $('#ed-avail').addEventListener('click', () => { ed.avail = !ed.avail; renderEditor(); });
+  $$('#ed-price, #ed-pack').forEach(i => i.addEventListener('input', () => { i.value = i.value.replace(/\D/g, '').slice(0, 7); }));
+  $('#ed-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#ed-name').value.trim(), vol = $('#ed-vol').value.trim(), price = parseInt($('#ed-price').value, 10);
+    const T = TYPE[ed.type], pack = T.packL ? parseInt($('#ed-pack').value, 10) : 1, errs = [];
+    if (ed.photos.length < 1) errs.push('добавьте хотя бы 1 фото');
+    if (!name) errs.push('укажите наименование');
+    if (!vol) errs.push('укажите объём или вес');
+    if (T.packL && !(pack > 0)) errs.push('укажите, сколько штук в упаковке');
+    if (!(price > 0)) errs.push('укажите цену');
+    if (errs.length) { const er = $('#ed-err'); er.textContent = 'Чтобы сохранить: ' + errs.join(', ') + '.'; er.hidden = false; er.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    const data = { name, vol, type: ed.type, pack, price, avail: ed.avail, ret: ed.ret, desc: $('#ed-desc').value.trim(), photos: ed.photos.slice() };
+    if (edId) { Object.assign(prod(edId), data); toast('Сохранено · магазины увидят изменения сразу'); renderProducts(); back(); }
+    else { products.unshift(Object.assign({ id: ++pid, key: 'new' + pid, cat: 'Бакалея', dist: true, isNew: 1 }, data)); toast('Товар добавлен · он уже в каталоге магазинов'); $('#p-search').value = ''; openTab('products'); }
+  });
+  $('#ed-del').addEventListener('click', () => {
+    sheet('<span class="h2">Удалить товар?</span><span class="small muted" style="text-align:center">Магазины больше не увидят его в каталоге</span><button type="button" class="btn lg danger" id="del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#del-yes').onclick = () => { products.splice(products.indexOf(prod(edId)), 1); closeSheet(); toast('Товар удалён'); renderProducts(); back(); };
+  });
+
+  // =====================================================================
+  //                               МАГАЗИН
+  // =====================================================================
+  let smart = false;
+  const cart = [];   // { pid, sup, price, q, urgent, day }
+  // Карточка товара для магазина: фото, название, цена/тип, наличие, «+» в корзину
+  function shopCard(p, grid) {
+    const off = bestOffer(p), av = !!off;
+    const flag = p.promo ? '<span class="flag promo">Акция</span>' : p.isNew ? '<span class="flag new">Новинка</span>' : '';
+    const old = p.promo && off ? '<span class="old">' + fmt(p.promo) + '</span>' : '';
+    const price = '<span class="p-price">' + old + (av ? (p.dist ? 'от ' : '') + fmt(off.price) : '—') + ' сом <small>/ ' + unitOf(p) + '</small></span>';
+    const st = av ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
+    const add = av ? '<span class="add" role="button" tabindex="0" data-quick="' + p.id + '" aria-label="В корзину"><svg class="ic"><use href="#i-add"/></svg></span>' : '';
+    return grid
+      ? '<button type="button" class="pcard scard rise' + (av ? '' : ' off') + '" data-item="' + p.id + '">' + flag + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + esc(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span>' + add + '</button>'
+      : '<button type="button" class="pcard scard rise' + (av ? '' : ' off') + '" data-item="' + p.id + '">' + zimg(p) + '<span class="grow" style="gap:4px">' + flag + '<span class="p-name">' + esc(p.name) + ' <span class="p-vol">· ' + esc(p.vol) + '</span></span>' + price + '</span>' + add + '</button>';
+  }
+  function cardClick(e) {
+    const q = e.target.closest('[data-quick]');
+    if (q) { e.stopPropagation(); quickAdd(+q.dataset.quick); return; }
+    const b = e.target.closest('[data-item]');
+    if (b) { openItem(+b.dataset.item); go('m-item', 'push'); }
+  }
+  function quickAdd(id) {
+    const p = prod(id), o = bestOffer(p); if (!o) return;
+    addToCart({ pid: id, sup: o.sup, price: o.price, q: 1, urgent: false, day: 1 });
+    toast('В корзине: ' + p.name + ' · ' + o.sup);
+  }
+  function addToCart(it) {
+    const ex = cart.find(c => c.pid === it.pid && c.sup === it.sup);
+    if (ex) { ex.q += it.q; ex.urgent = ex.urgent || it.urgent; ex.day = Math.min(ex.day, it.day); } else cart.push(it);
+    renderNav();
+  }
+
+  // Лента
+  const FEED_F = [['all', 'Все'], ['promo', 'Акции'], ['new', 'Новинки']];
+  let feedF = 'all';
+  function renderFeed() {
+    $('#smart-box').innerHTML = smart
+      ? '<div class="smart rise"><span class="s-ic"><svg class="ic"><use href="#i-spark"/></svg></span><span class="grow"><b>SmartOrder подключён</b><span>Заканчивается: молоко (4 шт), сметана (3 шт). Подсказки — в карточках товаров.</span></span></div>'
+      : '<div class="smart rise"><span class="s-ic"><svg class="ic"><use href="#i-spark"/></svg></span><span class="grow"><b>SmartOrder</b><span>Подключите учёт склада — подскажем, что пора заказать</span></span><button type="button" class="btn" id="smart-on">Подключить</button></div>';
+    $('#f-filter').innerHTML = FEED_F.map(([k, t]) => '<button type="button" class="chip' + (k === feedF ? ' on' : '') + '" data-ff="' + k + '">' + t + '</button>').join('');
+    const q = ($('#f-search').value || '').trim().toLowerCase();
+    let list = allItems().filter(p => isAvail(p));
+    if (q) list = list.filter(p => (p.name + ' ' + p.vol).toLowerCase().includes(q));
+    else if (feedF === 'promo') list = list.filter(p => p.promo);
+    else if (feedF === 'new') list = list.filter(p => p.isNew);
+    else list = list.filter(p => p.pop).sort((a, b) => a.pop - b.pop).concat(list.filter(p => !p.pop)).slice(0, 8);
+    $('#f-title').textContent = q ? 'Найдено: ' + list.length : feedF === 'promo' ? 'Акции' : feedF === 'new' ? 'Новинки' : 'Популярные товары';
+    const box = $('#f-list'); box.className = 'plist' + (view.feed === 'grid' ? ' grid' : '');
+    box.innerHTML = list.length ? list.map(p => shopCard(p, view.feed === 'grid')).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
+    $('#notif-dot').hidden = !notifs.some(n => !n.read);
+    renderNav();
+  }
+  $('#f-filter').addEventListener('click', e => { const b = e.target.closest('[data-ff]'); if (b) { feedF = b.dataset.ff; $('#f-search').value = ''; renderFeed(); } });
+  $('#f-search').addEventListener('input', renderFeed);
+  $('#f-list').addEventListener('click', cardClick);
+  $('#smart-box').addEventListener('click', e => { if (e.target.closest('#smart-on')) { smart = true; renderFeed(); toast('SmartOrder подключён (демо)'); } });
+  $('#open-barcode').addEventListener('click', () => { openScan('barcode'); go('s-scan', 'push'); });
+
+  // Каталог
+  const CATS = ['Все', 'Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'];
+  let cat = 'Все';
+  function renderCatalog() {
+    $('#c-cats').innerHTML = CATS.map(c => '<button type="button" class="chip' + (c === cat ? ' on' : '') + '" data-cat="' + c + '">' + c + '<span class="cnt">' + allItems().filter(p => c === 'Все' || p.cat === c).length + '</span></button>').join('');
+    const q = ($('#c-search').value || '').trim().toLowerCase();
+    const list = allItems().filter(p => (cat === 'Все' || p.cat === cat) && (!q || (p.name + ' ' + p.vol).toLowerCase().includes(q)))
+      .sort((a, b) => isAvail(b) - isAvail(a));
+    const box = $('#c-list'); box.className = 'plist' + (view.catalog === 'grid' ? ' grid' : '');
+    box.innerHTML = list.length ? list.map(p => shopCard(p, view.catalog === 'grid')).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
+  }
+  $('#c-cats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { cat = b.dataset.cat; renderCatalog(); } });
+  $('#c-search').addEventListener('input', renderCatalog);
+  $('#c-list').addEventListener('click', cardClick);
+
+  // Подробнее о товаре
+  let it = null;
+  function openItem(id) {
+    const p = prod(id), offs = offersOf(p), best = bestOffer(p);
+    it = { p, sup: best ? best.sup : null, q: 1, urgent: false, day: 1 };
+    $('#it-img').src = p.photos[0]; $('#it-img').dataset.zoom = p.photos[0]; $('#it-img').dataset.zname = p.name + ', ' + p.vol;
+    $('#it-name').textContent = p.name;
+    $('#it-meta').textContent = p.vol + ' · ' + TYPE[p.type].name.toLowerCase() + (TYPE[p.type].packL ? ' по ' + p.pack + ' шт' : '') + (p.ret ? ' · обмен и возврат' : ' · без возврата');
+    $('#it-tip').innerHTML = smart ? '<div class="smart-tip"><svg class="ic"><use href="#i-spark"/></svg><span>Совет SmartOrder: на складе осталось 4 шт. Обычно вы берёте 3 ' + unitOf(p) + ' в неделю — хватит до ' + dm(day(5)) + '.</span></div>' : '';
+    $('#it-unit').textContent = 'в ' + ({ кор: 'коробках', бл: 'блоках', шт: 'штуках', кг: 'килограммах' })[unitOf(p)];
+    $('#it-urgent').setAttribute('aria-checked', 'false'); $('#it-urgent-box').classList.remove('on');
+    renderItem(offs);
+    $('#m-item .body').scrollTop = 0;
+  }
+  function renderItem(offs) {
+    const p = it.p; offs = offs || offersOf(p);
+    $('#it-offers').innerHTML = offs.map(o => '<button type="button" class="offer' + (o.sup === it.sup ? ' on' : '') + '" data-sup="' + esc(o.sup) + '"' + (o.avail ? '' : ' disabled') + '><span class="radio"></span>' +
+      '<span class="grow" style="gap:3px"><span class="row" style="gap:6px;flex-wrap:wrap"><span class="bold" style="font-size:15px">' + o.sup + '</span>' + (o.tags || []).map(t => '<span class="tag ' + t[0] + '">' + t[1] + '</span>').join('') + '</span>' +
+      '<span class="small muted">' + (o.avail ? 'Доставка ' + (o.days === 0 ? 'сегодня' : 'завтра') + (o.defer ? ' · отсрочка оплаты ' + o.defer + ' дн.' : ' · оплата при получении') : 'Нет в наличии') + '</span></span>' +
+      '<span class="price" style="font-size:16px;font-weight:800;white-space:nowrap">' + fmt(o.price) + ' сом</span></button>').join('');
+    $('#it-dates').innerHTML = DAYS.map(([t, k]) => '<button type="button" class="date-opt' + (it.day === k ? ' on' : '') + '" data-iday="' + k + '"><b>' + t + '</b><span>' + dm(day(k)) + '</span></button>').join('');
+    const o = offs.find(x => x.sup === it.sup);
+    $('#it-q').value = it.q; $('#it-minus').disabled = it.q <= 1;
+    $('#it-total').textContent = o ? fmt(o.price * it.q) + ' сом' : '—';
+    $('#it-add').disabled = !o;
+  }
+  $('#it-offers').addEventListener('click', e => { const b = e.target.closest('[data-sup]'); if (b && !b.disabled) { it.sup = b.dataset.sup; renderItem(); } });
+  $('#it-dates').addEventListener('click', e => { const b = e.target.closest('[data-iday]'); if (b) { it.day = +b.dataset.iday; renderItem(); } });
+  $('#it-minus').addEventListener('click', () => { if (it.q > 1) { it.q--; renderItem(); } });
+  $('#it-plus').addEventListener('click', () => { it.q++; renderItem(); });
+  $('#it-q').addEventListener('change', e => { it.q = Math.max(1, parseInt(e.target.value, 10) || 1); renderItem(); });
+  $('#it-urgent').addEventListener('click', () => { it.urgent = !it.urgent; $('#it-urgent').setAttribute('aria-checked', it.urgent); $('#it-urgent-box').classList.toggle('on', it.urgent); });
+  $('#it-add').addEventListener('click', () => {
+    const o = offersOf(it.p).find(x => x.sup === it.sup); if (!o) return;
+    addToCart({ pid: it.p.id, sup: o.sup, price: o.price, q: it.q, urgent: it.urgent, day: it.day });
+    toast('Добавлено в корзину' + (it.urgent ? ' · срочно' : ''));
+    back();
+  });
+
+  // Корзина
+  function renderCart() {
+    const body = $('#cart-body');
+    $('#cart-clear').hidden = !cart.length; $('#cart-bar').hidden = !cart.length;
+    if (!cart.length) {
+      body.innerHTML = '<div class="empty" style="padding-top:60px"><svg class="ic"><use href="#i-cart"/></svg><span>Корзина пуста</span><button type="button" class="btn" data-tabgo="catalog" style="margin-top:6px">Перейти в каталог</button></div>';
+      renderNav(); return;
+    }
+    const groups = {};
+    cart.forEach((c, i) => (groups[c.sup] = groups[c.sup] || []).push([c, i]));
+    body.innerHTML = Object.keys(groups).map(sup => {
+      const rows = groups[sup], sum = rows.reduce((s, [c]) => s + c.price * c.q, 0);
+      return '<div class="card cart-group rise"><div class="between"><span class="bold" style="font-size:16px">' + sup + '</span><span class="xs muted">' + fmt(sum) + ' сом</span></div>' +
+        rows.map(([c, i]) => { const p = prod(c.pid); return '<div class="cart-row">' + zimg(p, 'sm') + '<span class="grow"><span class="bold" style="font-size:14px">' + esc(p.name) + (c.urgent ? '<span class="u-mark">СРОЧНО</span>' : '') + '</span>' +
+          '<span class="xs muted">' + fmt(c.price) + ' сом × ' + c.q + ' ' + unitOf(p) + ' · ' + dayWord(c.day) + ', ' + dm(day(c.day)) + '</span></span>' +
+          '<span class="stepper sm"><button type="button" data-cq="' + i + ':-1" aria-label="Меньше"' + (c.q > 1 ? '' : ' disabled') + '>−</button><input class="qin" type="number" min="1" value="' + c.q + '" data-cin="' + i + '" aria-label="Количество"><button type="button" data-cq="' + i + ':1" aria-label="Больше">+</button></span>' +
+          '<button type="button" class="eye" data-cdel="' + i + '" aria-label="Убрать"><svg class="ic"><use href="#i-trash"/></svg></button></div>'; }).join('') + '</div>';
+    }).join('') + '<span class="xs muted" style="text-align:center">Заказ уйдёт каждому поставщику отдельно</span>';
+    const total = cart.reduce((s, c) => s + c.price * c.q, 0), nSup = Object.keys(groups).length;
+    $('#cart-total').textContent = fmt(total) + ' сом';
+    $('#cart-n').textContent = 'Итого · ' + nSup + ' ' + plural(nSup, 'поставщик', 'поставщика', 'поставщиков');
+    renderNav();
+  }
+  $('#cart-body').addEventListener('click', e => {
+    const s = e.target.closest('[data-cq]'), d = e.target.closest('[data-cdel]');
+    if (s) { const [i, k] = s.dataset.cq.split(':'); cart[+i].q = Math.max(1, cart[+i].q + +k); renderCart(); }
+    if (d) { cart.splice(+d.dataset.cdel, 1); renderCart(); }
+  });
+  $('#cart-body').addEventListener('change', e => { const i = e.target.closest('[data-cin]'); if (i) { cart[+i.dataset.cin].q = Math.max(1, parseInt(i.value, 10) || 1); renderCart(); } });
+  $('#cart-clear').addEventListener('click', () => { cart.length = 0; renderCart(); });
+  $('#cart-send').addEventListener('click', () => {
+    const groups = {};
+    cart.forEach(c => (groups[c.sup] = groups[c.sup] || []).push(c));
+    const made = Object.keys(groups).map(sup => {
+      const rows = groups[sup], urgentRows = rows.filter(c => c.urgent);
+      const o = { n: String(oNum++).padStart(4, '0'), sup, shop: MY_SHOP, ago: 'только что', st: 'new', want: Math.min(...rows.map(c => c.day)),
+        items: rows.map(c => snap(prod(c.pid), c.q, c.price)) };
+      if (urgentRows.length) o.urgent = Math.min(...urgentRows.map(c => c.day));
+      orders.unshift(o);
+      // Другие поставщики в макете подтверждают сами; наш дистрибьютор — вручную в своём кабинете
+      if (sup !== DIST) setTimeout(() => { if (o.st === 'new') { acceptOrder(o, o.want); if (role === 'shop') { toast(sup + ' принял заказ № ' + o.n); refreshShop(); } } }, 6000);
+      return o;
+    });
+    cart.length = 0;
+    toast(made.length === 1 ? 'Заказ № ' + made[0].n + ' отправлен' : 'Отправлено заказов: ' + made.length);
+    soFilter = 'active'; openTab('sorders');
+  });
+
+  // Заказы магазина
+  let soFilter = 'active';
+  const myOrders = () => orders.filter(o => o.shop === MY_SHOP);
+  function renderShopOrders() {
+    const act = myOrders().filter(o => o.st !== 'done'), done = myOrders().filter(o => o.st === 'done');
+    $('#so-filter').innerHTML = [['active', 'Активные', act.length], ['done', 'Завершённые', done.length]].map(([k, t, n]) => '<button type="button" class="chip' + (k === soFilter ? ' on' : '') + '" data-sof="' + k + '">' + t + '<span class="cnt">' + n + '</span></button>').join('');
+    const list = soFilter === 'active' ? act : done;
+    $('#so-list').innerHTML = list.length ? list.map(o => '<button type="button" class="ocard rise' + (o.st === 'new' && o.urgent != null ? ' is-urgent' : '') + '" data-sorder="' + o.n + '">' +
+      '<span class="between"><span class="o-name">' + o.sup + '</span>' + pillOf(o, true) + '</span><span class="o-items">' + esc(summary(o)) + '</span>' +
+      '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>').join('')
+      : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (soFilter === 'active' ? 'Активных заказов нет' : 'Пока нет завершённых заказов') + '</span></div>';
+    renderNav();
+  }
+  $('#so-filter').addEventListener('click', e => { const b = e.target.closest('[data-sof]'); if (b) { soFilter = b.dataset.sof; renderShopOrders(); } });
+  $('#so-list').addEventListener('click', e => { const b = e.target.closest('[data-sorder]'); if (b) { openShopOrder(b.dataset.sorder); go('m-order', 'push'); } });
+  let curSO = null;
+  // Условный QR (макет): узор зависит от номера заказа, считать его камерой нельзя
+  function qrArt(seed) {
+    let x = 0; for (const ch of seed) x = (x * 31 + ch.charCodeAt(0)) >>> 0;
+    const rnd = () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+    const N = 25, cells = [];
+    const finder = (r, c) => { for (const [R, C] of [[0, 0], [0, N - 7], [N - 7, 0]]) { if (r >= R && r < R + 7 && c >= C && c < C + 7) { const a = r - R, b = c - C; return (a === 0 || a === 6 || b === 0 || b === 6 || (a >= 2 && a <= 4 && b >= 2 && b <= 4)) ? 1 : 0; } if (r >= R - 1 && r <= R + 7 && c >= C - 1 && c <= C + 7) return 0; } return -1; };
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const f = finder(r, c); cells.push(f === -1 ? (rnd() > .52 ? 1 : 0) : f); }
+    return '<div class="qr" role="img" aria-label="QR-код заказа">' + cells.map(v => v ? '<i></i>' : '<i class="o"></i>').join('') + '</div>';
+  }
+  function openShopOrder(n) { curSO = findOrder(n); renderShopOrder(); }
+  function renderShopOrder() {
+    const o = curSO, at = o.st === 'new' ? 0 : o.st === 'work' ? 1 : 2;
+    $('#mo-title').textContent = 'Заказ № ' + o.n; $('#mo-pill').innerHTML = pillOf(o, true);
+    const steps = [['Заказ отправлен', o.ago], ['Поставщик принял', o.st !== 'new' ? 'поставка ' + dm(day(o.deliver)) : 'ждём подтверждения'], ['Доставлен', o.st === 'done' ? dm(day(o.deliver)) + ' в ' + o.deliveredAt + ' · по QR' : '']];
+    let h = '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + o.sup + '</span><span class="small muted">№ ' + o.n + ' · ' + o.ago + (o.urgent != null && o.st === 'new' ? ' · <b style="color:#D8392C">срочно до ' + dm(day(o.urgent)) + '</b>' : '') + '</span></div>' +
+      '<div class="steps">' + steps.map(([t, s], j) => '<div class="step' + (j <= at ? ' done' : '') + '"><div class="mk"><span class="c"></span>' + (j < 2 ? '<span class="ln"></span>' : '') + '</div><div class="grow"><span class="bold" style="font-size:14px">' + t + '</span>' + (s ? '<span class="xs muted">' + s + '</span>' : '') + '</div></div>').join('') + '</div>' +
+      contactRow('Телефон поставщика') + '</div>';
+    if (o.st === 'work') h += '<div class="card qr-card rise"><span class="bold" style="font-size:16px">QR для подтверждения доставки</span>' + qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45">Покажите этот код экспедитору при получении товара. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div>';
+    h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Товары</span>' + itemRows(o) + '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div></div>';
+    if (o.st !== 'new') h += invoiceBlock(o);
+    else h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-pdf"/></svg>Накладная появится, когда поставщик примет заказ</div>';
+    $('#mo-body').innerHTML = h;
+    if (o.st !== 'new') prepareInv($('#mo-body .inv'), o);
+  }
+  function refreshShop() {
+    if (cur === 'm-orders') renderShopOrders();
+    if (cur === 'm-order' && curSO) renderShopOrder();
+    if (cur === 'm-feed') renderFeed();
+    renderNav();
+  }
+
+  // Уведомления магазина
+  const notifs = [
+    { t: 'Заказ № 0216 принят · поставка ' + dm(day(1)), s: DIST, ago: 'вчера', ic: 'i-check', read: false },
+    { t: 'Новинка: Ряженка 4%, 0,5 л', s: DIST, ago: '2 дня назад', ic: 'i-spark', read: false },
+    { t: 'Заказ № 0213 доставлен', s: DIST, ago: '4 дня назад', ic: 'i-truck', read: true }
+  ];
+  function notify(text, o) { if (o.shop === MY_SHOP) notifs.unshift({ t: text, s: o.sup, ago: 'только что', ic: o.st === 'done' ? 'i-truck' : 'i-check', read: false }); }
+  function renderNotifs() {
+    $('#notif-list').innerHTML = notifs.map(n => '<div class="card row rise" style="flex-direction:row;padding:14px;gap:12px"><span class="notif-i" style="background:' + (n.read ? 'var(--soft);color:var(--muted)' : 'var(--green-bg);color:var(--green)') + '"><svg class="ic"><use href="#' + n.ic + '"/></svg></span>' +
+      '<span class="grow"><span class="bold" style="font-size:14px">' + esc(n.t) + '</span><span class="xs muted">' + esc(n.s) + ' · ' + n.ago + '</span></span></div>').join('');
+    notifs.forEach(n => { n.read = true; });
+    $('#notif-dot').hidden = true;
+  }
+
+  // =====================================================================
+  //                       ПРОФИЛЬ И НАСТРОЙКИ (обе роли)
+  // =====================================================================
+  const avatars = { dist: null, shop: null };
+  function renderProfile() {
+    const P0 = PROFILE[role];
+    $('#pr-name').textContent = P0.name; $('#pr-sub').textContent = P0.sub; $('#pr-inn').textContent = P0.inn; $('#pr-addr-l').textContent = P0.addrL; $('#pr-addr').textContent = P0.addr;
+    $('#avatar').innerHTML = avatars[role] ? '<img alt="" src="' + avatars[role] + '">' : P0.av;
+    $('#feed-av').innerHTML = avatars.shop ? '<img alt="" src="' + avatars.shop + '">' : PROFILE.shop.av;
+    $('#inv-count').textContent = invOrders().length;
+    renderNav();
+  }
+  $('#avatar-input').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; avatars[role] = URL.createObjectURL(f); e.target.value = ''; renderProfile(); toast('Аватар обновлён'); });
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-support]')) {
+      const d = DEMO_PHONE.replace(/\D/g, '');
+      sheet('<span class="h2">Служба поддержки</span><span class="small muted" style="text-align:center">Ежедневно с 9:00 до 21:00</span>' +
+        '<a class="btn lg" href="https://wa.me/' + d + '?text=' + encodeURIComponent('Здравствуйте! Вопрос по Zakup.KG') + '" target="_blank" rel="noopener" style="text-decoration:none;background:linear-gradient(180deg,#34DE76,#1FBF5B)"><svg viewBox="0 0 24 24" style="width:22px;height:22px"><use href="#i-wa"/></svg>Написать в WhatsApp</a>' +
+        '<a class="btn lg ghost" href="tel:+' + d + '" style="text-decoration:none"><svg class="ic"><use href="#i-call"/></svg>Позвонить ' + DEMO_PHONE + '</a><button type="button" class="btn lg ghost" data-close>Закрыть</button>');
+    }
+    if (e.target.closest('[data-logout]')) {
+      sheet('<span class="h2">Выйти из аккаунта?</span><button type="button" class="btn lg danger" id="logout-yes">Выйти</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+      $('#logout-yes').onclick = () => { closeSheet(); $('#login-form').reset(); go('a-login', 'fade'); };
+    }
+  });
+  const invOrders = () => orders.filter(o => o.st !== 'new' && (role === 'dist' ? o.sup === DIST : o.shop === MY_SHOP));
+  function renderInvoices() {
+    const list = invOrders().sort((a, b) => b.n.localeCompare(a.n));
+    $('#inv-list').innerHTML = list.length ? list.map(o => '<button type="button" class="pcard" data-invopen="' + o.n + '"><span class="pimg" style="background:var(--green-bg);border:none;color:var(--green);cursor:pointer"><svg class="ic"><use href="#i-pdf"/></svg></span>' +
+      '<span class="grow"><span class="p-name">№ ' + o.n + ' · ' + (role === 'dist' ? SHOPS[o.shop].name : o.sup) + '</span><span class="small muted">' + dmy(day(o.accepted || 0)) + ' · ' + (o.st === 'done' ? 'доставлен' : 'в работе') + '</span></span>' +
+      '<span class="p-price">' + fmt(oSum(o)) + ' сом</span></button>').join('') : '<div class="empty"><svg class="ic"><use href="#i-pdf"/></svg><span>Накладные появятся после принятия заказов</span></div>';
+  }
+  $('#inv-list').addEventListener('click', e => {
+    const b = e.target.closest('[data-invopen]'); if (!b) return;
+    const o = findOrder(b.dataset.invopen);
+    $('#iv-title').textContent = 'Накладная № ' + o.n; $('#iv-stage').innerHTML = invoiceCard(o);
+    go('s-invoice', 'push'); prepareInv($('#iv-stage .inv'), o);
+  });
+  $('#set-lang').addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (b && b.dataset.l === 'ky') toast('Кыргызский язык — в следующей версии'); });
+  function applyTheme(t) {
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+    store.set('zk-theme', t === 'auto' ? null : t);
+    $$('#set-theme button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    $('meta[name="theme-color"]').content = dark ? '#0E1411' : '#FFFFFF';
+  }
+  applyTheme(store.get('zk-theme', 'auto'));
+  $('#set-theme').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) applyTheme(b.dataset.t); });
+  $('#pw-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = $('#pw-old').value, b = $('#pw-new').value, c = $('#pw-new2').value, er = $('#pw-err');
+    const msg = !a ? 'Введите текущий пароль' : b.length < 8 ? 'Новый пароль — не меньше 8 символов' : b !== c ? 'Пароли не совпадают' : '';
+    if (msg) { er.textContent = msg; er.hidden = false; return; }
+    er.hidden = true; e.target.reset(); toast('Пароль изменён'); back();
+  });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.li[data-doc]'); if (!b) return;
+    $('#doc-title').textContent = b.querySelector('.grow').textContent;
+    $('#doc-body').replaceChildren($('#doc-' + b.dataset.doc).content.cloneNode(true));
+    go('s-doc', 'push');
+  });
+
+  function renderAll() { renderOrders(); renderProducts(); renderFeed(); renderCatalog(); renderCart(); renderShopOrders(); renderProfile(); renderNav(); }
+
+  // Старт: заставка → вход
+  syncViewSw(); renderAll();
+  runBoot();
+})();
+</script>
+</body>
+</html>

@@ -635,6 +635,13 @@ details.fold.first{border-top:none}
 .notif-c{cursor:pointer;align-items:center}
 .notif-c.unread{box-shadow:inset 3px 0 0 var(--green),var(--sh-1)}
 .n-dot{width:9px;height:9px;border-radius:5px;background:var(--green);flex-shrink:0}
+
+/* Срочный заказ: только «сегодня» + что делать, если не успеваете */
+.dates.one{grid-template-columns:1fr}
+.late-card{gap:12px;border:1.5px dashed #E8A39C}
+.late-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.late-btns .btn{height:44px;font-size:14px}
+.late-ok{height:48px;font-size:15px}
 </style>
 </head>
 <body>
@@ -1479,7 +1486,8 @@ details.fold.first{border-top:none}
   $('#o-list').addEventListener('click', e => { const b = e.target.closest('[data-order]'); if (b) { openOrder(b.dataset.order); go('s-order', 'push'); } });
 
   let curOrder = null, pickDay = null;
-  function openOrder(n) { curOrder = findOrder(n); pickDay = null; renderOrder(); }
+  // Срочный заказ — только «сегодня», она выбрана сразу
+  function openOrder(n) { curOrder = findOrder(n); pickDay = curOrder.st === 'new' && curOrder.urgent != null ? curOrder.urgent : null; renderOrder(); }
   function renderOrder(still) {
     const o = curOrder, s = SHOPS[o.shop];
     $('#od-title').textContent = 'Заказ № ' + o.n; $('#od-pill').innerHTML = pillOf(o);
@@ -1489,11 +1497,26 @@ details.fold.first{border-top:none}
     h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + o.items.length + ' поз. · ' + o.ago + '</span></div>' + itemRows(o) +
       '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div>' +
       '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
-      (o.want != null && o.st === 'new' ? '<div class="between small"><span class="muted">Магазин хочет получить</span><span class="bold">' + dayWord(o.want) + ', ' + dm(day(o.want)) + '</span></div>' : '') + '</div>';
+      (o.want != null && o.st === 'new' && !o.rescheduled ? '<div class="between small"><span class="muted">Магазин хочет получить</span><span class="bold">' + dayWord(o.want) + ', ' + dm(day(o.want)) + '</span></div>' : '') + '</div>';
     const bar = $('#od-bar');
     if (o.st === 'new') {
-      h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
-        DAYS.map(([t, k]) => { const late = o.urgent != null && k > o.urgent; return '<button type="button" class="date-opt' + (pickDay === k ? ' on' : '') + '" data-day="' + k + '" role="radio" aria-checked="' + (pickDay === k) + '"><b>' + t + '</b><span' + (late ? ' style="color:var(--red)"' : '') + '>' + dm(day(k)) + (late ? ' · позже срока' : '') + '</span></button>'; }).join('') + '</div></div>';
+      if (o.urgent != null) {
+        // Срочный: поставка только в срок магазина. Не успеваете — позвоните магазину или откажитесь;
+        // если магазин согласен на позже — заказ становится обычным и дата выбирается как обычно.
+        const d = DEMO_PHONE.replace(/\D/g, '');
+        h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span>' +
+          '<div class="dates one"><button type="button" class="date-opt urgent on" data-day="' + o.urgent + '" role="radio" aria-checked="true"><b>' + DAYS.find(x => x[1] === o.urgent)[0] + '</b><span>' + dm(day(o.urgent)) + ' · срочно</span></button></div></div>' +
+          '<div class="card late-card rise"><div class="row" style="gap:10px;align-items:flex-start"><svg class="ic" style="color:#D8392C;margin-top:1px"><use href="#i-help"/></svg>' +
+          '<span class="grow"><span class="bold" style="font-size:15px">Не успеваете привезти ' + dayWord(o.urgent) + '?</span><span class="small muted" style="line-height:1.4">Позвоните магазину и договоритесь о другом сроке или откажитесь от заказа.</span></span></div>' +
+          '<div class="late-btns"><a class="btn ghost" href="tel:+' + d + '" style="text-decoration:none"><svg class="ic"><use href="#i-call"/></svg>Позвонить</a>' +
+          '<a class="btn ghost" href="https://wa.me/' + d + '?text=' + encodeURIComponent('Здравствуйте! По срочному заказу № ' + o.n + ' в Zakup.KG: можем привезти позже?') + '" target="_blank" rel="noopener" style="text-decoration:none"><svg viewBox="0 0 24 24" style="width:20px;height:20px;color:#1FBF5B"><use href="#i-wa"/></svg>WhatsApp</a></div>' +
+          '<button type="button" class="btn lg ghost late-ok" id="od-later"><svg class="ic"><use href="#i-cal"/></svg>Магазин согласен на другой срок</button>' +
+          '<button type="button" class="linkbtn" id="od-reject2" style="color:var(--red);align-self:center">Отказаться от заказа</button></div>';
+      } else {
+        if (o.rescheduled) h += '<div class="info-line rise"><svg class="ic"><use href="#i-check"/></svg>Срочность снята: магазин согласен на другой срок</div>';
+        h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
+          DAYS.map(([t, k]) => '<button type="button" class="date-opt' + (pickDay === k ? ' on' : '') + '" data-day="' + k + '" role="radio" aria-checked="' + (pickDay === k) + '"><b>' + t + '</b><span>' + dm(day(k)) + '</span></button>').join('') + '</div></div>';
+      }
       bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (pickDay == null ? ' disabled' : '') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять · ' + dm(day(pickDay))) + '</button></div>' +
         (pickDay == null ? '<span class="bar-hint">Чтобы принять, выберите дату поставки</span>' : '');
       bar.hidden = false;
@@ -1511,7 +1534,21 @@ details.fold.first{border-top:none}
     $('#od-body').innerHTML = still ? h.replace(/ rise/g, '') : h;
     if (hasInvoice(o)) prepareInv($('#od-body .inv'), o);
   }
-  $('#od-body').addEventListener('click', e => { const d = e.target.closest('[data-day]'); if (d) { pickDay = +d.dataset.day; renderOrder(true); } });
+  $('#od-body').addEventListener('click', e => {
+    const d = e.target.closest('[data-day]');
+    if (d) { pickDay = +d.dataset.day; renderOrder(true); return; }
+    if (e.target.closest('#od-reject2')) { openReject(); return; }
+    if (e.target.closest('#od-later')) {
+      sheet('<span class="h2">Магазин согласился на другой срок?</span><span class="small muted" style="text-align:center;line-height:1.45">Пометка «Срочно» снимется, заказ станет обычным — выберите дату поставки как обычно.</span>' +
+        '<button type="button" class="btn lg" id="later-yes">Да, сделать обычным</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+      $('#later-yes').onclick = () => {
+        const o = curOrder; delete o.urgent; o.rescheduled = true; pickDay = null;
+        notify('Заказ № ' + o.n + ': срочность снята по договорённости', o);
+        closeSheet(); toast('Заказ № ' + o.n + ' стал обычным — выберите дату поставки');
+        renderOrder(true); renderOrders();
+      };
+    }
+  });
   const REASONS = ['Нет в наличии', 'Загруженность доставки', 'Другое'];
   function openReject() {
     let pick = REASONS[0];

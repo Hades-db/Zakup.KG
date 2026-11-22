@@ -680,6 +680,10 @@ details.fold.first{border-top:none}
 .pick-c .grow{display:flex;flex-direction:column;gap:2px}
 .sheet-form{display:flex;flex-direction:column;gap:12px;width:100%}
 .sheet-err{color:var(--red);font-size:13px;font-weight:600}
+
+.cq-head{display:flex;align-items:center;gap:14px}
+.cq-head .cr-av{width:56px;height:56px;border-radius:18px;font-size:20px}
+.cq-head .grow{display:flex;flex-direction:column;gap:2px;min-width:0}
 </style>
 </head>
 <body>
@@ -836,6 +840,15 @@ details.fold.first{border-top:none}
     </header>
     <div class="body"><div class="cr-list" id="cr-list"></div></div>
     <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <section class="screen" id="s-courier" hidden>
+    <header class="top"><div class="top-row">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h-sub">Доставщик</span>
+    </div></header>
+    <div class="body" id="cq-body"></div>
+    <div class="bottom-bar"><button type="button" class="btn lg danger" id="cq-del"><svg class="ic"><use href="#i-trash"/></svg>Удалить сотрудника</button></div>
   </section>
 
   <!-- ===================== ДОСТАВЩИК ===================== -->
@@ -2236,7 +2249,7 @@ details.fold.first{border-top:none}
     const q = ($('#cr-search').value || '').trim().toLowerCase();
     const list = couriers.filter(c => !q || c.name.toLowerCase().includes(q));
     const busy = c => orders.filter(o => o.courier === c.id && o.st === 'work').length;
-    $('#cr-list').innerHTML = list.length ? list.map(c => '<label class="cr-row' + (crSel.has(c.id) ? ' on' : '') + '">' + (crMode ? '<input type="checkbox" data-crsel="' + c.id + '"' + (crSel.has(c.id) ? ' checked' : '') + ' aria-label="Выбрать ' + esc(c.name) + '">' : '') +
+    $('#cr-list').innerHTML = list.length ? list.map(c => '<label class="cr-row' + (crSel.has(c.id) ? ' on' : '') + '" data-crid="' + c.id + '">' + (crMode ? '<input type="checkbox" data-crsel="' + c.id + '"' + (crSel.has(c.id) ? ' checked' : '') + ' aria-label="Выбрать ' + esc(c.name) + '">' : '') +
       '<span class="cr-av">' + initials(c.name) + '</span><span class="grow"><b>' + esc(c.name) + '</b><span class="small muted">' + c.phone + '</span>' +
       '<span class="xs ' + (busy(c) ? '' : 'muted') + '" style="' + (busy(c) ? 'color:var(--green);font-weight:700' : '') + '">' + (busy(c) ? 'В работе: ' + busy(c) : 'Нет заказов в работе') + '</span></span></label>').join('')
       : '<div class="empty"><svg class="ic"><use href="#i-truck"/></svg><span>' + (q ? 'Никого не нашли' : 'Добавьте первого доставщика') + '</span></div>';
@@ -2314,6 +2327,44 @@ details.fold.first{border-top:none}
     else { bar.hidden = true; bar.innerHTML = ''; }
   }
   $('#cd-bar').addEventListener('click', e => { if (e.target.closest('#cd-scan')) { curOrder = cOrder; openScan('qr'); go('s-scan', 'push'); } });
+
+  // Подробности доставщика: ФИО, логин, история заказов, удалить
+  let cqId = null, cqF = 'work';
+  $('#cr-list').addEventListener('click', e => {
+    if (crMode) return;
+    const r = e.target.closest('[data-crid]'); if (!r) return;
+    cqId = +r.dataset.crid; cqF = 'work'; renderCourier(); go('s-courier', 'push');
+  });
+  function renderCourier() {
+    const c = couriers.find(x => x.id === cqId); if (!c) return;
+    const mine = orders.filter(o => o.courier === c.id && (o.st === 'work' || o.st === 'done'));
+    const F = [['work', 'В работе'], ['done', 'Доставлены']];
+    const list = mine.filter(o => o.st === cqF).sort((a, b) => cqF === 'work' ? a.deliver - b.deliver : b.deliver - a.deliver);
+    $('#cq-body').innerHTML = '<div class="card rise" style="gap:14px"><div class="cq-head"><span class="cr-av">' + initials(c.name) + '</span><span class="grow"><span style="font-size:19px;font-weight:800">' + esc(c.name) + '</span><span class="small muted">Доставщик</span></span></div>' +
+      '<div class="kv"><span>ФИО</span><span>' + esc(c.name) + '</span></div><div class="kv"><span>Логин</span><span>' + c.phone + '</span></div></div>' +
+      '<span class="bold" style="font-size:17px;padding:4px 2px 0">История заказов</span>' +
+      '<div class="chips" role="tablist">' + F.map(([k, t]) => '<button type="button" class="chip' + (k === cqF ? ' on' : '') + '" data-cqf="' + k + '" role="tab" aria-selected="' + (k === cqF) + '">' + t + '<span class="cnt">' + mine.filter(o => o.st === k).length + '</span></button>').join('') + '</div>' +
+      '<div class="olist">' + (list.length ? list.map(o => { const sh = SHOPS[o.shop];
+        return '<button type="button" class="ocard" data-cqo="' + o.n + '"><span class="between"><span class="o-name">' + sh.name + '</span>' + pillOf(o) + '</span>' +
+          '<span class="o-items"><span>' + esc(sh.addr) + '</span></span>' +
+          '<span class="between o-foot"><span class="xs muted">№ ' + o.n + (o.st === 'done' ? ', ' + dm(day(o.deliver)) + ' в ' + o.deliveredAt : '') + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>'; }).join('')
+        : '<div class="empty"><svg class="ic"><use href="#i-truck"/></svg><span>' + (cqF === 'work' ? 'Нет заказов в работе' : 'Пока нет доставленных заказов') + '</span></div>') + '</div>';
+  }
+  $('#cq-body').addEventListener('click', e => {
+    const f = e.target.closest('[data-cqf]'); if (f) { cqF = f.dataset.cqf; renderCourier(); return; }
+    const o = e.target.closest('[data-cqo]'); if (o) { openOrder(o.dataset.cqo); go('s-order', 'push'); }
+  });
+  $('#cq-del').addEventListener('click', () => {
+    const c = couriers.find(x => x.id === cqId), active = orders.filter(o => o.courier === c.id && o.st === 'work').length;
+    sheet('<span class="h2">Удалить сотрудника?</span><span class="bold" style="text-align:center">' + esc(c.name) + '</span>' +
+      (active ? '<span class="small muted" style="text-align:center">' + active + ' ' + plural(active, 'заказ', 'заказа', 'заказов') + ' в работе останутся без доставщика</span>' : '') +
+      '<button type="button" class="btn lg danger" id="cq-del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#cq-del-yes').onclick = () => {
+      orders.forEach(o => { if (o.courier === c.id && o.st === 'work') delete o.courier; });
+      couriers.splice(couriers.indexOf(c), 1);
+      closeSheet(); toast('Доставщик удалён'); renderCouriers(); renderOrders(); back();
+    };
+  });
 
   function renderAll() { renderOrders(); renderProducts(); renderCouriers(); renderCOrders(); renderFeed(); renderCatalog(); renderCart(); renderShopOrders(); renderProfile(); renderNav(); }
 

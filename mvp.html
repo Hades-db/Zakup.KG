@@ -684,6 +684,15 @@ details.fold.first{border-top:none}
 .cq-head{display:flex;align-items:center;gap:14px}
 .cq-head .cr-av{width:56px;height:56px;border-radius:18px;font-size:20px}
 .cq-head .grow{display:flex;flex-direction:column;gap:2px;min-width:0}
+
+/* ===== v8: карточки заказов поставщика ===== */
+.oc2{gap:5px}
+.oc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.oc-n{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.oc-meta{display:flex;align-items:baseline;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;font-size:13px}
+.olist.grid#o-list{display:block;columns:2;column-gap:10px}
+.olist.grid#o-list .ocard{break-inside:avoid;margin-bottom:10px;display:flex}
+.olist.grid#o-list .oc-meta{flex-direction:column;align-items:flex-start;gap:2px}
 </style>
 </head>
 <body>
@@ -1594,11 +1603,11 @@ details.fold.first{border-top:none}
     box.className = 'olist' + (view.orders === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(o => {
       const s = SHOPS[o.shop], cls = o.st === 'new' ? (o.urgent != null ? ' is-urgent' : ' is-new') : '';
-      const head = view.orders === 'grid' ? '<span>' + pillOf(o) + '</span><span class="o-name">' + s.name + '</span>'
-        : '<span class="between"><span class="o-name">' + s.name + '</span>' + pillOf(o) + '</span>';
-      return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items"><span>' + posWord(o.items.length) + '</span><span class="xs muted">' + o.ago + '</span></span>' +
+      return '<button type="button" class="ocard oc2 rise' + cls + '" data-order="' + o.n + '"><span class="oc-top"><span class="oc-n">№ ' + o.n + '</span>' + pillOf(o) + '</span>' +
+        '<span class="o-name">' + s.name + '</span>' +
+        '<span class="oc-meta"><span class="muted">' + posWord(o.items.length) + ', ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' с</span></span>' +
         (o.st === 'work' ? (courierOf(o) ? '<span class="o-cour"><svg class="ic"><use href="#i-truck"/></svg>' + esc(shortName(courierOf(o).name)) + '</span>' : '<span class="o-cour none"><svg class="ic"><use href="#i-truck"/></svg>Доставщик не назначен</span>') : '') +
-        '<span class="between o-foot"><span class="xs muted">№ ' + o.n + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>';
+        '</button>';
     }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет завершённых заказов') + '</span></div>';
     renderNav();
   }
@@ -2192,7 +2201,6 @@ details.fold.first{border-top:none}
     $('#inv-count').textContent = invOrders().length;
     $('#pr-inn').parentElement.hidden = role === 'courier';
     $('#pr-req-h').textContent = role === 'courier' ? 'Данные' : 'Реквизиты';
-    $('#s-profile [data-go="s-invoices"]').hidden = role === 'courier';
     renderNav();
   }
   $('#avatar-input').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; avatars[role] = URL.createObjectURL(f); e.target.value = ''; renderProfile(); toast('Аватар обновлён'); });
@@ -2208,11 +2216,11 @@ details.fold.first{border-top:none}
       $('#logout-yes').onclick = () => { closeSheet(); $('#login-form').reset(); go('a-login', 'fade'); };
     }
   });
-  const invOrders = () => orders.filter(o => hasInvoice(o) && (role === 'dist' ? o.sup === DIST : o.shop === MY_SHOP));
+  const invOrders = () => orders.filter(o => hasInvoice(o) && (role === 'dist' ? o.sup === DIST : role === 'courier' ? o.courier === ME_COURIER : o.shop === MY_SHOP));
   function renderInvoices() {
     const list = invOrders().sort((a, b) => b.n.localeCompare(a.n));
     $('#inv-list').innerHTML = list.length ? list.map(o => '<button type="button" class="pcard" data-invopen="' + o.n + '"><span class="pimg" style="background:var(--green-bg);border:none;color:var(--green);cursor:pointer"><svg class="ic"><use href="#i-pdf"/></svg></span>' +
-      '<span class="grow"><span class="p-name">№ ' + o.n + ', ' + (role === 'dist' ? SHOPS[o.shop].name : o.sup) + '</span><span class="small muted">' + dmy(day(o.accepted || 0)) + ', ' + (o.st === 'done' ? 'доставлен' : 'в работе') + '</span></span>' +
+      '<span class="grow"><span class="p-name">№ ' + o.n + ', ' + (role === 'shop' ? o.sup : SHOPS[o.shop].name) + '</span><span class="small muted">' + dmy(day(o.accepted || 0)) + ', ' + (o.st === 'done' ? 'доставлен' : 'в работе') + '</span></span>' +
       '<span class="p-price">' + fmt(oSum(o)) + ' сом</span></button>').join('') : '<div class="empty"><svg class="ic"><use href="#i-pdf"/></svg><span>Накладные появятся после принятия заказов</span></div>';
   }
   $('#inv-list').addEventListener('click', e => {
@@ -2322,13 +2330,14 @@ details.fold.first{border-top:none}
   function renderCOrder() {
     const o = cOrder, sh = SHOPS[o.shop], bar = $('#cd-bar');
     $('#cd-title').textContent = 'Заказ № ' + o.n; $('#cd-pill').innerHTML = pillOf(o);
-    let h = '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + sh.name + '</span><span class="small muted">' + sh.addr + '</span></div>' + contactRow('Телефон магазина') + '</div>';
+    let h = '<div class="card rise"><div class="between" style="align-items:flex-start;gap:10px"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + sh.name + '</span><span class="small muted">' + sh.addr + '</span></div>' + callBtns(sh.name) + '</div></div>';
     h += o.st === 'done' ? '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + '</div>'
       : '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>';
     h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + posWord(o.items.length) + '</span></div>' + itemRows(o) +
       '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div>' +
-      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div></div>';
+      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div></div>' + invoiceBlock(o);
     $('#cd-body').innerHTML = h;
+    prepareInv($('#cd-body .inv'), o);
     if (o.st === 'work') { bar.innerHTML = '<button type="button" class="btn lg" id="cd-scan"><svg class="ic"><use href="#i-qr"/></svg>Подтвердить доставку по QR</button>'; bar.hidden = false; }
     else { bar.hidden = true; bar.innerHTML = ''; }
   }

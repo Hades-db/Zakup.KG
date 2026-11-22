@@ -693,6 +693,12 @@ details.fold.first{border-top:none}
 .olist.grid#o-list{display:block;columns:2;column-gap:10px}
 .olist.grid#o-list .ocard{break-inside:avoid;margin-bottom:10px;display:flex}
 .olist.grid#o-list .oc-meta{flex-direction:column;align-items:flex-start;gap:2px}
+
+.urg-check{flex-direction:row;align-items:center;gap:10px;padding:14px;cursor:pointer;color:#D8392C}
+.urg-check input{width:22px;height:22px;accent-color:#D8392C;margin:0;flex-shrink:0}
+.urg-check .ic{width:20px;height:20px}
+.urg-check b{font-size:15px;font-weight:800;letter-spacing:.04em}
+.urg-check.on{box-shadow:inset 0 0 0 2px #D8392C,var(--sh-1)}
 </style>
 </head>
 <body>
@@ -965,7 +971,7 @@ details.fold.first{border-top:none}
           <span class="grow"><span class="bold">Количество</span><span class="xs muted" id="it-unit"></span></span>
           <div class="stepper"><button type="button" id="it-minus" aria-label="Меньше">−</button><input class="qin" id="it-q" type="number" inputmode="numeric" min="1" value="1" aria-label="Количество"><button type="button" id="it-plus" aria-label="Больше">+</button></div>
         </div>
-        <div class="opt card" style="flex-direction:row;align-items:center;padding:12px 14px"><span class="grow"><span class="bold">Срочно, привезти сегодня</span></span><button type="button" class="switch" id="it-urgent" role="switch" aria-checked="false" aria-label="Срочно, привезти сегодня"></button></div>
+        <label class="card urg-check" id="it-urgent-box"><input type="checkbox" id="it-urgent" aria-label="Срочно"><svg class="ic"><use href="#i-fire"/></svg><b>СРОЧНО</b></label>
       </div>
     </div>
     <div class="bottom-bar"><div class="sum-bar"><span class="s"><span class="xs muted bold">Итого</span><b id="it-total">0 сом</b></span><button type="button" class="btn lg" id="it-add">В корзину</button></div></div>
@@ -975,7 +981,6 @@ details.fold.first{border-top:none}
     <header class="top"><div class="top-row"><span class="h1">Корзина</span><button type="button" class="linkbtn" id="cart-clear" style="color:var(--red)">Очистить</button></div></header>
     <div class="body" id="cart-body"></div>
     <div class="bottom-bar" id="cart-bar" hidden>
-      <div class="between small"><span class="muted">Поставщиков</span><b id="cart-sups">0</b></div>
       <div class="sum-bar"><span class="s"><span class="xs muted bold">Итого</span><b id="cart-total">0 сом</b></span><button type="button" class="btn lg" id="cart-send">Оформить заказ</button></div>
     </div>
     <nav class="tabbar five" data-nav></nav>
@@ -2021,12 +2026,12 @@ details.fold.first{border-top:none}
   }
   function renderItem() {
     const p = it.p;
-    $('#it-urgent').setAttribute('aria-checked', it.day === 0);
+    $('#it-urgent').checked = it.day === 0; $('#it-urgent-box').classList.toggle('on', it.day === 0);
     $('#it-q').value = it.q; $('#it-minus').disabled = it.q <= 1;
     $('#it-total').textContent = fmt(p.price * it.q) + ' сом';
     $('#it-add').disabled = !p.avail;
   }
-  $('#it-urgent').addEventListener('click', () => { it.day = it.day === 0 ? 1 : 0; renderItem(); });
+  $('#it-urgent').addEventListener('change', e => { it.day = e.target.checked ? 0 : 1; renderItem(); });
   $('#it-minus').addEventListener('click', () => { if (it.q > 1) { it.q--; renderItem(); } });
   $('#it-plus').addEventListener('click', () => { it.q++; renderItem(); });
   $('#it-q').addEventListener('change', e => { it.q = Math.max(1, parseInt(e.target.value, 10) || 1); renderItem(); });
@@ -2054,7 +2059,7 @@ details.fold.first{border-top:none}
     }).join('') + '</div><span class="xs muted" style="text-align:center">После оформления товары одного поставщика соберутся в один заказ</span>';
     const total = cart.reduce((s, c) => s + prod(c.pid).price * c.q, 0), nSup = new Set(cart.map(c => prod(c.pid).sup)).size;
     $('#cart-total').textContent = fmt(total) + ' сом';
-    $('#cart-sups').textContent = nSup;
+
     renderNav();
   }
   $('#cart-body').addEventListener('click', e => {

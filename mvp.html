@@ -651,6 +651,33 @@ details.fold.first{border-top:none}
 .o-items .xs{flex-shrink:0;text-align:right}
 .so-num{display:flex;gap:10px;align-items:baseline}
 .so-num b{font-size:14px;color:var(--text)}
+
+/* ===== v7: доставщики ===== */
+.tabbar.four{grid-template-columns:repeat(4,1fr)}
+.tabbar.four .fab{left:37.5%}
+.tabbar.two{grid-template-columns:repeat(2,1fr)}
+.btn.sm-add{height:40px;padding:0 14px;font-size:14px;border-radius:12px;flex-shrink:0}
+.btn.sm-add .ic{width:18px;height:18px}
+.sel-bar{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--red-bg)}
+.sel-bar .bold{flex:1;color:var(--red)}
+.cr-list{display:flex;flex-direction:column;gap:10px}
+.cr-row{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;box-shadow:var(--sh-1);cursor:pointer}
+.cr-row.on{box-shadow:inset 0 0 0 2px var(--red),var(--sh-1)}
+.cr-row input{width:22px;height:22px;accent-color:var(--red);flex-shrink:0;margin:0}
+.cr-av{width:42px;height:42px;border-radius:14px;background:var(--green-bg);color:var(--green);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cr-row .grow{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cr-row b{font-size:15px}
+.cour-card{display:flex;align-items:center;gap:12px}
+.cour-none{color:var(--red);font-weight:700}
+.o-cour{font-size:12.5px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:4px}
+.o-cour.none{color:var(--red)}
+.o-cour .ic{width:14px;height:14px}
+.pick-list{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto}
+.pick-c{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--card);text-align:left;width:100%}
+.pick-c.on{border-color:var(--green);background:var(--green-bg)}
+.pick-c .grow{display:flex;flex-direction:column;gap:2px}
+.sheet-form{display:flex;flex-direction:column;gap:12px;width:100%}
+.sheet-err{color:var(--red);font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
@@ -689,7 +716,7 @@ details.fold.first{border-top:none}
       <div class="auth-links"><button type="button" class="linkbtn" data-auth="a-forgot">Забыли пароль?</button><span></span></div>
       <button type="submit" class="btn lg">Войти</button>
       <p class="auth-switch">Нет аккаунта? <button type="button" class="linkbtn" data-auth="a-register">Зарегистрироваться</button></p>
-      <div class="demo-roles"><span class="xs muted">Демо:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button></div>
+      <div class="demo-roles"><span class="xs muted">Демо:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button><button type="button" class="linkbtn xs" data-demo="courier">Доставщик</button></div>
     </form>
   </section>
 
@@ -792,6 +819,39 @@ details.fold.first{border-top:none}
     </header>
     <div class="body"><div class="plist" id="p-list"></div></div>
     <nav class="tabbar" data-nav></nav>
+  </section>
+
+
+  <!-- ===== Поставщик: доставщики ===== -->
+  <section class="screen" id="s-couriers" data-tab="couriers" data-role="dist" hidden>
+    <header class="top">
+      <div class="top-row"><span class="h1">Доставщики</span>
+        <button type="button" class="btn sm-add" id="cr-add"><svg class="ic"><use href="#i-add"/></svg>Добавить</button>
+      </div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="cr-search" type="search" placeholder="Поиск по ФИО" aria-label="Поиск по ФИО"></label>
+      <div class="sel-bar" id="cr-selbar" hidden><span class="bold" id="cr-selcount"></span><button type="button" class="linkbtn" id="cr-selcancel">Отмена</button><button type="button" class="btn danger sm-add" id="cr-del"><svg class="ic"><use href="#i-trash"/></svg>Удалить</button></div>
+    </header>
+    <div class="body"><div class="cr-list" id="cr-list"></div></div>
+    <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <!-- ===================== ДОСТАВЩИК ===================== -->
+  <section class="screen" id="c-orders" data-tab="corders" data-role="courier" hidden>
+    <header class="top">
+      <div class="top-row"><span class="h1">Мои заказы</span></div>
+      <div class="chips" id="co-filter" role="tablist" aria-label="Статус заказов"></div>
+    </header>
+    <div class="body"><div class="olist" id="co-list"></div></div>
+    <nav class="tabbar" data-nav></nav>
+  </section>
+
+  <section class="screen" id="c-order" hidden>
+    <header class="top"><div class="top-row">
+      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
+      <span class="h-sub" id="cd-title">Заказ</span><span id="cd-pill"></span>
+    </div></header>
+    <div class="body" id="cd-body"></div>
+    <div class="bottom-bar" id="cd-bar" hidden></div>
   </section>
 
   <!-- ===== Шаблон карточки товара: «+» и редактирование ===== -->
@@ -923,7 +983,7 @@ details.fold.first{border-top:none}
     </div></header>
     <div class="body">
       <div class="card rise" style="gap:10px">
-        <span class="bold" style="font-size:16px">Реквизиты</span>
+        <span class="bold" style="font-size:16px" id="pr-req-h">Реквизиты</span>
         <div class="kv"><span>ИНН</span><span id="pr-inn"></span></div>
         <div class="kv"><span id="pr-addr-l">Адрес склада</span><span id="pr-addr"></span></div>
         <div class="kv"><span>Телефон</span><span>+996 500 99 16 20</span></div>
@@ -1145,7 +1205,8 @@ details.fold.first{border-top:none}
   };
   const PROFILE = {
     dist: { name: DIST, sub: 'Поставщик, Бишкек', inn: '02305199010045', addrL: 'Адрес склада', addr: 'г. Бишкек, пр. Чуй, 154', av: 'Д' },
-    shop: { name: SHOPS[MY_SHOP].name, sub: 'Магазин, Свердловский р-н', inn: '01204198700123', addrL: 'Адрес магазина', addr: 'г. Бишкек, ул. Исанова, 61', av: 'А' }
+    shop: { name: SHOPS[MY_SHOP].name, sub: 'Магазин, Свердловский р-н', inn: '01204198700123', addrL: 'Адрес магазина', addr: 'г. Бишкек, ул. Исанова, 61', av: 'А' },
+    courier: { name: 'Эрлан Касымов', sub: 'Доставщик', inn: '', addrL: 'Поставщик', addr: DIST, av: 'ЭК' }
   };
 
   // ---------- Товары ----------
@@ -1217,6 +1278,20 @@ details.fold.first{border-top:none}
     { n: '0213', sup: DIST, shop: MY_SHOP, ago: '4 дня назад', st: 'done', deliver: -3, accepted: -4, deliveredAt: '15:05', items: [L('sugar', 25), L('juice', 1)] },
     { n: '0212', sup: OTHERS[0], shop: MY_SHOP, ago: '5 дней назад', st: 'done', deliver: -4, accepted: -5, deliveredAt: '09:20', items: [snap(byKeyAny('bread'), 30), snap(byKeyAny('baton'), 20)] }
   ];
+  // Доставщики поставщика (сотрудники). Телефоны в демо — один демо-номер
+  let crId = 4;
+  const couriers = [
+    { id: 1, name: 'Эрлан Касымов', phone: DEMO_PHONE },
+    { id: 2, name: 'Бекзат Осмонов', phone: DEMO_PHONE },
+    { id: 3, name: 'Улан Токтогулов', phone: DEMO_PHONE }
+  ];
+  const ME_COURIER = 1;   // демо: вход как доставщик — Эрлан Касымов
+  const courierOf = o => couriers.find(c => c.id === o.courier);
+  const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('');
+  const shortName = n => { const [a, b] = n.split(' '); return b ? a + ' ' + b[0] + '.' : a; };
+  orders.find(o => o.n === '0217').courier = 1;
+  orders.find(o => o.n === '0214').courier = 1;
+  orders.find(o => o.n === '0213').courier = 2;
   const findOrder = n => orders.find(o => o.n === n);
   const lineSum = l => l.q * l.price;
   const oSum = o => o.items.reduce((s, l) => s + lineSum(l), 0);
@@ -1236,10 +1311,11 @@ details.fold.first{border-top:none}
   let cur = 'a-login';
   const hist = [];
   const TABS = {
-    dist: { orders: 's-orders', products: 's-products', profile: 's-profile' },
+    dist: { orders: 's-orders', products: 's-products', couriers: 's-couriers', profile: 's-profile' },
+    courier: { corders: 'c-orders', profile: 's-profile' },
     shop: { feed: 'm-feed', catalog: 'm-catalog', cart: 'm-cart', sorders: 'm-orders', profile: 's-profile' }
   };
-  const HOME = { dist: 's-orders', shop: 'm-feed' };
+  const HOME = { dist: 's-orders', shop: 'm-feed', courier: 'c-orders' };
   function animIn(el, cls) { el.hidden = false; el.classList.remove('in-right', 'in-left', 'out-left', 'out-right', 'fade-in', 'anim'); void el.offsetWidth; el.classList.add(cls, 'anim'); }
   function animOut(el, cls) {
     el.classList.remove('in-right', 'in-left', 'out-left', 'out-right', 'fade-in', 'anim'); void el.offsetWidth; el.classList.add(cls);
@@ -1257,6 +1333,7 @@ details.fold.first{border-top:none}
   function openTab(t) {
     const R = {
       orders: renderOrders, products: renderProducts, profile: renderProfile, invoices: () => invoicesAs(true),
+      couriers: () => { crSel.clear(); renderCouriers(); }, corders: renderCOrders,
       feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: () => { if (!soKeep) soFilter = 'acc'; soKeep = false; renderShopOrders(); }
     };
     if (R[t]) R[t]();
@@ -1270,14 +1347,15 @@ details.fold.first{border-top:none}
       (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
     if (role === 'dist') {
       const newN = orders.filter(o => o.sup === DIST && o.st === 'new').length;
-      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') + t('profile', 'i-user', 'Профиль') +
-        '<button type="button" class="fab' + (fabHidden ? ' hide' : '') + '" data-fab aria-label="Добавить товар"><svg class="ic"><use href="#i-add"/></svg></button>';
+      return t('orders', 'i-doc', 'Заказы', newN) + t('products', 'i-box', 'Товары') + t('couriers', 'i-truck', 'Доставщики') + t('profile', 'i-user', 'Профиль') + (active === 'couriers' ? '' :
+        '<button type="button" class="fab' + (fabHidden ? ' hide' : '') + '" data-fab aria-label="Добавить товар"><svg class="ic"><use href="#i-add"/></svg></button>');
     }
+    if (role === 'courier') return t('corders', 'i-doc', 'Заказы', orders.filter(o => o.courier === ME_COURIER && o.st === 'work').length) + t('profile', 'i-user', 'Профиль');
     return t('feed', 'i-feed', 'Лента') + t('catalog', 'i-grid', 'Каталог') + t('cart', 'i-cart', 'Корзина', cart.length) + t('sorders', 'i-doc', 'Заказы') + t('profile', 'i-user', 'Профиль');
   }
   function renderNav() {
     $$('[data-nav]').forEach(n => {
-      n.classList.toggle('five', role === 'shop'); n.classList.toggle('three', role === 'dist');
+      n.classList.toggle('five', role === 'shop'); n.classList.toggle('four', role === 'dist'); n.classList.toggle('two', role === 'courier'); n.classList.remove('three');
       n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
     });
   }
@@ -1387,7 +1465,7 @@ details.fold.first{border-top:none}
   function enter(r, msg) {
     role = r; store.set('zk-role', r);
     syncViewSw(); renderAll();
-    openTab(r === 'dist' ? 'orders' : 'feed');
+    openTab(r === 'dist' ? 'orders' : r === 'courier' ? 'corders' : 'feed');
     if (msg) toast(msg);
   }
   $('#login-form').addEventListener('submit', e => {
@@ -1395,7 +1473,7 @@ details.fold.first{border-top:none}
     if (digits('#login-phone').length !== 9 || !$('#login-pw').value) { toast('Введите номер (9 цифр) и пароль'); return; }
     enter(role, 'Добро пожаловать!');
   });
-  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, b.dataset.demo === 'dist' ? 'Вход как поставщик (демо)' : 'Вход как магазин (демо)')));
+  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, { dist: 'Вход как поставщик (демо)', shop: 'Вход как магазин (демо)', courier: 'Вход как доставщик (демо)' }[b.dataset.demo])));
 
   // Восстановление пароля
   let resendT = null;
@@ -1497,6 +1575,7 @@ details.fold.first{border-top:none}
       const head = view.orders === 'grid' ? '<span>' + pillOf(o) + '</span><span class="o-name">' + s.name + '</span>'
         : '<span class="between"><span class="o-name">' + s.name + '</span>' + pillOf(o) + '</span>';
       return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items"><span>' + posWord(o.items.length) + '</span><span class="xs muted">' + o.ago + '</span></span>' +
+        (o.st === 'work' ? (courierOf(o) ? '<span class="o-cour"><svg class="ic"><use href="#i-truck"/></svg>' + esc(shortName(courierOf(o).name)) + '</span>' : '<span class="o-cour none"><svg class="ic"><use href="#i-truck"/></svg>Доставщик не назначен</span>') : '') +
         '<span class="between o-foot"><span class="xs muted">№ ' + o.n + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>';
     }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет завершённых заказов') + '</span></div>';
     renderNav();
@@ -1532,9 +1611,13 @@ details.fold.first{border-top:none}
         (pickDay == null ? '<span class="bar-hint">Чтобы принять, выберите дату поставки</span>' : '');
       bar.hidden = false;
     } else if (o.st === 'work') {
-      h += '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>' + invoiceBlock(o);
-      bar.innerHTML = '<button type="button" class="btn lg" data-go-scan><svg class="ic"><use href="#i-qr"/></svg>Отметить доставку по QR</button><span class="bar-hint">Экспедитор сканирует QR-код у магазина</span>';
-      bar.hidden = false;
+      const c = courierOf(o);
+      h += '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>' +
+        '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Доставщик</span>' +
+        (c ? '<div class="cour-card"><span class="cr-av">' + initials(c.name) + '</span><span class="grow" style="gap:2px"><b>' + esc(c.name) + '</b><span class="small muted">' + c.phone + '</span></span><button type="button" class="linkbtn" data-assign>Изменить</button></div>'
+          : '<span class="cour-none">Не назначен</span>') + '</div>' + invoiceBlock(o);
+      if (c) { bar.hidden = true; bar.innerHTML = ''; }
+      else { bar.innerHTML = '<button type="button" class="btn lg" data-assign><svg class="ic"><use href="#i-truck"/></svg>Назначить доставщика</button>'; bar.hidden = false; }
     } else if (o.st === 'rejected') {
       h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>Отклонён: ' + esc(o.reason) + '</div>';
       bar.hidden = true; bar.innerHTML = '';
@@ -1588,8 +1671,21 @@ details.fold.first{border-top:none}
       toast('Заказ № ' + o.n + ' принят, магазин получил уведомление');
       renderOrder(true); renderOrders();
       setTimeout(() => { const inv = $('#od-body .inv'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
-    } else if (e.target.closest('[data-go-scan]')) { openScan('qr'); go('s-scan', 'push'); }
+    } else if (e.target.closest('[data-assign]')) { openAssign(curOrder); }
   });
+  // Назначение доставщика вручную
+  function openAssign(o) {
+    if (!couriers.length) { toast('Сначала добавьте доставщика во вкладке «Доставщики»'); return; }
+    const busy = c => orders.filter(x => x.courier === c.id && x.st === 'work').length;
+    sheet('<span class="h2">Кто доставит заказ № ' + o.n + '?</span><div class="pick-list">' +
+      couriers.map(c => '<button type="button" class="pick-c' + (o.courier === c.id ? ' on' : '') + '" data-pickc="' + c.id + '"><span class="cr-av">' + initials(c.name) + '</span><span class="grow"><b>' + esc(c.name) + '</b><span class="xs muted">' + (busy(c) ? 'В работе: ' + busy(c) : 'Свободен') + '</span></span>' + (o.courier === c.id ? '<svg class="ic" style="color:var(--green)"><use href="#i-check"/></svg>' : '') + '</button>').join('') +
+      '</div><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $$('[data-pickc]').forEach(b => b.onclick = () => {
+      const c = couriers.find(x => x.id === +b.dataset.pickc); o.courier = c.id;
+      closeSheet(); toast('Заказ № ' + o.n + ' доставит ' + shortName(c.name));
+      renderOrder(true); renderOrders(); renderCouriers(); renderCOrders();
+    });
+  }
   function acceptOrder(o, k) { o.st = 'work'; o.deliver = k; o.accepted = 0; delete o.urgent; notify('Заказ № ' + o.n + ' принят, поставка ' + dm(day(k)), o); }
 
   // ---------- Накладная ----------
@@ -1685,9 +1781,10 @@ details.fold.first{border-top:none}
       $('#scan-ok').hidden = false;
       o.st = 'done'; o.deliver = 0; o.deliveredAt = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
       notify('Заказ № ' + o.n + ' доставлен', o);
+      if (o.sup === DIST) NOTIFS.dist.unshift({ t: 'Заказ № ' + o.n + ' доставлен', s: (courierOf(o) ? shortName(courierOf(o).name) + ', ' : '') + SHOPS[o.shop].name, ago: 'только что', ic: 'i-truck', read: false });
       scanT = setTimeout(() => {
-        renderOrder(true); renderOrders(); if (cur === 's-scan' && hist[hist.length - 1] === 's-invoices') renderInvoices();
-        go(hist.pop() || 's-order', 'back'); toast('Заказ № ' + o.n + ' доставлен, магазин получил подтверждение');
+        if (role === 'courier') { renderCOrder(); renderCOrders(); } else { renderOrder(true); renderOrders(); }
+        renderNav(); go(hist.pop() || (role === 'courier' ? 'c-order' : 's-order'), 'back'); toast('Заказ № ' + o.n + ' доставлен, магазин получил подтверждение');
       }, 1600);
     } else if (scanMode === 'code') {
       const code = ean13();
@@ -1717,7 +1814,7 @@ details.fold.first{border-top:none}
   $('#p-search').addEventListener('input', renderProducts);
   $('#p-list').addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if (b) { openEditor(+b.dataset.pid); go('s-editor', 'push'); } });
   // «+» прячется при прокрутке списка товаров вниз и возвращается при прокрутке вверх
-  ['#s-orders', '#s-products', '#s-invoices', '#s-profile'].forEach(sc => { let last = 0; const body = $(sc + ' .body'); body.addEventListener('scroll', () => { const y = body.scrollTop; if (y > last + 6 && y > 40) setFab(true); else if (y < last - 6 || y < 20) setFab(false); last = y; }, { passive: true }); });
+  ['#s-orders', '#s-products', '#s-couriers', '#s-invoices', '#s-profile'].forEach(sc => { let last = 0; const body = $(sc + ' .body'); body.addEventListener('scroll', () => { const y = body.scrollTop; if (y > last + 6 && y > 40) setFab(true); else if (y < last - 6 || y < 20) setFab(false); last = y; }, { passive: true }); });
 
   let edId = null, ed = null;
   function openEditor(id) {
@@ -2056,13 +2153,16 @@ details.fold.first{border-top:none}
   // =====================================================================
   //                       ПРОФИЛЬ И НАСТРОЙКИ (обе роли)
   // =====================================================================
-  const avatars = { dist: null, shop: null };
+  const avatars = { dist: null, shop: null, courier: null };
   function renderProfile() {
     const P0 = PROFILE[role];
     $('#pr-name').textContent = P0.name; $('#pr-sub').textContent = P0.sub; $('#pr-inn').textContent = P0.inn; $('#pr-addr-l').textContent = P0.addrL; $('#pr-addr').textContent = P0.addr;
     $('#avatar').innerHTML = avatars[role] ? '<img alt="" src="' + avatars[role] + '">' : P0.av;
     $('#feed-av').innerHTML = avatars.shop ? '<img alt="" src="' + avatars.shop + '">' : PROFILE.shop.av;
     $('#inv-count').textContent = invOrders().length;
+    $('#pr-inn').parentElement.hidden = role === 'courier';
+    $('#pr-req-h').textContent = role === 'courier' ? 'Данные' : 'Реквизиты';
+    $('#s-profile [data-go="s-invoices"]').hidden = role === 'courier';
     renderNav();
   }
   $('#avatar-input').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; avatars[role] = URL.createObjectURL(f); e.target.value = ''; renderProfile(); toast('Аватар обновлён'); });
@@ -2115,7 +2215,91 @@ details.fold.first{border-top:none}
     go('s-doc', 'push');
   });
 
-  function renderAll() { renderOrders(); renderProducts(); renderFeed(); renderCatalog(); renderCart(); renderShopOrders(); renderProfile(); renderNav(); }
+
+  // =====================================================================
+  //              ПОСТАВЩИК: ДОСТАВЩИКИ (сотрудники) — поиск, добавить, удалить
+  // =====================================================================
+  const crSel = new Set();
+  function renderCouriers() {
+    const q = ($('#cr-search').value || '').trim().toLowerCase();
+    const list = couriers.filter(c => !q || c.name.toLowerCase().includes(q));
+    const busy = c => orders.filter(o => o.courier === c.id && o.st === 'work').length;
+    $('#cr-list').innerHTML = list.length ? list.map(c => '<label class="cr-row' + (crSel.has(c.id) ? ' on' : '') + '"><input type="checkbox" data-crsel="' + c.id + '"' + (crSel.has(c.id) ? ' checked' : '') + ' aria-label="Выбрать ' + esc(c.name) + '">' +
+      '<span class="cr-av">' + initials(c.name) + '</span><span class="grow"><b>' + esc(c.name) + '</b><span class="small muted">' + c.phone + '</span>' +
+      '<span class="xs ' + (busy(c) ? '' : 'muted') + '" style="' + (busy(c) ? 'color:var(--green);font-weight:700' : '') + '">' + (busy(c) ? 'В работе: ' + busy(c) : 'Нет заказов в работе') + '</span></span></label>').join('')
+      : '<div class="empty"><svg class="ic"><use href="#i-truck"/></svg><span>' + (q ? 'Никого не нашли' : 'Добавьте первого доставщика') + '</span></div>';
+    $('#cr-selbar').hidden = !crSel.size;
+    $('#cr-selcount').textContent = 'Выбрано: ' + crSel.size;
+  }
+  $('#cr-search').addEventListener('input', renderCouriers);
+  $('#cr-list').addEventListener('change', e => { const c = e.target.closest('[data-crsel]'); if (!c) return; const id = +c.dataset.crsel; if (c.checked) crSel.add(id); else crSel.delete(id); renderCouriers(); });
+  $('#cr-selcancel').addEventListener('click', () => { crSel.clear(); renderCouriers(); });
+  $('#cr-del').addEventListener('click', () => {
+    const n = crSel.size, active = orders.filter(o => crSel.has(o.courier) && o.st === 'work').length;
+    sheet('<span class="h2">Удалить ' + n + ' ' + plural(n, 'доставщика', 'доставщиков', 'доставщиков') + '?</span>' +
+      (active ? '<span class="small muted" style="text-align:center">' + active + ' ' + plural(active, 'заказ', 'заказа', 'заказов') + ' в работе останутся без доставщика</span>' : '') +
+      '<button type="button" class="btn lg danger" id="cr-del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#cr-del-yes').onclick = () => {
+      orders.forEach(o => { if (crSel.has(o.courier) && o.st === 'work') delete o.courier; });
+      for (let i = couriers.length - 1; i >= 0; i--) if (crSel.has(couriers[i].id)) couriers.splice(i, 1);
+      crSel.clear(); closeSheet(); toast(n === 1 ? 'Доставщик удалён' : 'Доставщики удалены'); renderCouriers(); renderOrders();
+    };
+  });
+  $('#cr-add').addEventListener('click', () => {
+    sheet('<span class="h2">Новый доставщик</span><form class="sheet-form" id="cr-form" novalidate>' +
+      '<div class="field"><span class="label">ФИО</span><label class="inp"><svg class="ic"><use href="#i-user"/></svg><input id="cr-name" autocomplete="off" placeholder="Например: Азамат Жумабеков"></label></div>' +
+      '<div class="field"><span class="label">Телефон</span><label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input id="cr-phone" inputmode="numeric" placeholder="500 99 16 20" autocomplete="off"></label></div>' +
+      '<div class="field"><span class="label">Пароль для входа</span><label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input id="cr-pw" type="text" autocomplete="off" placeholder="Не меньше 6 символов"></label></div>' +
+      '<span class="sheet-err" id="cr-err" hidden></span>' +
+      '<button type="submit" class="btn lg">Добавить</button><button type="button" class="btn lg ghost" data-close>Отмена</button></form>');
+    const ph = $('#cr-phone');
+    ph.addEventListener('input', () => { const d = ph.value.replace(/\D/g, '').slice(0, 9); ph.value = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean).join(' '); });
+    $('#cr-name').focus();
+    $('#cr-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = $('#cr-name').value.trim().replace(/\s+/g, ' '), d = ph.value.replace(/\D/g, ''), pw = $('#cr-pw').value;
+      const err = !name || name.split(' ').length < 2 ? 'Укажите имя и фамилию' : d.length !== 9 ? 'Номер телефона: 9 цифр' : pw.length < 6 ? 'Пароль: не меньше 6 символов' : '';
+      if (err) { $('#cr-err').textContent = err; $('#cr-err').hidden = false; return; }
+      couriers.unshift({ id: crId++, name, phone: '+996 ' + ph.value });
+      closeSheet(); $('#cr-search').value = ''; renderCouriers();
+      toast(shortName(name) + ' добавлен, он может войти по номеру и паролю');
+    });
+  });
+
+  // =====================================================================
+  //                  ДОСТАВЩИК: только назначенные ему заказы
+  // =====================================================================
+  let coFilter = 'work', cOrder = null;
+  const myDeliveries = () => orders.filter(o => o.courier === ME_COURIER && (o.st === 'work' || o.st === 'done'));
+  function renderCOrders() {
+    const mine = myDeliveries(), F = [['work', 'В работе'], ['done', 'Завершено']];
+    $('#co-filter').innerHTML = F.map(([k, t]) => '<button type="button" class="chip' + (k === coFilter ? ' on' : '') + '" data-cof="' + k + '" role="tab" aria-selected="' + (k === coFilter) + '">' + t + '<span class="cnt">' + mine.filter(o => o.st === k).length + '</span></button>').join('');
+    const list = mine.filter(o => o.st === coFilter).sort((a, b) => coFilter === 'work' ? a.deliver - b.deliver : b.deliver - a.deliver);
+    $('#co-list').innerHTML = list.length ? list.map(o => { const sh = SHOPS[o.shop];
+      return '<button type="button" class="ocard rise" data-cord="' + o.n + '"><span class="between"><span class="o-name">' + sh.name + '</span>' + pillOf(o) + '</span>' +
+        '<span class="o-items"><span>' + esc(sh.addr) + '</span></span>' +
+        '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ', ' + posWord(o.items.length) + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>'; }).join('')
+      : '<div class="empty"><svg class="ic"><use href="#i-truck"/></svg><span>' + (coFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет доставленных заказов') + '</span></div>';
+    renderNav();
+  }
+  $('#co-filter').addEventListener('click', e => { const b = e.target.closest('[data-cof]'); if (b) { coFilter = b.dataset.cof; renderCOrders(); } });
+  $('#co-list').addEventListener('click', e => { const b = e.target.closest('[data-cord]'); if (b) { cOrder = findOrder(b.dataset.cord); renderCOrder(); go('c-order', 'push'); } });
+  function renderCOrder() {
+    const o = cOrder, sh = SHOPS[o.shop], bar = $('#cd-bar');
+    $('#cd-title').textContent = 'Заказ № ' + o.n; $('#cd-pill').innerHTML = pillOf(o);
+    let h = '<div class="card rise"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + sh.name + '</span><span class="small muted">' + sh.addr + '</span></div>' + contactRow('Телефон магазина') + '</div>';
+    h += o.st === 'done' ? '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + '</div>'
+      : '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>';
+    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + posWord(o.items.length) + '</span></div>' + itemRows(o) +
+      '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' сом</span></div>' +
+      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div></div>';
+    $('#cd-body').innerHTML = h;
+    if (o.st === 'work') { bar.innerHTML = '<button type="button" class="btn lg" id="cd-scan"><svg class="ic"><use href="#i-qr"/></svg>Подтвердить доставку по QR</button>'; bar.hidden = false; }
+    else { bar.hidden = true; bar.innerHTML = ''; }
+  }
+  $('#cd-bar').addEventListener('click', e => { if (e.target.closest('#cd-scan')) { curOrder = cOrder; openScan('qr'); go('s-scan', 'push'); } });
+
+  function renderAll() { renderOrders(); renderProducts(); renderCouriers(); renderCOrders(); renderFeed(); renderCatalog(); renderCart(); renderShopOrders(); renderProfile(); renderNav(); }
 
   // Старт: заставка → вход
   syncViewSw(); renderAll();

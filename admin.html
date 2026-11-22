@@ -113,6 +113,10 @@ select.inp{padding-right:30px}
 .top-search .ic{position:absolute;left:12px;top:12px;color:var(--muted)}
 .top-search input{padding-left:38px}
 .burger{display:none}
+.src{height:26px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;background:var(--soft);color:var(--muted)}
+.src.live{background:var(--green-bg);color:var(--green)}
+.src.live:before{content:'';width:7px;height:7px;border-radius:4px;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
 .env{height:26px;padding:0 10px;border-radius:8px;background:var(--amber-bg);color:var(--amber);font-size:12px;font-weight:800;display:inline-flex;align-items:center}
 .content{padding:4px 28px 40px;display:flex;flex-direction:column;gap:16px}
 
@@ -307,7 +311,7 @@ td.r,th.r{text-align:right}
     <header class="topbar">
       <button class="icon-btn burger" id="burger" aria-label="Меню"><svg class="ic"><use href="#i-menu"/></svg></button>
       <h1 id="page-title">Главная</h1>
-      <span class="env">Тестовый сервер</span>
+      <span class="env">Тестовый сервер</span><span class="src" id="src-chip"></span>
       <label class="top-search"><svg class="ic"><use href="#i-search"/></svg><input class="inp" id="g-search" placeholder="Компания, ИНН, номер заказа"></label>
     </header>
     <section class="content" id="content"></section>
@@ -392,7 +396,13 @@ td.r,th.r{text-align:right}
     { n: '0214', shop: 8, sup: 1, sum: 3320, st: 'done', deliver: '21.11', ago: '2 дня назад', items: [['Молоко «Моё» 3,2%, 1 л', '3 кор', 2592], ['Йогурт питьевой, 0,3 л', '13 шт', 728]] },
     { n: '0213', shop: 6, sup: 3, sum: 2210, st: 'rejected', reason: 'Нет в наличии', ago: '4 дня назад', items: [['Пряники «Тульские»', '26 шт', 2210]] }
   ];
-  orders.forEach(o => { o.hist = [['Магазин отправил заказ', o.ago, 'ok']]; if (o.st === 'work' || o.st === 'done') o.hist.push(['Поставщик принял, поставка ' + o.deliver, o.ago, 'ok']); if (o.st === 'done') o.hist.push(['Доставлено, подтверждено по QR', o.deliver, 'ok']); if (o.st === 'rejected') o.hist.push(['Поставщик отказал: ' + o.reason, o.ago, 'red']); });
+  function buildHist(o) {
+    o.hist = [['Магазин отправил заказ', o.ago, 'ok']];
+    if (o.st === 'work' || o.st === 'done') o.hist.push(['Поставщик принял, поставка ' + o.deliver + (o.courierName ? ', доставщик ' + o.courierName : ''), o.ago, 'ok']);
+    if (o.st === 'done') o.hist.push(['Доставлено по QR' + (o.courierName ? ', ' + o.courierName : ''), o.deliver + (o.deliveredAt ? ' в ' + o.deliveredAt : ''), 'ok']);
+    if (o.st === 'rejected') o.hist.push([(o.byAdmin ? 'Отменён командой Zakup.KG: ' : 'Поставщик отказал: ') + o.reason, o.ago, 'red']);
+  }
+  orders.forEach(buildHist);
   const tickets = [
     { id: 41, co: 5, who: 'Айдана М.', subj: 'Не приходит SMS-код', st: 'open', time: '10:52', msgs: [['Здравствуйте, третий раз запрашиваю код, SMS не приходит.', 'u', '10:52']] },
     { id: 40, co: 1, who: 'Бакыт С.', subj: 'Как добавить экспедитора?', st: 'open', time: '09:30', msgs: [['Добрый день! Хотим добавить второго экспедитора, где это сделать?', 'u', '09:30']] },
@@ -429,6 +439,71 @@ td.r,th.r{text-align:right}
   ];
   const logAct = (act, obj, why) => audit.unshift([now(), ROLES[role].name === 'Владелец' ? 'Владелец' : ROLES[role].name, ROLES[role].name, act, obj, why || '']);
 
+
+  // =====================================================================
+  //   ДАННЫЕ ИЗ ПРИЛОЖЕНИЯ (mvp.html). Оба файла на одном сайте и делят localStorage.
+  //   Приложение пишет заказы, доставщиков и каталог; админка читает их вживую
+  //   и записывает свои действия обратно (отмена заказа, скрытие товара).
+  // =====================================================================
+  const SHARED_KEY = 'zk-shared-v1';
+  let sharedRaw = null, live = false;
+  const STATIC = { orders: orders.slice(), products: products.slice() };
+  const readShared = () => { try { return JSON.parse(localStorage.getItem(SHARED_KEY)); } catch (e) { return null; } };
+  function writeShared(fn) {
+    const d = readShared(); if (!d) return false;
+    fn(d); const raw = JSON.stringify(d); sharedRaw = raw;
+    try { localStorage.setItem(SHARED_KEY, raw); } catch (e) { return false; }
+    applyShared(d); return true;
+  }
+  const dayStr = k => { const d = new Date(); d.setDate(d.getDate() + k); return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0'); };
+  const waitMin = ago => { const m = /(\d+)\s*ч(?:\s*(\d+)\s*мин)?/.exec(ago), n = /(\d+)\s*мин/.exec(ago); return /только что/.test(ago) ? 0 : m ? +m[1] * 60 + (+m[2] || 0) : n ? +n[1] : 9999; };
+  function coId(name, type, addr) {
+    let c = companies.find(x => x.name === name);
+    if (!c) { c = { id: Math.max(...companies.map(x => x.id)) + 1, type, name, inn: '—', addr: addr || '—', st: 'ok', reg: '—', staff: 1, orders: 0 }; companies.push(c); }
+    else if (addr) c.addr = addr;
+    return c.id;
+  }
+  function applyShared(d) {
+    if (!d || d.v !== 1) { live = false; orders.splice(0, orders.length, ...STATIC.orders); products.splice(0, products.length, ...STATIC.products); syncChip(); return; }
+    live = true;
+    const cName = id => { const c = d.couriers.find(x => x.id === id); return c ? c.name : ''; };
+    const mapped = d.orders.map(o => {
+      const sh = d.shops[o.shop] || { name: o.shop, addr: '' };
+      const sum = o.items.reduce((a, l) => a + l.q * l.price, 0);
+      const x = {
+        n: o.n, shop: coId(sh.name, 'shop', 'г. Бишкек, ' + sh.addr), sup: coId(o.sup, 'dist'), sum, st: o.st, urgent: o.urgent != null && o.st === 'new',
+        ago: o.ago, wait: o.st === 'new' ? waitMin(o.ago) : 0, deliver: o.deliver != null && o.st !== 'new' ? dayStr(o.deliver) : '', deliveredAt: o.deliveredAt,
+        reason: o.reason, byAdmin: o.byAdmin, courierName: cName(o.courier), items: o.items.map(l => [l.name + ', ' + l.vol, l.q + ' ' + l.unit, l.q * l.price])
+      };
+      buildHist(x); return x;
+    }).sort((a, b) => b.n.localeCompare(a.n));
+    orders.splice(0, orders.length, ...mapped);
+    companies.forEach(c => { c.orders = orders.filter(o => o.shop === c.id || o.sup === c.id).length; });
+    // доставщики поставщика — пользователи с ролью «Доставщик»
+    for (let i = users.length - 1; i >= 0; i--) if (users[i].courier) users.splice(i, 1);
+    const distId = coId(d.dist, 'dist');
+    d.couriers.forEach(c => users.push({ id: 1000 + c.id, name: c.name, co: distId, r: 'Доставщик', last: 'сегодня', st: 'ok', courier: true }));
+    companies.forEach(c => { c.staff = users.filter(u => u.co === c.id).length || c.staff; });
+    // каталог
+    const all = d.products.concat(d.others);
+    products.splice(0, products.length, ...all.map(p => ({ id: p.id, name: p.name + (p.vol ? ', ' + p.vol.n + ' ' + p.vol.u : ''), sup: coId(p.sup, 'dist'), price: p.price, photos: (p.photos || []).length, flag: (p.photos || []).length < 2 ? 'photo' : '', hidden: !!d.prodHidden[p.id], avail: p.avail })));
+    syncChip();
+  }
+  function syncChip() {
+    const c = $('#src-chip'); if (!c) return;
+    c.className = 'src' + (live ? ' live' : ''); c.textContent = live ? 'Данные из приложения' : 'Демо-данные админки';
+    c.title = live ? 'Заказы, доставщики и каталог берутся из mvp.html вживую' : 'Откройте приложение mvp.html на этом сайте, и данные подтянутся';
+  }
+  function pullShared() {
+    let raw = null; try { raw = localStorage.getItem(SHARED_KEY); } catch (e) {}
+    if (raw === sharedRaw) return false;
+    sharedRaw = raw; applyShared(raw ? JSON.parse(raw) : null); return true;
+  }
+  pullShared();
+  const refresh = () => { if (pullShared() && !$('#app').hidden) { render(); const d = $('#drawer-root .drawer'); if (d && d.dataset.order) openOrder(d.dataset.order); } };
+  window.addEventListener('storage', e => { if (e.key === SHARED_KEY) refresh(); });
+  setInterval(refresh, 1500);
+
   // ---------- Вход ----------
   $('#role-pick').addEventListener('click', e => { const b = e.target.closest('[data-role]'); if (!b) return; $$('.role-opt').forEach(x => x.classList.toggle('on', x === b)); role = b.dataset.role; });
   $('#code-row').innerHTML = Array.from({ length: 6 }, (_, i) => '<input inputmode="numeric" maxlength="1" aria-label="Цифра ' + (i + 1) + '">').join('');
@@ -448,7 +523,7 @@ td.r,th.r{text-align:right}
   function enter() {
     $('#login').hidden = true; $('#app').hidden = false;
     const R = ROLES[role]; $('#me-av').textContent = R.av; $('#me-name').textContent = R.name; $('#me-role').textContent = R.email;
-    page = 'home'; render(); toast('Вход выполнен: ' + R.name);
+    page = 'home'; syncChip(); render(); toast('Вход выполнен: ' + R.name);
   }
   $('#logout').onclick = () => { $('#app').hidden = true; $('#login').hidden = false; step = 1; $('#step1').hidden = false; $('#step2').hidden = true; closeDrawer(); };
   $('#theme-btn').onclick = () => {
@@ -469,7 +544,7 @@ td.r,th.r{text-align:right}
     if (k === 'companies') return companies.filter(c => c.st === 'pending').length;
     if (k === 'tickets') return tickets.filter(t => t.st === 'open').length;
     if (k === 'data') return dataReqs.filter(d => d.st === 'new').length;
-    if (k === 'orders') return orders.filter(o => o.st === 'new' && o.wait > 120).length;
+    if (k === 'orders') return orders.filter(o => o.st === 'new' && o.wait >= 120).length;
     return 0;
   }
   function renderNav() {
@@ -494,10 +569,10 @@ td.r,th.r{text-align:right}
   // ---------- Страницы ----------
   const PAGES = {
     home() {
-      const late = orders.filter(o => o.st === 'new' && o.wait > 120), pend = companies.filter(c => c.st === 'pending');
+      const late = orders.filter(o => o.st === 'new' && o.wait >= 120), pend = companies.filter(c => c.st === 'pending');
       const week = [['16.11', 31], ['17.11', 38], ['18.11', 35], ['19.11', 44], ['20.11', 41], ['21.11', 47], ['22.11', 12]], max = 50;
       return '<div class="kpis">' +
-        '<div class="kpi"><span>Заказов сегодня</span><b>12</b><i class="up">+3 к вчера</i></div>' +
+        '<div class="kpi"><span>Заказов сегодня</span><b>' + (live ? orders.filter(o => !/вчера|дн|\d\d\.\d\d/.test(o.ago)).length : 12) + '</b><i class="' + (live ? 'muted' : 'up') + '">' + (live ? 'из приложения' : '+3 к вчера') + '</i></div>' +
         '<div class="kpi"><span>За неделю</span><b>248</b><i class="up">+18%</i></div>' +
         '<div class="kpi"><span>Сумма за неделю</span><b>1,1 млн</b><i class="muted">сом</i></div>' +
         '<div class="kpi"><span>Новые компании</span><b>' + pend.length + '</b><i class="muted">ждут проверки</i></div>' +
@@ -508,7 +583,7 @@ td.r,th.r{text-align:right}
         '<div class="card"><div class="between"><h2>Ждут проверки</h2><button class="linkbtn" data-goto="companies-pending">Все</button></div>' +
         (pend.length ? '<div class="list">' + pend.map(c => '<div style="cursor:pointer" data-co="' + c.id + '"><span class="grow cell2"><b>' + esc(c.name) + '</b><span>' + (c.type === 'dist' ? 'Поставщик' : 'Магазин') + ', ' + c.reg + '</span></span>' + tag('На проверке', 'amber') + '</div>').join('') + '</div>' : '<span class="muted small">Новых заявок нет</span>') + '</div></div>' +
         '<div class="card"><div class="between"><h2>Проблемные заказы</h2><span class="xs muted">новые без ответа поставщика</span></div><div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Ждёт</th><th class="r">Сумма</th></tr></thead><tbody>' +
-        orders.filter(o => o.st === 'new').sort((a, b) => b.wait - a.wait).map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + (o.urgent ? ' ' + tag('Срочно', 'red', 'i-fire') : '') + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + (o.wait > 120 ? '<b style="color:var(--red)">' + o.ago + '</b>' : o.ago) + '</td><td class="r mono bold">' + fmt(o.sum) + ' сом</td></tr>').join('') +
+        orders.filter(o => o.st === 'new').sort((a, b) => b.wait - a.wait).map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + (o.urgent ? ' ' + tag('Срочно', 'red', 'i-fire') : '') + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + (o.wait >= 120 ? '<b style="color:var(--red)">' + o.ago + '</b>' : o.ago) + '</td><td class="r mono bold">' + fmt(o.sum) + ' сом</td></tr>').join('') +
         '</tbody></table></div></div>';
     },
     companies() {
@@ -527,7 +602,7 @@ td.r,th.r{text-align:right}
         '</tbody></table></div></div>';
     },
     orders() {
-      const F = [['all', 'Все', () => true], ['new', 'Новые', o => o.st === 'new'], ['late', 'Без ответа больше 2 ч', o => o.st === 'new' && o.wait > 120], ['work', 'В работе', o => o.st === 'work'], ['done', 'Доставлены', o => o.st === 'done'], ['rejected', 'Отказы', o => o.st === 'rejected']];
+      const F = [['all', 'Все', () => true], ['new', 'Новые', o => o.st === 'new'], ['late', 'Без ответа больше 2 ч', o => o.st === 'new' && o.wait >= 120], ['work', 'В работе', o => o.st === 'work'], ['done', 'Доставлены', o => o.st === 'done'], ['rejected', 'Отказы', o => o.st === 'rejected']];
       const qq = q(), list = orders.filter(F.find(f => f[0] === filt.orders)[2]).filter(o => !qq || (o.n + coName(o.shop) + coName(o.sup)).toLowerCase().includes(qq));
       return '<div class="card"><div class="tabs">' + F.map(([k, t, f]) => '<button class="tab' + (k === filt.orders ? ' on' : '') + '" data-f="orders:' + k + '">' + t + '<span class="n">' + orders.filter(f).length + '</span></button>').join('') + '</div>' +
         '<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Статус</th><th>Поставка</th><th>Создан</th><th class="r">Сумма</th></tr></thead><tbody>' +
@@ -551,7 +626,7 @@ td.r,th.r{text-align:right}
     },
     catalog() {
       return '<div class="card"><div class="between"><h2>Товары поставщиков</h2><span class="xs muted">помечены товары с одним фото или подозрительной ценой</span></div><div class="tbl-wrap"><table><thead><tr><th>Товар</th><th>Поставщик</th><th class="r">Цена</th><th>Фото</th><th>Проверка</th><th>Показ</th></tr></thead><tbody>' +
-        products.map(p => '<tr><td class="bold">' + esc(p.name) + '</td><td>' + esc(coName(p.sup)) + '</td><td class="r mono">' + fmt(p.price) + ' сом</td><td>' + p.photos + ' из 5</td><td>' + (p.flag === 'photo' ? tag('Мало фото', 'amber') : p.flag === 'price' ? tag('Цена ниже рынка', 'red') : tag('Ок', 'green')) + '</td><td><button class="switch" role="switch" data-hide="' + p.id + '" aria-checked="' + !p.hidden + '"' + (can('hideProduct') ? '' : ' disabled') + ' aria-label="Показывать магазинам"></button></td></tr>').join('') + '</tbody></table></div></div>';
+        products.map(p => '<tr><td class="bold">' + esc(p.name) + '</td><td>' + esc(coName(p.sup)) + '</td><td class="r mono">' + fmt(p.price) + ' сом</td><td>' + p.photos + ' из 5</td><td>' + (p.avail === false ? tag('Нет в наличии', '') + ' ' : '') + (p.flag === 'photo' ? tag('Мало фото', 'amber') : p.flag === 'price' ? tag('Цена ниже рынка', 'red') : tag('Ок', 'green')) + '</td><td><button class="switch" role="switch" data-hide="' + p.id + '" aria-checked="' + !p.hidden + '"' + (can('hideProduct') ? '' : ' disabled') + ' aria-label="Показывать магазинам"></button></td></tr>').join('') + '</tbody></table></div></div>';
     },
     dicts() {
       return '<div class="grid2"><div class="card"><div class="between"><h2>Категории</h2><button class="btn ghost sm" id="add-cat">' + ic('i-plus') + 'Добавить</button></div><div class="list">' + cats.map(c => '<div><span class="grow">' + esc(c) + '</span></div>').join('') + '</div></div>' +
@@ -572,7 +647,7 @@ td.r,th.r{text-align:right}
         '<div><span class="row bold"><span class="sdot warn"></span>SMS-шлюз</span><span class="xs muted">3 недоставленных за час</span></div>' +
         '<div><span class="row bold"><span class="sdot"></span>Пуш-уведомления</span><span class="xs muted">FCM, доставлено 99%</span></div></div>' +
         '<div class="grid2"><div class="card"><h2>Функции</h2><div class="list">' + flags.map(([k, t, on]) => '<div><span class="grow cell2"><b>' + t + '</b><span class="mono">' + k + '</span></span><button class="switch" role="switch" data-flag="' + k + '" aria-checked="' + on + '"' + (can('flags') ? '' : ' disabled') + ' aria-label="' + t + '"></button></div>').join('') + '</div></div>' +
-        '<div class="card"><div class="between"><h2>Последние ошибки</h2><button class="btn ghost sm" id="mk-test">' + ic('i-plus') + 'Тестовая компания</button></div><div class="log">' +
+        '<div class="card"><div class="between"><h2>Последние ошибки</h2><span class="row"><button class="btn ghost sm" id="mk-reset">Сбросить демо-данные</button><button class="btn ghost sm" id="mk-test">' + ic('i-plus') + 'Тестовая компания</button></span></div><div class="log">' +
         '<span class="w">10:52:03 WARN sms.send timeout provider=local to=+996 500 •• •• 20</span><span class="w">10:51:40 WARN sms.send timeout provider=local to=+996 500 •• •• 20</span><span>10:40:12 INFO order.accept n=0216 deliver=23.11</span><span class="e">09:12:55 ERROR invoice.pdf render_timeout n=0214 retry=1 ok</span><span>08:55:01 INFO auth.login role=shop</span><span>03:00:00 INFO backup.done size=48MB</span>' +
         '</div></div></div>';
     },
@@ -605,11 +680,12 @@ td.r,th.r{text-align:right}
     const u = t.closest('[data-user]'); if (u) { openUser(+u.dataset.user); return; }
     const tk = t.closest('[data-ticket]'); if (tk) { curTicket = +tk.dataset.ticket; render(); return; }
     const dr = t.closest('[data-dreq]'); if (dr) { openDataReq(+dr.dataset.dreq); return; }
-    const hp = t.closest('[data-hide]'); if (hp && !hp.disabled) { const p = products.find(x => x.id === +hp.dataset.hide); p.hidden = !p.hidden; logAct(p.hidden ? 'Скрыл товар' : 'Вернул товар', p.name); toast(p.hidden ? 'Товар скрыт от магазинов' : 'Товар снова виден магазинам'); render(); return; }
+    const hp = t.closest('[data-hide]'); if (hp && !hp.disabled) { const p = products.find(x => x.id === +hp.dataset.hide); p.hidden = !p.hidden; if (live) writeShared(d => { if (p.hidden) d.prodHidden[p.id] = true; else delete d.prodHidden[p.id]; }); logAct(p.hidden ? 'Скрыл товар' : 'Вернул товар', p.name); toast(p.hidden ? 'Товар скрыт от магазинов' : 'Товар снова виден магазинам'); render(); return; }
     const fl = t.closest('[data-flag]'); if (fl && !fl.disabled) { const x = flags.find(y => y[0] === fl.dataset.flag); x[2] = !x[2]; logAct(x[2] ? 'Включил функцию' : 'Выключил функцию', x[1]); toast(x[1] + (x[2] ? ': включено' : ': выключено')); render(); return; }
     const nv = t.closest('[data-newver]'); if (nv) { const d = docs[+nv.dataset.newver]; const parts = d[1].slice(1).split('.'); d[1] = 'v' + parts[0] + '.' + (+parts[1] + 1); d[2] = new Date().toLocaleDateString('ru-RU'); logAct('Опубликовал новую версию', d[0] + ' ' + d[1]); toast(d[0] + ': опубликована ' + d[1]); render(); return; }
     if (t.closest('#add-cat')) { modal('<h3>Новая категория</h3><input class="inp" id="m-in" placeholder="Например: Заморозка"><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Добавить</button></div>', () => { const v = $('#m-in').value.trim(); if (!v) return false; cats.push(v); logAct('Добавил категорию', v); toast('Категория добавлена'); render(); }); return; }
     if (t.closest('#add-staff')) { modal('<h3>Пригласить сотрудника</h3><div class="field"><label>Почта</label><input class="inp" id="m-in" type="email" placeholder="name@zakup.kg"></div><div class="field"><label>Роль</label><select class="inp" id="m-role"><option value="support">Поддержка</option><option value="moder">Модератор</option><option value="dev">Разработчик</option></select></div><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Пригласить</button></div>', () => { const v = $('#m-in').value.trim(); if (!v) return false; staff.push([v.split('@')[0], v, $('#m-role').value, 'приглашён']); logAct('Пригласил сотрудника', v); toast('Приглашение отправлено на ' + v); render(); }); return; }
+    if (t.closest('#mk-reset')) { modal('<h3>Сбросить демо-данные?</h3><p class="small muted">Заказы, доставщики и каталог в приложении вернутся к начальным. Открытое приложение перезагрузится.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn red" id="m-ok">Сбросить</button></div>', () => { try { localStorage.removeItem(SHARED_KEY); } catch (e) {} logAct('Сбросил демо-данные', 'Приложение'); refresh(); toast('Демо-данные сброшены'); render(); }); return; }
     if (t.closest('#mk-test')) { companies.push({ id: companies.length + 1, type: 'shop', name: 'Тест «Магазин ' + (companies.length + 1) + '»', inn: '00000000000000', addr: 'тестовый адрес', st: 'ok', reg: new Date().toLocaleDateString('ru-RU'), staff: 1, orders: 0 }); logAct('Создал тестовую компанию', 'Тест «Магазин ' + companies.length + '»'); toast('Тестовая компания создана'); return; }
     if (t.closest('#t-close')) { const tk2 = tickets.find(x => x.id === curTicket); tk2.st = 'closed'; logAct('Закрыл обращение', '№ ' + tk2.id); toast('Обращение закрыто'); render(); return; }
   });
@@ -658,14 +734,18 @@ td.r,th.r{text-align:right}
   function openOrder(n) {
     const o = orders.find(x => x.n === n);
     const head = '<h3>Заказ № ' + o.n + '</h3><div class="row" style="margin-top:6px">' + stTag(o) + '</div>';
-    const body = '<div class="sec"><h4>Стороны</h4><div class="kv"><span>Магазин</span><span><button class="linkbtn" data-co2="' + o.shop + '">' + esc(coName(o.shop)) + '</button></span><span>Поставщик</span><span><button class="linkbtn" data-co2="' + o.sup + '">' + esc(coName(o.sup)) + '</button></span><span>Создан</span><span>' + o.ago + '</span><span>Поставка</span><span>' + (o.deliver || 'не назначена') + '</span></div></div>' +
+    const body = '<div class="sec"><h4>Стороны</h4><div class="kv"><span>Магазин</span><span><button class="linkbtn" data-co2="' + o.shop + '">' + esc(coName(o.shop)) + '</button></span><span>Поставщик</span><span><button class="linkbtn" data-co2="' + o.sup + '">' + esc(coName(o.sup)) + '</button></span><span>Создан</span><span>' + o.ago + '</span><span>Поставка</span><span>' + (o.deliver || 'не назначена') + '</span>' + (o.courierName ? '<span>' + (o.st === 'done' ? 'Доставил' : 'Доставщик') + '</span><span>' + esc(o.courierName) + '</span>' : '') + '</div></div>' +
       '<div class="sec"><h4>Товары</h4><div class="list">' + o.items.map(([nm, q2, s]) => '<div><span class="grow cell2"><b>' + esc(nm) + '</b><span>' + q2 + '</span></span><span class="mono bold">' + fmt(s) + ' сом</span></div>').join('') + '<div><span class="grow bold">Итого</span><span class="mono bold">' + fmt(o.sum) + ' сом</span></div></div></div>' +
       '<div class="sec"><h4>История</h4><div class="timeline">' + o.hist.map(([t, w, k]) => '<div class="tl"><span class="dot' + (k === 'red' ? ' red' : k === 'grey' ? ' grey' : '') + '"></span><div class="cell2"><b>' + esc(t) + '</b><span>' + esc(w) + '</span></div></div>').join('') + (o.st === 'new' ? '<div class="tl"><span class="dot grey"></span><div class="cell2"><b>Ждём ответа поставщика</b><span>' + o.ago + '</span></div></div>' : '') + '</div></div>';
     let foot = '<button class="btn ghost" id="d-call">Связаться с поставщиком</button>';
     if (o.st !== 'done' && o.st !== 'rejected') foot += can('orderStatus') ? '<button class="btn red ghost" id="d-cancel">Отменить заказ</button>' : '';
     drawer(head, body, foot + (can('orderStatus') ? '' : noAccess('Владелец (смена статуса)')));
+    $('#drawer-root .drawer').dataset.order = n;
     $('#d-call').onclick = () => { logAct('Связался с поставщиком', 'Заказ № ' + o.n); toast('Звонок поставщику: ' + (can('seeFull') ? PHONE : MASK)); };
-    const c1 = $('#d-cancel'); if (c1) c1.onclick = () => reasonModal('Отменить заказ № ' + o.n + '?', 'Отменить заказ', 'red', v => { o.st = 'rejected'; o.reason = v; o.hist.push(['Отменён командой Zakup.KG: ' + v, now(), 'red']); logAct('Отменил заказ', '№ ' + o.n, v); toast('Заказ отменён, стороны получат уведомление'); render(); openOrder(n); });
+    const c1 = $('#d-cancel'); if (c1) c1.onclick = () => reasonModal('Отменить заказ № ' + o.n + '?', 'Отменить заказ', 'red', v => {
+      if (live) writeShared(d => { const x = d.orders.find(y => y.n === o.n); if (x) { x.st = 'rejected'; x.reason = v; x.byAdmin = true; delete x.urgent; } });
+      else { o.st = 'rejected'; o.reason = v; o.byAdmin = true; buildHist(o); }
+      logAct('Отменил заказ', '№ ' + o.n, v); toast(live ? 'Заказ отменён, приложение уже обновилось' : 'Заказ отменён, стороны получат уведомление'); render(); openOrder(n); });
   }
   $('#drawer-root').addEventListener('click', e => { const b = e.target.closest('[data-co2]'); if (b) openCompany(+b.dataset.co2); });
 

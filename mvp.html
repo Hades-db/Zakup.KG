@@ -1586,6 +1586,13 @@ details.fold.first{border-top:none}
   let curOrder = null, pickDay = null;
   // Срочный заказ — только «сегодня», она выбрана сразу
   function openOrder(n) { curOrder = findOrder(n); pickDay = curOrder.st === 'new' && curOrder.urgent != null ? curOrder.urgent : null; renderOrder(); }
+  // Блок «Доставщик» в заказе поставщика: edit — можно выбрать/изменить
+  function courierBlock(o, title, edit) {
+    const c = courierOf(o);
+    return '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">' + title + '</span>' +
+      (c ? '<div class="cour-card"><span class="cr-av">' + initials(c.name) + '</span><span class="grow" style="gap:2px"><b>' + esc(c.name) + '</b><span class="small muted">' + c.phone + '</span></span>' + (edit ? '<button type="button" class="linkbtn" data-assign>Изменить</button>' : '') + '</div>'
+        : edit ? '<button type="button" class="btn lg ghost" data-assign><svg class="ic"><use href="#i-truck"/></svg>Выбрать доставщика</button>' : '<span class="muted">Не указан</span>') + '</div>';
+  }
   function renderOrder(still) {
     const o = curOrder, s = SHOPS[o.shop];
     $('#od-title').textContent = 'Заказ № ' + o.n; $('#od-pill').innerHTML = pillOf(o);
@@ -1607,22 +1614,22 @@ details.fold.first{border-top:none}
         h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
           DAYS.map(([t, k]) => '<button type="button" class="date-opt' + (pickDay === k ? ' on' : '') + '" data-day="' + k + '" role="radio" aria-checked="' + (pickDay === k) + '"><b>' + t + '</b><span>' + dLong(day(k)) + '</span></button>').join('') + '</div></div>';
       }
-      bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (pickDay == null ? ' disabled' : '') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять на ' + dm(day(pickDay))) + '</button></div>' +
-        (pickDay == null ? '<span class="bar-hint">Чтобы принять, выберите дату поставки</span>' : '');
+      h += courierBlock(o, 'Доставщик', true);
+      const ready = pickDay != null && courierOf(o);
+      bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (ready ? '' : ' disabled') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять на ' + dm(day(pickDay))) + '</button></div>' +
+        (ready ? '' : '<span class="bar-hint">' + (pickDay == null && !courierOf(o) ? 'Выберите дату поставки и доставщика' : pickDay == null ? 'Выберите дату поставки' : 'Выберите доставщика') + '</span>');
       bar.hidden = false;
     } else if (o.st === 'work') {
       const c = courierOf(o);
       h += '<div class="info-line rise"><svg class="ic"><use href="#i-cal"/></svg>Поставка ' + dayWord(o.deliver) + (dayWord(o.deliver) ? ', ' : '') + dmy(day(o.deliver)) + '</div>' +
-        '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Доставщик</span>' +
-        (c ? '<div class="cour-card"><span class="cr-av">' + initials(c.name) + '</span><span class="grow" style="gap:2px"><b>' + esc(c.name) + '</b><span class="small muted">' + c.phone + '</span></span><button type="button" class="linkbtn" data-assign>Изменить</button></div>'
-          : '<span class="cour-none">Не назначен</span>') + '</div>' + invoiceBlock(o);
+        courierBlock(o, 'Доставщик', true) + invoiceBlock(o);
       if (c) { bar.hidden = true; bar.innerHTML = ''; }
       else { bar.innerHTML = '<button type="button" class="btn lg" data-assign><svg class="ic"><use href="#i-truck"/></svg>Назначить доставщика</button>'; bar.hidden = false; }
     } else if (o.st === 'rejected') {
       h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>Отклонён: ' + esc(o.reason) + '</div>';
       bar.hidden = true; bar.innerHTML = '';
     } else {
-      h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + '</div>' + invoiceBlock(o);
+      h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + '</div>' + courierBlock(o, 'Доставил', false) + invoiceBlock(o);
       bar.hidden = true; bar.innerHTML = '';
     }
     $('#od-body').innerHTML = still ? h.replace(/ rise/g, '') : h;
@@ -1631,6 +1638,7 @@ details.fold.first{border-top:none}
   $('#od-body').addEventListener('click', e => {
     const d = e.target.closest('[data-day]');
     if (d) { pickDay = +d.dataset.day; renderOrder(true); return; }
+    if (e.target.closest('[data-assign]')) { openAssign(curOrder); return; }
     if (e.target.closest('#od-reject2')) { openReject(); return; }
     if (e.target.closest('#od-later')) {
       sheet('<span class="h2">Магазин согласился на другой срок?</span><span class="small muted" style="text-align:center;line-height:1.45">Пометка «Срочно» снимется, заказ станет обычным — выберите дату поставки как обычно.</span>' +
@@ -1666,7 +1674,7 @@ details.fold.first{border-top:none}
   $('#od-bar').addEventListener('click', e => {
     if (e.target.closest('#od-reject')) { openReject(); return; }
     if (e.target.closest('#od-accept')) {
-      const o = curOrder; if (pickDay == null) return;
+      const o = curOrder; if (pickDay == null || !courierOf(o)) return;
       acceptOrder(o, pickDay);
       toast('Заказ № ' + o.n + ' принят, магазин получил уведомление');
       renderOrder(true); renderOrders();
@@ -1682,7 +1690,7 @@ details.fold.first{border-top:none}
       '</div><button type="button" class="btn lg ghost" data-close>Отмена</button>');
     $$('[data-pickc]').forEach(b => b.onclick = () => {
       const c = couriers.find(x => x.id === +b.dataset.pickc); o.courier = c.id;
-      closeSheet(); toast('Заказ № ' + o.n + ' доставит ' + shortName(c.name));
+      closeSheet(); toast(o.st === 'new' ? 'Доставщик: ' + shortName(c.name) : 'Заказ № ' + o.n + ' доставит ' + shortName(c.name));
       renderOrder(true); renderOrders(); renderCouriers(); renderCOrders();
     });
   }
@@ -1700,7 +1708,7 @@ details.fold.first{border-top:none}
       '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
       o.items.map((l, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(l.name) + ', ' + esc(l.vol) + '</td><td class="r">' + qtyText(l) + '</td><td class="r">' + fmt(l.price) + '</td><td class="r">' + fmt(lineSum(l)) + '</td></tr>').join('') +
       '<tr class="tot"><td></td><td>Итого</td><td></td><td></td><td class="r">' + fmt(sum) + '</td></tr></tbody></table>' +
-      '<div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">Склад / экспедитор</span><span class="line"></span></div><div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div></div>';
+      '<div class="inv-sign"><div><span class="xs muted">' + (o.st === 'done' ? 'Доставил' : 'Доставщик') + '</span><span class="small bold">' + (courierOf(o) ? esc(courierOf(o).name) : 'Склад / экспедитор') + '</span><span class="line"></span></div><div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div></div>';
   }
   function invoiceBlock(o) {
     return '<div class="between rise" style="padding:4px 2px 0"><span class="bold" style="font-size:16px">Накладная</span></div>' +

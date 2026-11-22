@@ -742,7 +742,7 @@ details.fold.first{border-top:none}
   <section class="screen" id="s-orders" data-tab="orders" data-role="dist" hidden>
     <header class="top">
       <div class="top-row"><span class="h1">Заказы</span>
-        <div class="view-sw" role="group" aria-label="Вид списка" data-view="orders"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+        <button type="button" class="icon-btn view-btn" data-view="orders" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <div class="chips" id="o-filter" role="tablist" aria-label="Статус заказов"></div>
     </header>
@@ -776,7 +776,7 @@ details.fold.first{border-top:none}
   <section class="screen" id="s-products" data-tab="products" data-role="dist" hidden>
     <header class="top">
       <div class="top-row"><span class="h1">Товары</span>
-        <div class="view-sw" role="group" aria-label="Вид списка" data-view="products"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+        <button type="button" class="icon-btn view-btn" data-view="products" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="p-search" type="search" placeholder="Поиск товара" aria-label="Поиск товара"></label>
     </header>
@@ -829,7 +829,7 @@ details.fold.first{border-top:none}
         <button type="button" class="mini-av" data-tabgo="profile" aria-label="Профиль" id="feed-av">А</button>
         <span class="feed-name"><b>Магазин «Айдана»</b></span>
         <button type="button" class="icon-btn" data-go="m-notifs" aria-label="Уведомления"><svg class="ic"><use href="#i-bell"/></svg><span class="dot-n" id="notif-dot"></span></button>
-        <button type="button" class="icon-btn" id="feed-view" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
+        <button type="button" class="icon-btn view-btn" id="feed-view" data-view="feed" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <div class="row" style="gap:10px">
         <label class="search" style="flex:1"><svg class="ic"><use href="#i-search"/></svg><input id="f-search" type="search" placeholder="Название или штрихкод" aria-label="Поиск товара"></label>
@@ -847,7 +847,7 @@ details.fold.first{border-top:none}
   <section class="screen" id="m-catalog" data-tab="catalog" data-role="shop" hidden>
     <header class="top">
       <div class="top-row"><span class="h1">Каталог</span>
-        <div class="view-sw" role="group" aria-label="Вид списка" data-view="catalog"><button type="button" data-v="list" aria-label="Списком"><svg class="ic"><use href="#i-list"/></svg></button><button type="button" data-v="grid" aria-label="Блоками"><svg class="ic"><use href="#i-grid"/></svg></button></div>
+        <button type="button" class="icon-btn view-btn" data-view="catalog" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="c-search" type="search" placeholder="Название или штрихкод" aria-label="Поиск в каталоге"></label>
       <div class="chips" id="c-cats" role="tablist" aria-label="Категории"></div>
@@ -918,7 +918,6 @@ details.fold.first{border-top:none}
         <div class="kv"><span>ИНН</span><span id="pr-inn"></span></div>
         <div class="kv"><span id="pr-addr-l">Адрес склада</span><span id="pr-addr"></span></div>
         <div class="kv"><span>Телефон</span><span>+996 500 99 16 20</span></div>
-        <span class="xs muted">Эти данные печатаются в накладной</span>
       </div>
       <div class="list rise">
         <button class="li" data-support><svg class="ic"><use href="#i-help"/></svg><span class="grow">Служба поддержки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
@@ -1149,7 +1148,7 @@ details.fold.first{border-top:none}
   let pid = 100;
   // P(ключ фото, название, объём, ед., тип фасовки, в упаковке, цена, категория, штрихкод, доп.)
   const P = (key, name, n, u, type, pack, price, cat, code, extra) => Object.assign({
-    id: ++pid, key, name, vol: { n, u }, type, pack, price, cat, code, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg'], sup: DIST
+    id: ++pid, key, name, vol: { n, u }, type, pack, price, cat, code, avail: true, ret: true, desc: '', photos: ['photos/' + key + '.jpg', 'photos/' + key + '.jpg'], sup: DIST
   }, extra || {});
   // Товары нашего дистрибьютора (его вкладка «Товары»)
   const products = [
@@ -1303,10 +1302,16 @@ details.fold.first{border-top:none}
   // Вид список / блоки — запоминается для каждого экрана
   const view = {};
   ['orders', 'products', 'feed', 'catalog'].forEach(k => { view[k] = store.get('zk-v-' + k, k === 'catalog' || k === 'feed' ? 'grid' : 'list'); });
-  function syncViewSw() { $$('.view-sw').forEach(sw => $$('button', sw).forEach(b => b.classList.toggle('on', b.dataset.v === view[sw.dataset.view]))); }
-  $$('.view-sw').forEach(sw => sw.addEventListener('click', e => {
-    const b = e.target.closest('[data-v]'); if (!b) return;
-    const k = sw.dataset.view; view[k] = b.dataset.v; store.set('zk-v-' + k, b.dataset.v); syncViewSw();
+  // Одна кнопка: иконка показывает вид, на который переключит
+  function syncViewSw() {
+    $$('.view-btn').forEach(b => {
+      const grid = view[b.dataset.view] === 'grid';
+      b.innerHTML = '<svg class="ic"><use href="#' + (grid ? 'i-list' : 'i-grid') + '"/></svg>';
+      b.setAttribute('aria-label', grid ? 'Показать списком' : 'Показать блоками');
+    });
+  }
+  $$('.view-btn').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.view; view[k] = view[k] === 'grid' ? 'list' : 'grid'; store.set('zk-v-' + k, view[k]); syncViewSw();
     ({ orders: renderOrders, products: renderProducts, feed: renderFeed, catalog: renderCatalog })[k]();
   }));
 
@@ -1467,6 +1472,7 @@ details.fold.first{border-top:none}
   const inF = (o, k) => k === 'done' ? (o.st === 'done' || o.st === 'rejected') : o.st === k;
   let oFilter = 'new';
   const distOrders = () => orders.filter(o => o.sup === DIST);
+  const posWord = n => n + ' ' + (n % 10 === 1 && n % 100 !== 11 ? 'позиция' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'позиции' : 'позиций');
   function renderOrders() {
     $('#o-filter').innerHTML = FILTERS.map(([k, t]) => '<button type="button" class="chip' + (k === oFilter ? ' on' : '') + '" data-of="' + k + '" role="tab" aria-selected="' + (k === oFilter) + '">' + t + '<span class="cnt">' + distOrders().filter(o => inF(o, k)).length + '</span></button>').join('');
     const rank = o => o.st === 'new' ? (o.urgent != null ? o.urgent - 10 : 0) : o.st === 'work' ? o.deliver : o.st === 'rejected' ? 5 : -o.deliver;
@@ -1477,7 +1483,7 @@ details.fold.first{border-top:none}
       const s = SHOPS[o.shop], cls = o.st === 'new' ? (o.urgent != null ? ' is-urgent' : ' is-new') : '';
       const head = view.orders === 'grid' ? '<span>' + pillOf(o) + '</span><span class="o-name">' + s.name + '</span>'
         : '<span class="between"><span class="o-name">' + s.name + '</span>' + pillOf(o) + '</span>';
-      return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items">' + esc(summary(o)) + '</span>' +
+      return '<button type="button" class="ocard rise' + cls + '" data-order="' + o.n + '">' + head + '<span class="o-items">' + posWord(o.items.length) + '</span>' +
         '<span class="between o-foot"><span class="xs muted">№ ' + o.n + ' · ' + o.ago + '</span><span class="o-sum">' + fmt(oSum(o)) + ' сом</span></span></button>';
     }).join('') : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + (oFilter === 'new' ? 'Новых заказов нет' : oFilter === 'work' ? 'Нет заказов в работе' : 'Пока нет завершённых заказов') + '</span></div>';
     renderNav();
@@ -1501,17 +1507,9 @@ details.fold.first{border-top:none}
     const bar = $('#od-bar');
     if (o.st === 'new') {
       if (o.urgent != null) {
-        // Срочный: поставка только в срок магазина. Не успеваете — позвоните магазину или откажитесь;
-        // если магазин согласен на позже — заказ становится обычным и дата выбирается как обычно.
-        const d = DEMO_PHONE.replace(/\D/g, '');
+        // Срочный: поставка только в срок магазина
         h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span>' +
-          '<div class="dates one"><button type="button" class="date-opt urgent on" data-day="' + o.urgent + '" role="radio" aria-checked="true"><b>' + DAYS.find(x => x[1] === o.urgent)[0] + '</b><span>' + dm(day(o.urgent)) + ' · срочно</span></button></div></div>' +
-          '<div class="card late-card rise"><div class="row" style="gap:10px;align-items:flex-start"><svg class="ic" style="color:#D8392C;margin-top:1px"><use href="#i-help"/></svg>' +
-          '<span class="grow"><span class="bold" style="font-size:15px">Не успеваете привезти ' + dayWord(o.urgent) + '?</span><span class="small muted" style="line-height:1.4">Позвоните магазину и договоритесь о другом сроке или откажитесь от заказа.</span></span></div>' +
-          '<div class="late-btns"><a class="btn ghost" href="tel:+' + d + '" style="text-decoration:none"><svg class="ic"><use href="#i-call"/></svg>Позвонить</a>' +
-          '<a class="btn ghost" href="https://wa.me/' + d + '?text=' + encodeURIComponent('Здравствуйте! По срочному заказу № ' + o.n + ' в Zakup.KG: можем привезти позже?') + '" target="_blank" rel="noopener" style="text-decoration:none"><svg viewBox="0 0 24 24" style="width:20px;height:20px;color:#1FBF5B"><use href="#i-wa"/></svg>WhatsApp</a></div>' +
-          '<button type="button" class="btn lg ghost late-ok" id="od-later"><svg class="ic"><use href="#i-cal"/></svg>Магазин согласен на другой срок</button>' +
-          '<button type="button" class="linkbtn" id="od-reject2" style="color:var(--red);align-self:center">Отказаться от заказа</button></div>';
+          '<div class="dates one"><button type="button" class="date-opt urgent on" data-day="' + o.urgent + '" role="radio" aria-checked="true"><b>' + DAYS.find(x => x[1] === o.urgent)[0] + '</b><span>' + dm(day(o.urgent)) + ' · срочно</span></button></div></div>';
       } else {
         if (o.rescheduled) h += '<div class="info-line rise"><svg class="ic"><use href="#i-check"/></svg>Срочность снята: магазин согласен на другой срок</div>';
         h += '<div class="card rise" style="gap:10px"><span class="bold" style="font-size:16px">Дата поставки</span><div class="dates" role="radiogroup" aria-label="Дата поставки">' +
@@ -1528,7 +1526,7 @@ details.fold.first{border-top:none}
       h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>Отклонён · ' + esc(o.reason) + '</div>';
       bar.hidden = true; bar.innerHTML = '';
     } else {
-      h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + ' · подтверждено по QR</div>' + invoiceBlock(o);
+      h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-check"/></svg>Доставлено ' + dmy(day(o.deliver)) + ' в ' + o.deliveredAt + '</div>' + invoiceBlock(o);
       bar.hidden = true; bar.innerHTML = '';
     }
     $('#od-body').innerHTML = still ? h.replace(/ rise/g, '') : h;
@@ -1596,7 +1594,7 @@ details.fold.first{border-top:none}
       '<div class="inv-sign"><div><span class="xs muted">Отпустил</span><span class="small bold">Склад / экспедитор</span><span class="line"></span></div><div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div></div>';
   }
   function invoiceBlock(o) {
-    return '<div class="between rise" style="padding:4px 2px 0"><span class="bold" style="font-size:16px">Накладная</span><span class="xs muted">сформирована при принятии</span></div>' +
+    return '<div class="between rise" style="padding:4px 2px 0"><span class="bold" style="font-size:16px">Накладная</span></div>' +
       invoiceCard(o).replace('<div class="inv">', '<div class="inv rise">') +
       '<div class="inv-actions rise"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div>';
   }
@@ -1726,7 +1724,7 @@ details.fold.first{border-top:none}
     $('#ed-photos').innerHTML = ed.photos.map((src, i) => '<div class="ph"><img alt="" src="' + esc(src) + '" data-zoom="' + esc(src) + '" data-zname="' + esc($('#ed-name').value) + '">' + (i === 0 ? '<span class="ph-main">Главное</span>' : '') +
       '<button type="button" class="ph-del" data-phdel="' + i + '" aria-label="Удалить фото">×</button></div>').join('') +
       (n < 5 ? '<label class="ph-add" for="ph-input"><svg class="ic"><use href="#i-camera"/></svg>' + (n ? 'Ещё фото' : 'Добавить') + '</label>' : '');
-    const c = $('#ph-count'); c.textContent = n + ' из 5' + (n < 1 ? ' · нужно минимум 1' : ''); c.className = 'ph-count ' + (n < 1 ? 'bad' : 'ok');
+    const c = $('#ph-count'); c.textContent = n < 2 ? 'Нужно минимум 2 фото' : n + ' из 5'; c.className = 'ph-count ' + (n < 2 ? 'bad' : 'ok');
     const curCat = $('#ed-cat').value.trim();
     $('#ed-cats').innerHTML = CATS_DIR.map(k => '<button type="button" class="chip sm' + (k === curCat ? ' on' : '') + '" data-ecat="' + k + '">' + k + '</button>').join('');
     $$('#ed-type button').forEach(b => { const on = b.dataset.t === ed.type; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
@@ -1757,7 +1755,7 @@ details.fold.first{border-top:none}
     const name = $('#ed-name').value.trim(), code = $('#ed-code').value.trim(), cat = $('#ed-cat').value.trim();
     const volN = parseFloat($('#ed-vol').value.replace(',', '.')), price = parseInt($('#ed-price').value, 10);
     const T = TYPE[ed.type], pack = T.packL ? parseInt($('#ed-pack').value, 10) : 1, errs = [];
-    if (ed.photos.length < 1) errs.push('добавьте хотя бы 1 фото');
+    if (ed.photos.length < 2) errs.push('добавьте минимум 2 фото');
     if (!name) errs.push('укажите наименование');
     if (code && code.length !== 13) errs.push('штрихкод EAN-13 — 13 цифр');
     if (!cat) errs.push('укажите категорию');
@@ -1820,12 +1818,7 @@ details.fold.first{border-top:none}
   const FEED_F = [['all', 'Все'], ['promo', 'Акции'], ['new', 'Новинки']];
   let feedF = 'all';
   // Одна кнопка вида: показывает, на какой вид переключит (списком ↔ блоками)
-  function syncFeedView() {
-    const grid = view.feed === 'grid', b = $('#feed-view');
-    b.innerHTML = '<svg class="ic"><use href="#' + (grid ? 'i-list' : 'i-grid') + '"/></svg>';
-    b.setAttribute('aria-label', grid ? 'Показать списком' : 'Показать блоками');
-  }
-  $('#feed-view').addEventListener('click', () => { view.feed = view.feed === 'grid' ? 'list' : 'grid'; store.set('zk-v-feed', view.feed); syncFeedView(); renderFeed(); });
+  const syncFeedView = () => syncViewSw();
   function renderFeed() {
     syncFeedView();
     $('#f-filter').innerHTML = FEED_F.map(([k, t]) => '<button type="button" class="chip' + (k === feedF ? ' on' : '') + '" data-ff="' + k + '">' + t + '</button>').join('');
@@ -1978,8 +1971,7 @@ details.fold.first{border-top:none}
     const mine = myOrders();
     $('#so-filter').innerHTML = SO_F.map(([k, t, f]) => '<button type="button" class="chip' + (k === soFilter ? ' on' : '') + '" data-sof="' + k + '" role="tab" aria-selected="' + (k === soFilter) + '">' + t + '<span class="cnt">' + mine.filter(f).length + '</span></button>').join('');
     const list = mine.filter(SO_F.find(f => f[0] === soFilter)[2]);
-    $('#so-list').innerHTML = list.length ? list.map(o => '<div class="card so-card rise' + (o.st === 'rejected' ? ' rej' : '') + '" role="button" tabindex="0" data-so="' + o.n + '">' + soHead(o) +
-      '<span class="so-more">Подробнее<svg class="ic"><use href="#i-next"/></svg></span></div>').join('')
+    $('#so-list').innerHTML = list.length ? list.map(o => '<div class="card so-card rise' + (o.st === 'rejected' ? ' rej' : '') + '" role="button" tabindex="0" data-so="' + o.n + '">' + soHead(o) + '</div>').join('')
       : '<div class="empty"><svg class="ic"><use href="#i-doc"/></svg><span>' + ({ sent: 'Нет отправленных запросов', acc: 'Нет принятых или отклонённых заказов', done: 'Пока нет доставленных заказов' })[soFilter] + '</span></div>';
     renderNav();
   }
@@ -2002,7 +1994,7 @@ details.fold.first{border-top:none}
     if (hasInvoice(o)) h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':inv"' + (openSO.has(o.n + ':inv') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-pdf"/></svg>Накладная<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in">' +
       invoiceCard(o) + '<div class="inv-actions"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div></div></details></div>';
     else if (o.st === 'new') h += '<div class="info-line grey rise"><svg class="ic"><use href="#i-pdf"/></svg>Накладная появится, когда поставщик примет заказ</div>';
-    if (o.st === 'work') h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR для подтверждения доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
+    if (o.st === 'work') h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR-подтверждение доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
       qrArt('ZAKUP:' + o.n + ':DELIVERED') + '<span class="small muted" style="line-height:1.45;text-align:center">Покажите код экспедитору при получении. В коде — номер заказа, состав и статус «доставлено».</span><span class="xs muted">Макет: код условный</span></div></details></div>';
     $('#mo-body').innerHTML = h;
     const inv = $('#mo-body details[open] .inv'); if (inv) prepareInv(inv, o);

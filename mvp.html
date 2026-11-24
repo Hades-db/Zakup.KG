@@ -731,10 +731,49 @@ details.fold.first{border-top:none}
 .sp-note{text-align:center;font-size:12.5px;color:var(--muted);padding:4px 0}
 .banner-off{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--red-bg);color:var(--red);font-weight:700;font-size:14px}
 .tag-blk{font-size:11.5px;font-weight:800;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:8px}
+/* ===== Адаптив: планшет и компьютер ===== */
+@media (min-width:700px){
+  .app{inset:0;left:0;width:auto;transform:none;border-radius:0;box-shadow:none}
+  .top,.body,.bottom-bar{padding-left:max(20px,calc((100% - 760px)/2));padding-right:max(20px,calc((100% - 760px)/2))}
+  .auth{max-width:440px;width:100%;margin:0 auto;padding-left:20px!important;padding-right:20px!important}
+  .sheet-bg{align-items:center;justify-content:center;padding:24px}
+  .sheet{max-width:520px;border-radius:24px;max-height:calc(100% - 48px);overflow-y:auto;padding-bottom:20px}
+  .toast{left:auto;right:24px;width:400px}
+  .lightbox .lb-img{max-width:720px;margin:0 auto}
+}
+.side-nav{display:none}
+@media (min-width:1024px){
+  .side-nav{display:flex;position:absolute;left:0;top:0;bottom:0;width:248px;flex-direction:column;gap:22px;padding:22px 14px;background:var(--card);box-shadow:1px 0 0 var(--line),6px 0 20px rgba(20,40,28,.05);z-index:5}
+  .side-brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+  .side-tabs{display:flex;flex-direction:column;gap:4px}
+  .side-tabs .tab{flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:12px 14px;height:auto;border-radius:12px;width:100%;text-align:left}
+  .side-tabs .tab.on::before{inset:0;border-radius:12px}
+  .side-tabs .tab:hover:not(.on){background:var(--soft)}
+  .side-tabs .badge-n{position:static;margin-left:auto;transform:none}
+  .side-tabs .fab{position:static;transform:none;width:100%;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font:inherit;font-size:15px;font-weight:700;box-shadow:var(--sh-green)}
+  .side-tabs .fab.hide{opacity:1;transform:none;pointer-events:auto}
+  .app.in-auth .side-nav{display:none}
+  .app:not(.in-auth) .screen{left:248px}
+  .app:not(.in-auth) .screen:not([data-tab]){left:calc(248px + max(0px,(100% - 1128px)/2));right:max(0px,(100% - 1128px)/2);box-shadow:0 0 0 1px var(--line)}
+  .app:not(.in-auth) .toast{right:24px}
+  .screen .tabbar{display:none}
+  .screen[data-tab] .top,.screen[data-tab] .body,.screen[data-tab] .bottom-bar{padding-left:max(28px,calc((100% - 1120px)/2));padding-right:max(28px,calc((100% - 1120px)/2))}
+  .screen[data-tab] .body{padding-top:20px}
+  .plist:not(.grid){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  .plist.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+  .olist:not(.grid){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  .olist.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .olist.grid#o-list{columns:3}
+  #so-list,#cr-list,#co-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .tab,.btn,.chip,.li,.pcard,.ocard,.icon-btn{cursor:pointer}
+}
+@media (min-width:1440px){ .plist:not(.grid),.olist:not(.grid),#so-list{grid-template-columns:repeat(3,minmax(0,1fr))} }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app in-auth" id="app">
+  <aside class="side-nav" id="side-nav" aria-label="Разделы"><div class="side-brand"><span class="logo-plate" style="width:40px;height:40px;border-radius:12px"><svg><use href="#logo-mark"/></svg></span><span class="brand-name" style="font-size:20px">Zakup<b>.KG</b></span></div><nav class="side-tabs" id="side-tabs"></nav></aside>
 
   <!-- ===== Заставка ===== -->
   <div class="boot" id="boot" aria-hidden="true">
@@ -770,7 +809,7 @@ details.fold.first{border-top:none}
       <div class="auth-links"><button type="button" class="linkbtn" data-auth="a-forgot">Забыли пароль?</button><span></span></div>
       <button type="submit" class="btn lg">Войти</button>
       <p class="auth-switch">Нет аккаунта? <button type="button" class="linkbtn" data-auth="a-register">Зарегистрироваться</button></p>
-      <div class="demo-roles"><span class="xs muted">Демо:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button><button type="button" class="linkbtn xs" data-demo="courier">Доставщик</button></div>
+      <div class="demo-roles"><span class="xs muted">Войти как:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button><button type="button" class="linkbtn xs" data-demo="courier">Доставщик</button></div>
     </form>
   </section>
 
@@ -836,7 +875,7 @@ details.fold.first{border-top:none}
       <div class="scan-ok" id="scan-ok" hidden><span class="circle"><svg class="ic"><use href="#i-check"/></svg></span><b style="font-size:20px" id="scan-ok-b">Доставлено</b><span class="small" style="color:rgba(255,255,255,.8);text-align:center;padding:0 30px;line-height:1.5" id="scan-ok-t"></span></div>
     </div>
     <div class="scan-foot">
-      <button type="button" class="btn lg" id="scan-demo">Код отсканирован (демо)</button>
+      <button type="button" class="btn lg" id="scan-demo">Код отсканирован</button>
     </div>
   </section>
 
@@ -1419,7 +1458,7 @@ details.fold.first{border-top:none}
     if (dir === 'push') { hist.push(cur); animOut(from, 'out-left'); animIn(to, 'in-right'); $$('.body', to).forEach(b => { b.scrollTop = 0; }); }
     else if (dir === 'back') { animOut(from, 'out-right'); animIn(to, 'in-left'); }
     else { hist.length = 0; from.hidden = true; animIn(to, 'fade-in'); }
-    cur = id;
+    cur = id; $('#app').classList.toggle('in-auth', id.startsWith('a-'));
   }
   const back = () => go(hist.pop() || HOME[role], 'back');
   function openTab(t) {
@@ -1428,12 +1467,12 @@ details.fold.first{border-top:none}
       couriers: () => { crSel.clear(); crMode = false; renderCouriers(); }, corders: renderCOrders,
       feed: renderFeed, catalog: renderCatalog, cart: renderCart, sorders: () => { if (!soKeep) soFilter = 'acc'; soKeep = false; renderShopOrders(); }
     };
-    if (R[t]) R[t]();
-    go(TABS[role][t], 'fade');
+    curTab = t; if (R[t]) R[t]();
+    go(TABS[role][t], 'fade'); renderNav();
   }
   // Поставщик: Заказы · Товары · Профиль. Над «Товарами» висит круглая «+» (добавить товар), как в MBank;
   // при прокрутке вниз прячется, при прокрутке вверх возвращается.
-  let fabHidden = false;
+  let fabHidden = false, curTab = null;
   function navHTML(active) {
     const t = (k, ic, label, badge) => '<button type="button" class="tab' + (k === active ? ' on' : '') + '" data-tabgo="' + k + '"><svg class="ic"><use href="#' + ic + '"/></svg>' + label +
       (badge ? '<span class="badge-n' + (k === 'cart' ? ' green' : '') + '">' + badge + '</span>' : '') + '</button>';
@@ -1450,6 +1489,8 @@ details.fold.first{border-top:none}
       n.classList.toggle('five', role === 'shop'); n.classList.toggle('four', role === 'dist'); n.classList.toggle('two', role === 'courier'); n.classList.remove('three');
       n.innerHTML = navHTML(n.closest('.screen').dataset.tab);
     });
+    // Компьютер: те же разделы в боковой панели
+    $('#side-tabs').innerHTML = role ? navHTML(curTab).replace(/(<button type="button" class="fab[^>]*>)(<svg[\s\S]*?<\/svg>)/, '$1$2<span>Добавить товар</span>') : '';
   }
 
   // Центральная кнопка сканера: экспедитор сканирует QR у магазина — заказ определяется по коду
@@ -1598,7 +1639,7 @@ details.fold.first{border-top:none}
     if (reg && reg.st === 'rejected') { blockedSheet('Zakup.KG отклонил заявку ' + reg.name + (reg.why ? '. Причина: ' + reg.why : '')); return; }
     enter(reg ? reg.type : role, 'Добро пожаловать!');
   });
-  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, { dist: 'Вход как поставщик (демо)', shop: 'Вход как магазин (демо)', courier: 'Вход как доставщик (демо)' }[b.dataset.demo])));
+  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, { dist: 'Вход как поставщик', shop: 'Вход как магазин', courier: 'Вход как доставщик' }[b.dataset.demo])));
 
   // Восстановление пароля: заявка уходит в админку, пароль выдаёт администратор
   $('#forgot-form').addEventListener('submit', e => {
@@ -1884,7 +1925,7 @@ details.fold.first{border-top:none}
     $('#scan-cap-s').textContent = mode === 'qr-any' ? 'Наведите камеру на QR-код магазина'
       : qr ? 'Наведите камеру на QR-код магазина'
       : mode === 'code' ? 'Наведите камеру на штрихкод' : 'Наведите камеру на штрихкод';
-    $('#scan-demo').textContent = qr ? 'Код отсканирован (демо)' : 'Штрихкод распознан (демо)';
+    $('#scan-demo').textContent = qr ? 'Код отсканирован' : 'Штрихкод распознан';
     $('#scan-ok').hidden = true; $('#scan-demo').disabled = false;
   }
   $('#scan-demo').addEventListener('click', () => {
@@ -2844,7 +2885,7 @@ details.fold.first{border-top:none}
     'Понятно': 'Түшүнүктүү', 'Да': 'Ооба', 'Нет': 'Жок', 'да': 'ооба', 'нет': 'жок', 'Все': 'Баары', 'Фильтр': 'Чыпка', 'Поиск': 'Издөө', 'Отправить': 'Жөнөтүү', 'Очистить': 'Тазалоо',
     'Вид списка': 'Тизменин көрүнүшү', 'Показать списком': 'Тизме түрүндө', 'Показать блоками': 'Блок түрүндө', 'Ничего не найдено': 'Эч нерсе табылган жок', 'Никого не нашли': 'Эч ким табылган жок',
     'Нет данных': 'Маалымат жок', 'Готовим…': 'Даярдап жатабыз…', 'нет связи': 'байланыш жок', 'слишком долго, попробуйте ещё раз': 'өтө узак, кайра аракет кылыңыз',
-    'B2B Экосистема Поставок': 'B2B Жеткирүү экосистемасы', 'ДЕМО': 'ДЕМО', 'Демо:': 'Демо:', 'Магазин': 'Дүкөн', 'Поставщик': 'Жабдуучу', 'Доставщик': 'Жеткирүүчү', 'Магазины': 'Дүкөндөр',
+    'B2B Экосистема Поставок': 'B2B Жеткирүү экосистемасы', 'ДЕМО': 'ДЕМО', 'Войти как:': 'Ким катары кирүү:', 'Магазин': 'Дүкөн', 'Поставщик': 'Жабдуучу', 'Доставщик': 'Жеткирүүчү', 'Магазины': 'Дүкөндөр',
 
     // вход и регистрация
     'Войти': 'Кирүү', 'Выйти': 'Чыгуу', 'Выйти из аккаунта?': 'Аккаунттан чыгасызбы?', 'Номер телефона': 'Телефон номери', 'Пароль': 'Сырсөз', 'Показать пароль': 'Сырсөздү көрсөтүү', 'Скрыть пароль': 'Сырсөздү жашыруу',
@@ -2852,7 +2893,7 @@ details.fold.first{border-top:none}
     'Восстановление пароля': 'Сырсөздү калыбына келтирүү', 'Новый пароль выдаст администратор Zakup.KG': 'Жаңы сырсөздү Zakup.KG администратору берет', 'Отправить заявку': 'Арыз жөнөтүү',
     'Заявка отправлена, администратор свяжется с вами': 'Арыз жөнөтүлдү, администратор сиз менен байланышат', 'Заявка отправлена. Вход откроется после проверки': 'Арыз жөнөтүлдү. Текшерүүдөн кийин кирүү ачылат',
     'Заявка на проверке': 'Арыз текшерүүдө', 'Вход недоступен': 'Кирүү мүмкүн эмес', 'Добро пожаловать!': 'Кош келиңиз!', 'Добро пожаловать в B2B платформу!': 'B2B платформасына кош келиңиз!',
-    'Вход как магазин (демо)': 'Дүкөн катары кирүү (демо)', 'Вход как поставщик (демо)': 'Жабдуучу катары кирүү (демо)', 'Вход как доставщик (демо)': 'Жеткирүүчү катары кирүү (демо)',
+    'Вход как магазин': 'Дүкөн катары кирүү', 'Вход как поставщик': 'Жабдуучу катары кирүү', 'Вход как доставщик': 'Жеткирүүчү катары кирүү',
     'Введите номер (9 цифр) и пароль': 'Номерди (9 сан) жана сырсөздү киргизиңиз', 'Введите номер телефона: 9 цифр': 'Телефон номерин киргизиңиз: 9 сан', 'Номер телефона: 9 цифр': 'Телефон номери: 9 сан',
     'Название магазина': 'Дүкөндүн аталышы', 'Название поставщика': 'Жабдуучунун аталышы', 'ИНН / ПИН (14 цифр)': 'ИСН / ПИН (14 сан)', 'Адрес магазина / доставки': 'Дүкөндүн / жеткирүүнүн дареги',
     'Придумайте пароль': 'Сырсөз ойлоп табыңыз', 'Согласен с': 'Макулмун:', 'условиями использования, публичной офертой и политикой конфиденциальности': 'колдонуу шарттары, ачык оферта жана купуялуулук саясаты',
@@ -2905,7 +2946,7 @@ details.fold.first{border-top:none}
     'Удалить товар?': 'Товарды өчүрөсүзбү?', 'Товар удалён': 'Товар өчүрүлдү', 'Товар добавлен': 'Товар кошулду', 'Фото товара': 'Товардын сүрөтү', 'От 2 до 5 фото': '2ден 5ке чейин сүрөт', 'Ещё фото': 'Дагы сүрөт',
     'Главное': 'Негизги', 'Удалить фото': 'Сүрөттү өчүрүү', 'Максимум 5 фото': 'Эң көп 5 сүрөт', 'Нужно минимум 2 фото': 'Эң аз 2 сүрөт керек', 'Наименование товара': 'Товардын аталышы',
     'Например: Молоко «Моё» 3,2%': 'Мисалы: Сүт «Моё» 3,2%', 'Штрихкод товара': 'Товардын штрихкоду', 'Штрихкод на упаковке (EAN-13)': 'Таңгактагы штрихкод (EAN-13)', 'EAN-13, например 4870001154691': 'EAN-13, мисалы 4870001154691',
-    'Сканировать штрихкод': 'Штрихкодду сканерлөө', 'Сканер штрихкодов': 'Штрихкод сканери', 'Штрихкод распознан': 'Штрихкод таанылды', 'Штрихкод распознан (демо)': 'Штрихкод таанылды (демо)', 'Товар найден': 'Товар табылды',
+    'Сканировать штрихкод': 'Штрихкодду сканерлөө', 'Сканер штрихкодов': 'Штрихкод сканери', 'Штрихкод распознан': 'Штрихкод таанылды', 'Штрихкод распознан': 'Штрихкод таанылды', 'Товар найден': 'Товар табылды',
     'Категория товара': 'Товардын категориясы', 'Введите или выберите из списка': 'Киргизиңиз же тизмеден тандаңыз', 'Объём / Вес': 'Көлөмү / Салмагы', 'Объём': 'Көлөмү', 'Единица': 'Бирдик', 'Ед.': 'Бирд.',
     'Ед. объёма': 'Көлөм бирдиги', 'Фасовка': 'Таңгак', 'Кол-во в коробке, шт': 'Кутудагы саны, даана', 'Кол-во в блоке, шт': 'Блоктогу саны, даана', 'Кол-во в упаковке, шт': 'Таңгактагы саны, даана', 'Кол-во в упаковке': 'Таңгактагы саны',
     'Цена, с': 'Баасы, с', 'Состав, срок хранения, условия поставки…': 'Курамы, сактоо мөөнөтү, жеткирүү шарттары…', 'Магазины видят товар и могут заказать': 'Дүкөндөр товарды көрүп, буйрутма бере алышат',
@@ -2923,7 +2964,7 @@ details.fold.first{border-top:none}
     'Удалить сотрудника': 'Кызматкерди өчүрүү', 'Удалить сотрудника?': 'Кызматкерди өчүрөсүзбү?', 'в работе останутся без доставщика': 'иште жеткирүүчүсүз калат', 'Логин': 'Логин', 'История заказов': 'Буйрутмалар тарыхы',
     'Данные доставщика': 'Жеткирүүчүнүн маалыматы', 'Новый пароль': 'Жаңы сырсөз', 'Без изменений': 'Өзгөртүүсүз', 'Сохранено. Доставщик войдёт с новыми данными': 'Сакталды. Жеткирүүчү жаңы маалыматтар менен кирет',
     'Заблокирован': 'Бөгөттөлгөн', 'В работе:': 'Иште:', 'Доставщик:': 'Жеткирүүчү:', 'Отметить доставленным': 'Жеткирилди деп белгилөө', 'Подтвердить доставку по QR': 'Жеткирүүнү QR менен ырастоо',
-    'Наведите камеру на QR-код магазина': 'Камераны дүкөндүн QR-кодуна багыттаңыз', 'Наведите камеру на штрихкод': 'Камераны штрихкодго багыттаңыз', 'Код отсканирован (демо)': 'Код сканерленди (демо)',
+    'Наведите камеру на QR-код магазина': 'Камераны дүкөндүн QR-кодуна багыттаңыз', 'Наведите камеру на штрихкод': 'Камераны штрихкодго багыттаңыз', 'Код отсканирован': 'Код сканерленди',
 
     // профиль
     'Реквизиты': 'Реквизиттер', 'Данные': 'Маалыматтар', 'ИНН': 'ИСН', 'Адрес': 'Дарек', 'Адрес склада': 'Кампанын дареги', 'Адрес магазина': 'Дүкөндүн дареги', 'Редактировать данные': 'Маалыматтарды өзгөртүү',

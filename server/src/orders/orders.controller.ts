@@ -6,7 +6,8 @@ import { OrdersService } from './orders.service';
 class AcceptDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Дата поставки в формате ГГГГ-ММ-ДД' }) deliveryDate: string;
   @IsInt() courierId: number;
-  @IsOptional() @IsArray() @ArrayMaxSize(200) @IsInt({ each: true }) outLines?: number[];
+  @IsOptional() @IsArray() @ArrayMaxSize(200) @IsInt({ each: true }) @Min(1, { each: true }) outLines?: number[];
+  @IsOptional() @IsBoolean() agreedLater?: boolean;
 }
 class ReasonDto { @IsString() @Length(2, 300) reason: string }
 class CourierDto { @IsInt() courierId: number }
@@ -19,7 +20,7 @@ class MessageDto { @IsString() @Length(1, 1000) body: string }
 export class OrdersController {
   constructor(private s: OrdersService) {}
 
-  @Get('orders') list(@Me() me: AuthUser, @Query('status') st?: string) { return this.s.list(me, st); }
+  @Get('orders') list(@Me() me: AuthUser, @Query('status') st?: string, @Query('limit') l?: string, @Query('offset') off?: string) { return this.s.list(me, st, Number(l), Number(off)); }
   @Get('orders/:n') get(@Me() me: AuthUser, @Param('n') n: string) { return this.s.get(me, n); }
 
   @Roles('shop') @Post('cart/checkout') checkout(@Me() me: AuthUser) { return this.s.checkout(me); }

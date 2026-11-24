@@ -17,22 +17,29 @@ const LIST = `
 
 const unitOf: Record<string, string> = { box: 'кор', block: 'бл', weight: 'кг', piece: 'шт' };
 const volText = (v: string, u: string) => String(Number(v)).replace('.', ',') + ' ' + u;
+const ALREADY: Record<string, string> = { work: 'Заказ уже принят', done: 'Заказ уже доставлен', rejected: 'Заказ отклонён или отменён', new: 'Заказ ещё не принят' };
+/** Действие допустимо только в этих статусах — иначе понятный ответ, а не тихая перезапись */
+const need = (o: any, ...st: string[]) => { if (!st.includes(o.status)) throw new ConflictException(ALREADY[o.status]); };
+const today = () => new Date(Date.now() + 6 * 3600e3).toISOString().slice(0, 10);   // Asia/Bishkek, UTC+6 без перехода на летнее
 
 @Injectable()
 export class OrdersService {
   constructor(private db: DbService) {}
 
-  private async find(c: Tx, number: string) {
+  /** lock — для действий, меняющих заказ: строка блокируется до конца транзакции, поэтому два одновременных
+   *  «Принять» (или «Доставлено») не пройдут оба — второе увидит уже новый статус */
+  private async find(c: Tx, number: string, lock = false) {
+    if (!/^\d{1,9}$/.test(String(number))) throw new NotFoundException('Заказ не найден');
     const n = Number(number);
-    if (!Number.isInteger(n) || n <= 0) throw new NotFoundException('Заказ не найден');
-    const o = (await c.query('SELECT * FROM orders WHERE number = $1', [n])).rows[0];   // RLS: чужой заказ не виден
+    const o = (await c.query('SELECT * FROM orders WHERE number = $1' + (lock ? ' FOR UPDATE' : ''), [n])).rows[0];   // RLS: чужой заказ не виден
     if (!o) throw new NotFoundException('Заказ не найден');
     return o;
   }
 
-  list(me: AuthUser, status?: string) {
+  list(me: AuthUser, status?: string, limit = 50, offset = 0) {
     if (status && !['new', 'work', 'done', 'rejected'].includes(status)) throw new BadRequestException('Неизвестный статус');
-    return this.db.asUser(me.id, async c => (await c.query(LIST + ` WHERE ($1::order_status IS NULL OR o.status = $1) ORDER BY o.created_at DESC LIMIT 200`, [status || null])).rows);
+    limit = Math.min(Math.max(Number(limit) || 50, 1), 200); offset = Math.max(Number(offset) || 0, 0);
+    return this.db.asUser(me.id, async c => (await c.query(LIST + ` WHERE ($1::order_status IS NULL OR o.status = $1) ORDER BY o.created_at DESC, o.id DESC LIMIT $2 OFFSET $3`, [status || null, limit, offset])).rows);
   }
 
   get(me: AuthUser, number: string) {
@@ -54,9 +61,10 @@ export class OrdersService {
   checkout(me: AuthUser) {
     return this.db.asUser(me.id, async c => {
       const rows = (await c.query(`SELECT ci.qty, ci.urgent, p.id, p.supplier_id, p.name, p.volume_value, p.volume_unit, p.pack_type, p.pack_qty, p.price,
-            (p.in_stock AND NOT p.is_draft AND p.hidden_by IS NULL AND p.deleted_at IS NULL) AS ok,
+            (p.in_stock AND NOT p.is_draft AND p.hidden_by IS NULL AND p.deleted_at IS NULL AND s.status = 'ok') AS ok,
             (SELECT path FROM product_photos WHERE product_id = p.id ORDER BY position LIMIT 1) AS photo
-          FROM cart_items ci JOIN products p ON p.id = ci.product_id WHERE ci.user_id = $1 ORDER BY ci.added_at`, [me.id])).rows;
+          FROM cart_items ci JOIN products p ON p.id = ci.product_id JOIN companies s ON s.id = p.supplier_id
+         WHERE ci.user_id = $1 ORDER BY ci.added_at FOR UPDATE OF ci`, [me.id])).rows;   // двойное нажатие «Оформить» ждёт первое и видит пустую корзину
       if (!rows.length) throw new BadRequestException('Корзина пуста');
       const bad = rows.filter(r => !r.ok);
       if (bad.length) throw new ConflictException('Нет в наличии: ' + bad.map(r => r.name).join(', '));
@@ -82,30 +90,35 @@ export class OrdersService {
   }
 
   /** Поставщик принимает: дата и доставщик обязательны; можно отказать по отдельным позициям */
-  accept(me: AuthUser, number: string, b: { deliveryDate: string; courierId: number; outLines?: number[] }) {
+  accept(me: AuthUser, number: string, b: { deliveryDate: string; courierId: number; outLines?: number[]; agreedLater?: boolean }) {
     return this.db.asUser(me.id, async c => {
-      const o = await this.find(c, number);
+      const o = await this.find(c, number, true);
       if (o.supplier_id != me.companyId) throw new NotFoundException('Заказ не найден');
+      need(o, 'new');
+      // срочный — только сегодня; другой срок — если магазин согласился, тогда срочность снимается
+      const dropUrgent = o.urgent && b.deliveryDate !== today() && !!b.agreedLater;
       const cr = (await c.query(`SELECT id FROM users WHERE id = $1 AND company_id = $2 AND role = 'courier'`, [b.courierId, me.companyId])).rows[0];
       if (!cr) throw new UnprocessableEntityException('Доставщик не найден');
       if (b.outLines?.length) await c.query('UPDATE order_items SET is_out = (line = ANY($2::smallint[])) WHERE order_id = $1', [o.id, b.outLines]);
-      await c.query(`UPDATE orders SET status = 'work', delivery_date = $2, courier_id = $3 WHERE id = $1`, [o.id, b.deliveryDate, b.courierId]);
+      await c.query(`UPDATE orders SET status = 'work', delivery_date = $2, courier_id = $3, urgent = urgent AND NOT $4 WHERE id = $1`, [o.id, b.deliveryDate, b.courierId, dropUrgent]);
     }).then(() => this.get(me, number));
   }
 
   reject(me: AuthUser, number: string, reason: string) {
     return this.db.asUser(me.id, async c => {
-      const o = await this.find(c, number);
+      const o = await this.find(c, number, true);
       if (o.supplier_id != me.companyId) throw new NotFoundException('Заказ не найден');
-      await c.query(`UPDATE orders SET status = 'rejected', reject_reason = $2 WHERE id = $1`, [o.id, reason]);
+      need(o, 'new');
+      await c.query(`UPDATE orders SET status = 'rejected', reject_reason = $2 WHERE id = $1`, [o.id, reason.trim()]);
     }).then(() => this.get(me, number));
   }
 
   setCourier(me: AuthUser, number: string, courierId: number) {
     return this.db.asUser(me.id, async c => {
-      const o = await this.find(c, number);
+      const o = await this.find(c, number, true);
       if (o.supplier_id != me.companyId) throw new NotFoundException('Заказ не найден');
-      if (o.status !== 'work') throw new ConflictException('Доставщика меняют у заказа в работе');
+      need(o, 'work');
+      if (Number(o.courier_id) === Number(courierId)) return;
       const cr = (await c.query(`SELECT id FROM users WHERE id = $1 AND company_id = $2 AND role = 'courier' AND status = 'active'`, [courierId, me.companyId])).rows[0];
       if (!cr) throw new UnprocessableEntityException('Доставщик не найден');
       await c.query('UPDATE orders SET courier_id = $2 WHERE id = $1', [o.id, courierId]);
@@ -115,8 +128,9 @@ export class OrdersService {
   /** Доставщик отмечает доставку: по QR магазина, либо кнопкой, если доставка по QR выключена */
   deliver(me: AuthUser, number: string, qr?: string) {
     return this.db.asUser(me.id, async c => {
-      const o = await this.find(c, number);
+      const o = await this.find(c, number, true);
       if (o.courier_id != me.id) throw new NotFoundException('Заказ не найден');
+      need(o, 'work');
       if (qr != null) {
         const [, n, token] = String(qr).split(':');
         if (Number(n) !== o.number || token !== o.qr_token) throw new ConflictException('QR-код от другого заказа');
@@ -127,8 +141,9 @@ export class OrdersService {
 
   pay(me: AuthUser, number: string, paid: boolean) {
     return this.db.asUser(me.id, async c => {
-      const o = await this.find(c, number);
+      const o = await this.find(c, number, true);
       if (o.supplier_id != me.companyId) throw new NotFoundException('Заказ не найден');
+      need(o, 'work', 'done');
       await c.query(`UPDATE orders SET paid_at = CASE WHEN $2 THEN COALESCE(paid_at, now()) END, paid_marked_by = CASE WHEN $2 THEN $3::bigint END WHERE id = $1`, [o.id, paid, me.id]);
     }).then(() => this.get(me, number));
   }
@@ -137,7 +152,8 @@ export class OrdersService {
     return this.db.asUser(me.id, async c => {
       const o = await this.find(c, number);
       if (o.shop_id != me.companyId) throw new NotFoundException('Заказ не найден');
-      await c.query('INSERT INTO order_ratings (order_id, stars, comment, created_by) VALUES ($1, $2, $3, $4)', [o.id, stars, comment || null, me.id]);
+      if (o.status !== 'done') throw new ConflictException('Оценить можно только доставленный заказ');
+      await c.query('INSERT INTO order_ratings (order_id, stars, comment, created_by) VALUES ($1, $2, $3, $4)', [o.id, stars, comment?.trim() || null, me.id]);
     }).then(() => this.get(me, number));
   }
 
@@ -151,6 +167,8 @@ export class OrdersService {
   }
 
   send(me: AuthUser, number: string, body: string) {
+    body = String(body || '').trim();
+    if (!body) throw new BadRequestException('Пустое сообщение');
     return this.db.asUser(me.id, async c => {
       const o = await this.find(c, number);
       if (me.role === 'courier') throw new NotFoundException('Заказ не найден');

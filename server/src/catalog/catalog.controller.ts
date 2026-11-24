@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, NotFoundException, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
 import { IsBoolean, IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { AuthUser, Me, Roles } from '../auth/auth.guard';
 import { DbService } from '../db/db.service';
@@ -19,9 +19,9 @@ export class CatalogController {
               v.barcode, v.in_stock AS "inStock", v.supplier_id AS "supplierId", v.supplier_name AS supplier, v.category, v.orders_count AS popularity,
               (SELECT path FROM product_photos WHERE product_id = v.id ORDER BY position LIMIT 1) AS photo
          FROM ${view} v
-        WHERE ($1::text IS NULL OR v.name ILIKE '%' || $1 || '%' OR v.barcode = $1)
+        WHERE ($1::text IS NULL OR v.name ILIKE '%' || $1 || '%' ESCAPE '\\' OR v.barcode = $4)
           AND ($2::text IS NULL OR v.category = $2) AND ($3::bigint IS NULL OR v.supplier_id = $3)
-        ORDER BY v.in_stock DESC, v.orders_count DESC, v.name LIMIT 200`, [q || null, cat || null, sup || null])).rows);
+        ORDER BY v.in_stock DESC, v.orders_count DESC, v.name LIMIT 200`, [q ? q.trim().slice(0, 100).replace(/[\\%_]/g, m => '\\' + m) : null, cat || null, sup && /^\d+$/.test(sup) ? sup : null, q ? q.trim() : null])).rows);
   }
 
   @Roles('shop') @Get('cart')
@@ -37,9 +37,16 @@ export class CatalogController {
 
   @Roles('shop') @Put('cart/:productId')
   put(@Me() me: AuthUser, @Param('productId') pid: string, @Body() b: CartDto) {
-    if (!/^\d+$/.test(pid)) throw new BadRequestException('Неверный товар');
-    return this.db.asUser(me.id, c => c.query(`INSERT INTO cart_items (user_id, product_id, qty, urgent) VALUES ($1, $2, $3, $4)
-        ON CONFLICT (user_id, product_id) DO UPDATE SET qty = EXCLUDED.qty, urgent = EXCLUDED.urgent`, [me.id, pid, b.qty, !!b.urgent])).then(() => this.cart(me));
+    if (!/^\d{1,15}$/.test(pid)) throw new NotFoundException('Товар не найден');
+    return this.db.asUser(me.id, async c => {
+      // в корзину — только то, что магазин видит в каталоге (в наличии, не скрыто, поставщик работает)
+      const p = (await c.query('SELECT pack_type FROM catalog WHERE id = $1', [pid])).rows[0];
+      if (!p) throw new ConflictException('Товара нет в наличии');
+      if (p.pack_type !== 'weight' && !Number.isInteger(b.qty)) throw new BadRequestException('Количество — целое число');
+      if (b.urgent && !(await c.query("SELECT flag('urgent_on') AS on")).rows[0].on) throw new ConflictException('Срочные заказы временно недоступны');
+      await c.query(`INSERT INTO cart_items (user_id, product_id, qty, urgent) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id, product_id) DO UPDATE SET qty = EXCLUDED.qty, urgent = EXCLUDED.urgent`, [me.id, pid, b.qty, !!b.urgent]);
+    }).then(() => this.cart(me));
   }
 
   @Roles('shop') @Delete('cart/:productId')

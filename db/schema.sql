@@ -42,6 +42,9 @@ CREATE DOMAIN som      AS numeric(12,2) CHECK (VALUE >= 0);
 CREATE FUNCTION touch() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN NEW.updated_at := now(); RETURN NEW; END $$;
 
+-- Номер заказа для людей: № 0221 (с 10000 — без нулей)
+CREATE FUNCTION order_no(n integer) RETURNS text LANGUAGE sql IMMUTABLE SET search_path = zakup, public AS $$ SELECT CASE WHEN n < 10000 THEN lpad(n::text, 4, '0') ELSE n::text END $$;
+
 -- =====================================================================
 -- 1. КОМАНДА ZAKUP.KG (админ-панель)
 -- =====================================================================
@@ -283,7 +286,7 @@ CREATE CONSTRAINT TRIGGER photos_min_photos AFTER DELETE ON product_photos
 CREATE TABLE cart_items (
   user_id    bigint  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   product_id bigint  NOT NULL REFERENCES products(id),
-  qty        integer NOT NULL CHECK (qty BETWEEN 1 AND 9999),
+  qty        numeric(10,3) NOT NULL CHECK (qty > 0 AND qty <= 9999),   -- дробное — только у весовых (проверяет API)
   urgent     boolean NOT NULL DEFAULT false,      -- галочка «СРОЧНО» в карточке и в корзине
   added_at   timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, product_id)
@@ -362,7 +365,7 @@ BEGIN
     RAISE EXCEPTION 'Позиция от другого поставщика: корзина делится на заказы по поставщикам';
   END IF;
   UPDATE orders SET total = COALESCE((SELECT sum(amount) FROM order_items WHERE order_id = oid), 0),
-                    items_count = (SELECT count(*) FROM order_items WHERE order_id = oid)
+                    items_count = (SELECT count(*) FROM order_items WHERE order_id = oid AND NOT is_out)
    WHERE id = oid;
   RETURN NULL;
 END $$;
@@ -416,8 +419,20 @@ CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW EXECUTE
 CREATE FUNCTION orders_before_update() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF NEW.status = OLD.status THEN
-    IF OLD.status IN ('done', 'rejected') AND (NEW.courier_id, NEW.delivery_date) IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date) THEN
+    IF OLD.status IN ('done', 'rejected') AND (NEW.courier_id, NEW.delivery_date, NEW.delivered_by, NEW.delivered_method, NEW.delivered_at, NEW.reject_reason, NEW.cancelled_by, NEW.urgent)
+         IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date, OLD.delivered_by, OLD.delivered_method, OLD.delivered_at, OLD.reject_reason, OLD.cancelled_by, OLD.urgent) THEN
       RAISE EXCEPTION 'Завершённый заказ менять нельзя';
+    END IF;
+    IF OLD.status = 'work' THEN
+      IF NEW.courier_id IS DISTINCT FROM OLD.courier_id AND (SELECT status FROM users WHERE id = NEW.courier_id) IS DISTINCT FROM 'active' THEN
+        RAISE EXCEPTION 'Доставщик заблокирован';
+      END IF;
+      IF NEW.delivery_date IS DISTINCT FROM OLD.delivery_date AND NEW.delivery_date < (now() AT TIME ZONE 'Asia/Bishkek')::date THEN
+        RAISE EXCEPTION 'Дата доставки в прошлом';
+      END IF;
+    END IF;
+    IF OLD.status = 'new' AND (NEW.courier_id, NEW.delivery_date) IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date) THEN
+      RAISE EXCEPTION 'Доставщик и дата назначаются при принятии заказа';
     END IF;
     RETURN NEW;
   END IF;
@@ -434,6 +449,12 @@ BEGIN
     END IF;
     IF NEW.delivery_date < (now() AT TIME ZONE 'Asia/Bishkek')::date THEN
       RAISE EXCEPTION 'Дата доставки в прошлом';
+    END IF;
+    IF NEW.delivery_date > (now() AT TIME ZONE 'Asia/Bishkek')::date + 30 THEN
+      RAISE EXCEPTION 'Дата поставки — не дальше 30 дней';
+    END IF;
+    IF NEW.urgent AND NEW.delivery_date <> (now() AT TIME ZONE 'Asia/Bishkek')::date THEN
+      RAISE EXCEPTION 'Срочный заказ — поставка сегодня. Если магазин согласен на другой срок, снимите срочность';
     END IF;
     NEW.accepted_at := COALESCE(NEW.accepted_at, now());
   END IF;
@@ -627,7 +648,6 @@ CREATE FUNCTION notify_user(p_user bigint, p_title text, p_sender text, p_icon t
 LANGUAGE sql SECURITY DEFINER SET search_path = zakup, public AS $$
   INSERT INTO notifications (user_id, title, sender, icon, order_id) SELECT p_user, p_title, p_sender, p_icon, p_order WHERE p_user IS NOT NULL
 $$;
-CREATE FUNCTION order_no(n integer) RETURNS text LANGUAGE sql IMMUTABLE SET search_path = zakup, public AS $$ SELECT lpad(n::text, 4, '0') $$;
 
 CREATE FUNCTION orders_notify() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
 DECLARE shop text; sup text; outn int;
@@ -874,7 +894,7 @@ SELECT barcode, supplier_name, id AS product_id, name, price,
 
 -- Карточка заказа в списке поставщика: «3 позиции, 5 мин назад», сумма
 CREATE VIEW supplier_order_cards AS
-SELECT o.id, o.supplier_id, lpad(o.number::text, 4, '0') AS number, o.status, o.urgent,
+SELECT o.id, o.supplier_id, order_no(o.number) AS number, o.status, o.urgent,
        o.ship_name, o.ship_district, o.items_count, o.total, o.delivery_date,
        u.full_name AS courier_name, o.created_at,
        (o.status = 'new' AND o.created_at < now() - interval '2 hours') AS overdue

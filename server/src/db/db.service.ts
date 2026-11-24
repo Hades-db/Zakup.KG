@@ -17,7 +17,8 @@ export type Tx = PoolClient;
  */
 @Injectable()
 export class DbService implements OnModuleDestroy {
-  readonly pool = new Pool({ connectionString: config.databaseUrl, max: 20 });
+  readonly pool = new Pool({ connectionString: config.databaseUrl, max: 20, connectionTimeoutMillis: 5000 });
+  constructor() { this.pool.on('error', e => console.error('PostgreSQL:', e.message)); }   // обрыв простаивающего соединения не роняет сервер
 
   async onModuleDestroy() { await this.pool.end(); }
 
@@ -26,6 +27,7 @@ export class DbService implements OnModuleDestroy {
     try {
       await c.query('BEGIN');
       await c.query("SET LOCAL search_path = zakup, public");
+      await c.query("SET LOCAL statement_timeout = '10s'");      // зависший запрос не держит соединение
       await prep(c);
       const r = await fn(c);
       await c.query('COMMIT');

@@ -4,10 +4,14 @@ import { createHash, randomBytes } from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { config } from '../config';
 import { DbService } from '../db/db.service';
+import { clearLimit, limit } from '../common/rate-limit';
 
 const sha = (t: string) => createHash('sha256').update(t).digest();
 const phone12 = (p: string) => { const d = String(p || '').replace(/\D/g, ''); const n = d.length === 9 ? '996' + d : d; if (!/^996\d{9}$/.test(n)) throw new BadRequestException('Номер телефона: 9 цифр после +996'); return n; };
 export const hashPassword = (pw: string) => hash(pw, { algorithm: Algorithm.Argon2id });
+// для ровного времени ответа, когда номера нет: проверяем пароль против этого хэша
+const DUMMY = hash('zakup-dummy-password', { algorithm: Algorithm.Argon2id });
+const clean = (v: string) => String(v || '').trim().replace(/\s+/g, ' ');
 
 @Injectable()
 export class AuthService {
@@ -34,10 +38,14 @@ export class AuthService {
   /** Вход по номеру и паролю. Регистрация на проверке, блокировка — понятный текст вместо входа */
   login(phone: string, password: string, device?: string, ip?: string) {
     const p = phone12(phone);
+    limit('login:ip:' + ip, 50, 15 * 60_000);     // перебор номеров с одного адреса
+    limit('login:ph:' + p, 10, 15 * 60_000);      // перебор паролей к одному номеру
     return this.db.system(async c => {
       const u = (await c.query(`SELECT user_id, password_hash, denied FROM login_check WHERE phone = $1 AND denied IS DISTINCT FROM 'Аккаунт удалён'`, [p])).rows[0];
-      // одинаковый ответ для «нет номера» и «неверный пароль» — не подсказываем, какие номера зарегистрированы
-      if (!u || !(await verify(u.password_hash, password).catch(() => false))) throw new UnauthorizedException('Неверный номер или пароль');
+      // одинаковый ответ и время для «нет номера» и «неверный пароль» — не подсказываем, какие номера зарегистрированы
+      const ok = await verify(u ? u.password_hash : await DUMMY, password).catch(() => false);
+      if (!u || !ok) throw new UnauthorizedException('Неверный номер или пароль');
+      clearLimit('login:ph:' + p);
       if (u.denied) throw new ForbiddenException(u.denied);
       await c.query('UPDATE users SET last_login_at = now() WHERE id = $1', [u.user_id]);
       return { ...(await this.issue(c, u.user_id, device, ip)), user: await this.profile(c, u.user_id) };
@@ -45,7 +53,8 @@ export class AuthService {
   }
 
   /** Обновление токенов: refresh одноразовый, при каждом обновлении выдаём новый */
-  refresh(token: string) {
+  refresh(token: string, ip?: string) {
+    limit('refresh:ip:' + ip, 300, 15 * 60_000);
     const [sid, raw] = String(token || '').split('.');
     if (!sid || !raw || !/^[0-9a-f-]{36}$/.test(sid)) throw new UnauthorizedException('Сеанс завершён, войдите снова');
     return this.db.system(async c => {
@@ -71,6 +80,8 @@ export class AuthService {
   /** Смена своего пароля: остальные сеансы закрываются */
   changePassword(userId: number, sid: string, oldPw: string, newPw: string) {
     if (!newPw || newPw.length < 8) throw new BadRequestException('Новый пароль — не меньше 8 символов');
+    if (newPw === oldPw) throw new BadRequestException('Новый пароль совпадает с текущим');
+    limit('pw:' + userId, 10, 15 * 60_000);
     return this.db.system(async c => {
       const u = (await c.query('SELECT password_hash FROM users WHERE id = $1', [userId])).rows[0];
       if (!(await verify(u.password_hash, oldPw).catch(() => false))) throw new BadRequestException('Неверный текущий пароль');
@@ -81,7 +92,11 @@ export class AuthService {
   }
 
   /** Регистрация: компания «на проверке» + владелец. Войти можно после подтверждения в админке */
-  register(b: { type: 'shop' | 'dist'; name: string; inn: string; address: string; phone: string; password: string; ownerName?: string; acceptedDocs?: boolean }) {
+  register(b: { type: 'shop' | 'dist'; name: string; inn: string; address: string; phone: string; password: string; ownerName?: string; acceptedDocs?: boolean }, ip?: string) {
+    limit('reg:ip:' + ip, 10, 60 * 60_000);
+    b = { ...b, name: clean(b.name), address: clean(b.address), ownerName: b.ownerName ? clean(b.ownerName) : undefined };
+    if (b.name.length < 2) throw new BadRequestException('Проверьте: название');
+    if (b.address.length < 5) throw new BadRequestException('Проверьте: адрес');
     if (!b.acceptedDocs) throw new BadRequestException('Нужно согласие с условиями, офертой и политикой');
     if (!b.password || b.password.length < 8) throw new BadRequestException('Пароль — не меньше 8 символов');
     const p = phone12(b.phone);
@@ -97,6 +112,7 @@ export class AuthService {
   /** «Забыли пароль?»: заявка администратору. Ответ одинаковый, есть номер в базе или нет */
   resetRequest(phone: string, ip?: string) {
     const p = phone12(phone);
+    limit('reset:ip:' + ip, 10, 60 * 60_000);
     return this.db.system(async c => {
       await c.query(`INSERT INTO password_reset_requests (phone, user_id, ip)
         SELECT $1::text, (SELECT id FROM users WHERE phone = $1::text AND status <> 'deleted'), $2::inet

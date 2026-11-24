@@ -6,6 +6,7 @@
 import { INestApplication } from '@nestjs/common';
 import { execSync } from 'child_process';
 import request from 'supertest';
+import { resetLimits } from '../src/common/rate-limit';
 
 const ADMIN = process.env.TEST_ADMIN_URL || 'postgres://postgres@/zk?host=/var/tmp&port=5499';
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgres://zakup_server@/zk?host=/var/tmp&port=5499';
@@ -25,6 +26,7 @@ beforeAll(async () => {
   app = await createApp(); await app.init(); http = request(app.getHttpServer());
 });
 afterAll(async () => { await app?.close(); });
+beforeEach(() => resetLimits());
 
 describe('вход', () => {
   it('сервер жив', async () => { expect((await http.get('/health')).body).toEqual({ ok: true }); });
@@ -139,20 +141,23 @@ describe('заказ целиком: корзина → принятие → д�
     const foreign = Number(sql(`SELECT id FROM zakup.users WHERE full_name = 'Тилек Абдыкадыров'`));
     expect((await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow() })).status).toBe(400);
     expect((await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId: foreign })).status).toBe(422);
-    const all = await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId, outLines: [1, 2] });
+    const urg = await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId });
+    expect(urg.status).toBe(409); expect(urg.body.error).toMatch(/Срочный заказ — поставка сегодня/);
+    const all = await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId, outLines: [1, 2], agreedLater: true });
     expect(all.status).toBe(409); expect(all.body.error).toMatch(/Нет ни одной позиции/);
     expect((await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: '2020-01-01', courierId })).body.error).toMatch(/в прошлом/);
   });
 
   it('принятие без одной позиции: сумма, накладная, уведомления магазину и доставщику', async () => {
-    const r = await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId, outLines: [2] });
-    expect(r.status).toBe(200);
+    const r = await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId, outLines: [2], agreedLater: true });
+    expect(r.status).toBe(200); expect(r.body.urgent).toBe(false); expect(r.body.itemsCount).toBe(1);
     expect(r.body).toMatchObject({ status: 'work', total: 1728, courier: 'Эрлан Касымов' });
     expect(r.body.items[1]).toMatchObject({ out: true, amount: 0 });
     expect(r.body.invoice).toMatchObject({ total: 1728, courier: 'Эрлан Касымов' });
     expect((await as(shop).get('/v1/notifications')).body[0].title).toMatch(new RegExp('Заказ № ' + num + ' принят без 1 поз\\., поставка'));
     expect((await as(courier).get('/v1/notifications')).body[0].title).toBe('Вам назначен заказ № ' + num);
-    expect((await as(dist).post(`/v1/orders/${num}/reject`, { reason: 'Передумали' })).body.error).toMatch(/только команда Zakup.KG/);
+    expect((await as(dist).post(`/v1/orders/${num}/reject`, { reason: 'Передумали' })).body.error).toBe('Заказ уже принят');
+    expect((await as(dist).post(`/v1/orders/${num}/accept`, { deliveryDate: tomorrow(), courierId })).body.error).toBe('Заказ уже принят');
   });
 
   it('доставка: при включённом QR кнопкой нельзя, чужой QR не подходит', async () => {

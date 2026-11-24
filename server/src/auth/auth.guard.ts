@@ -9,6 +9,8 @@ export interface AuthUser { id: number; sid: string; role: AppRole; companyId: n
 
 export const Public = () => SetMetadata('public', true);
 export const Roles = (...r: AppRole[]) => SetMetadata('roles', r);
+/** Метод доступен и с временным паролем (сменить пароль, профиль, выход) */
+export const AllowTempPassword = () => SetMetadata('tempOk', true);
 export const Me = createParamDecorator((_: unknown, ctx: ExecutionContext): AuthUser => ctx.switchToHttp().getRequest().user);
 
 /**
@@ -26,7 +28,8 @@ export class AuthGuard implements CanActivate {
     const h: string = req.headers.authorization || '';
     if (!h.startsWith('Bearer ')) throw new UnauthorizedException('Нужен вход');
     let p: any;
-    try { p = jwt.verify(h.slice(7), config.jwtSecret); } catch { throw new UnauthorizedException('Сеанс истёк, войдите снова'); }
+    try { p = jwt.verify(h.slice(7), config.jwtSecret, { algorithms: ['HS256'] }); } catch { throw new UnauthorizedException('Сеанс истёк, войдите снова'); }
+    if (!p || !/^\d+$/.test(String(p.sub)) || !/^[0-9a-f-]{36}$/.test(String(p.sid))) throw new UnauthorizedException('Сеанс истёк, войдите снова');
     const r = await this.db.system(c => c.query(
       `SELECT s.revoked_at, s.expires_at, l.denied, l.role, l.company_type, l.must_change_password, u.company_id
          FROM sessions s JOIN login_check l ON l.user_id = s.user_id JOIN users u ON u.id = s.user_id
@@ -36,6 +39,8 @@ export class AuthGuard implements CanActivate {
     if (s.denied) throw new UnauthorizedException(s.denied);
     const user: AuthUser = { id: Number(p.sub), sid: p.sid, role: s.role === 'courier' ? 'courier' : s.company_type, companyId: Number(s.company_id), mustChangePassword: s.must_change_password };
     req.user = user;
+    // временный пароль от администратора: сначала смена пароля, потом всё остальное
+    if (user.mustChangePassword && !this.reflector.getAllAndOverride<boolean>('tempOk', targets)) throw new ForbiddenException('Смените временный пароль');
     const roles = this.reflector.getAllAndOverride<AppRole[]>('roles', targets);
     if (roles && !roles.includes(user.role)) throw new ForbiddenException('Действие недоступно для вашей роли');
     return true;

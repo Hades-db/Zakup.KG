@@ -8,11 +8,11 @@ SET search_path = zakup, public;
 \set pw '''$argon2id$v=19$m=65536,t=3,p=4$ZGVtby1zYWx0$ZGVtby1oYXNoLWRvLW5vdC11c2U'''
 
 -- ---------- Команда ----------
-INSERT INTO staff (name, email, role, password_hash, last_login_at) VALUES
-  ('Владелец',  'admin@zakup.kg',   'owner',   :pw, now()),
-  ('Айбек Н.',  'support@zakup.kg', 'support', :pw, now() - interval '3 hours'),
-  ('Динара К.', 'moder@zakup.kg',   'moder',   :pw, now() - interval '1 day'),
-  ('Тимур Р.',  'dev@zakup.kg',     'dev',     :pw, now() - interval '5 hours');
+INSERT INTO staff (name, phone, role, password_hash, must_change_password, totp_secret, last_login_at) VALUES
+  ('Владелец',  '996700000901', 'owner',   :pw, false, '\x00'::bytea, now()),
+  ('Айбек Н.',  '996700000902', 'support', :pw, false, '\x00'::bytea, now() - interval '3 hours'),
+  ('Динара К.', '996700000903', 'moder',   :pw, false, '\x00'::bytea, now() - interval '1 day'),
+  ('Тимур Р.',  '996700000904', 'dev',     :pw, false, '\x00'::bytea, now() - interval '5 hours');
 
 -- ---------- Флаги, справочники, документы ----------
 INSERT INTO feature_flags (key, enabled, title) VALUES

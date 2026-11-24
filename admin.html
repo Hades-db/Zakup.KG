@@ -63,6 +63,7 @@ button{cursor:pointer}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:12.5px;font-weight:700;color:var(--muted)}
 .inp{height:42px;border:1px solid var(--border);border-radius:10px;background:var(--card);padding:0 12px;outline:none;width:100%}
+.phone-inp{display:flex;align-items:center;gap:8px;font-size:14px;cursor:text}.phone-inp .cc{font-weight:700;color:var(--muted)}.phone-inp input{font-size:14px!important;height:100%}
 .inp:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
 textarea.inp{height:auto;min-height:80px;padding:10px 12px;resize:vertical}
 select.inp{padding-right:30px}
@@ -275,7 +276,8 @@ td.r,th.r{text-align:right}
     <div class="brand"><svg class="mark"><use href="#logo-mark"/></svg><div><b>Zakup.KG</b><br><span>Панель команды</span></div></div>
     <div id="step1" style="display:flex;flex-direction:column;gap:14px">
       <h1>Вход</h1>
-      <div class="field"><label for="l-email">Почта</label><input class="inp" id="l-email" type="email" value="admin@zakup.kg"></div>
+      <div class="field"><label for="l-phone">Номер телефона</label><div class="inp phone-inp"><span class="cc">+996</span><input id="l-phone" type="text" inputmode="numeric" autocomplete="tel" value="500 99 16 20" style="border:none;outline:none;background:none;font:inherit;color:inherit;flex:1;min-width:0"></div></div>
+      <span class="err" id="phone-err" hidden>Введите номер: 9 цифр</span>
       <div class="field"><label for="l-pass">Пароль</label><input class="inp" id="l-pass" type="password" value="demo-password"></div>
       <div class="field"><label>Роль (демо)</label>
         <div class="roles" id="role-pick">
@@ -303,7 +305,7 @@ td.r,th.r{text-align:right}
     <div class="brand"><svg class="mark"><use href="#logo-mark"/></svg><div><b>Zakup.KG</b><br><span>Панель команды</span></div></div>
     <nav id="nav"></nav>
     <div class="side-foot">
-      <div class="me"><span class="av" id="me-av">В</span><div><b id="me-name">Владелец</b><span id="me-role">admin@zakup.kg</span></div></div>
+      <div class="me"><span class="av" id="me-av">В</span><div><b id="me-name">Владелец</b><span id="me-role">+996 500 99 16 20</span></div></div>
       <div class="row"><button class="btn ghost sm" id="theme-btn" style="flex:1"><svg class="ic"><use href="#i-sun"/></svg>Тема</button><button class="btn ghost sm" id="logout" style="flex:1"><svg class="ic"><use href="#i-logout"/></svg>Выйти</button></div>
     </div>
   </aside>
@@ -337,10 +339,10 @@ td.r,th.r{text-align:right}
 
   // ---------- Роли ----------
   const ROLES = {
-    owner: { name: 'Владелец', av: 'В', email: 'admin@zakup.kg' },
-    support: { name: 'Поддержка', av: 'П', email: 'support@zakup.kg' },
-    moder: { name: 'Модератор', av: 'М', email: 'moder@zakup.kg' },
-    dev: { name: 'Разработчик', av: 'Р', email: 'dev@zakup.kg' }
+    owner: { name: 'Владелец', av: 'В', phone: '+996 500 99 16 20' },
+    support: { name: 'Поддержка', av: 'П', phone: '+996 500 99 16 20' },
+    moder: { name: 'Модератор', av: 'М', phone: '+996 500 99 16 20' },
+    dev: { name: 'Разработчик', av: 'Р', phone: '+996 500 99 16 20' }
   };
   const ACCESS = {
     home: ['owner', 'support', 'moder', 'dev'], companies: ['owner', 'support', 'moder'], users: ['owner', 'support'],
@@ -405,7 +407,7 @@ td.r,th.r{text-align:right}
     cats: ['Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'],
     reasons: ['Нет в наличии', 'Загруженность доставки', 'Другое'],
     docs: [['Публичная оферта', 'v1.2', '01.11.2026'], ['Пользовательское соглашение', 'v1.1', '01.11.2026'], ['Политика конфиденциальности', 'v1.3', '15.11.2026']],
-    staff: [['Владелец', 'admin@zakup.kg', 'owner', 'сейчас'], ['Айбек Н.', 'support@zakup.kg', 'support', 'сегодня, 10:15'], ['Динара К.', 'moder@zakup.kg', 'moder', 'вчера'], ['Тимур Р.', 'dev@zakup.kg', 'dev', 'сегодня, 08:02']],
+    staff: [['Владелец', '+996 500 99 16 20', 'owner', 'сейчас'], ['Айбек Н.', '+996 500 99 16 20', 'support', 'сегодня, 10:15'], ['Динара К.', '+996 500 99 16 20', 'moder', 'вчера'], ['Тимур Р.', '+996 500 99 16 20', 'dev', 'сегодня, 08:02']],
     audit: [
       ['22.11.2026 10:15', 'Айбек Н.', 'Поддержка', 'Сбросил пароль', 'Гульнара А., Магазин «Достук»', 'Просьба по телефону'],
       ['21.11.2026 17:40', 'Динара К.', 'Модератор', 'Заблокировал компанию', 'Киоск «Мээрим»', 'ИНН не совпадает с данными налоговой']
@@ -429,6 +431,8 @@ td.r,th.r{text-align:right}
     let changed = false;
     d.v = 1;
     for (const k of Object.keys(SEED)) if (d[k] === undefined) { d[k] = JSON.parse(JSON.stringify(SEED[k])); changed = true; }
+    // сотрудники раньше входили по почте — переводим на телефон
+    d.staff.forEach(st => { if (/@/.test(st[1])) { st[1] = '+996 500 99 16 20'; changed = true; } });
     // компании из приложения (магазины и поставщики заказов) — в общий список
     const add = (name, type, addr) => { if (!name || d.companies.some(c => c.name === name)) return; d.companies.push({ id: Math.max(...d.companies.map(c => c.id)) + 1, type, name, inn: '—', addr: addr || '—', st: 'ok', reg: '—', staff: 1, orders: 0 }); changed = true; };
     if (d.orders) {
@@ -504,16 +508,19 @@ td.r,th.r{text-align:right}
     inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && all[i - 1]) all[i - 1].focus(); });
   });
   let step = 1;
+  // Номер телефона: 500 99 16 20 (вход и форма сотрудника)
+  document.addEventListener('input', e => { const t = e.target; if (!t.closest || !t.closest('.phone-inp')) return; const d = t.value.replace(/\D/g, '').slice(0, 9); t.value = d.replace(/^(\d{3})(\d{0,2})(\d{0,2})(\d{0,2}).*/, (m, a, b, c, x) => [a, b, c, x].filter(Boolean).join(' ')); });
+  document.addEventListener('click', e => { const w = e.target.closest && e.target.closest('.phone-inp'); if (w && e.target === w) w.querySelector('input').focus(); });
   $('#login-form').addEventListener('submit', e => {
     e.preventDefault();
-    if (step === 1) { step = 2; $('#step1').hidden = true; $('#step2').hidden = false; $$('#code-row input').forEach((x, i) => { x.value = String((i * 3 + 1) % 10); }); $('#code-row input').focus(); return; }
+    if (step === 1) { const ok = $('#l-phone').value.replace(/\D/g, '').length === 9; $('#phone-err').hidden = ok; if (!ok) return; step = 2; $('#step1').hidden = true; $('#step2').hidden = false; $$('#code-row input').forEach((x, i) => { x.value = String((i * 3 + 1) % 10); }); $('#code-row input').focus(); return; }
     if ($$('#code-row input').map(x => x.value).join('').length < 6) { $('#code-err').hidden = false; return; }
     enter();
   });
   $('#back1').onclick = () => { step = 1; $('#step1').hidden = false; $('#step2').hidden = true; };
   function enter() {
     $('#login').hidden = true; $('#app').hidden = false;
-    const R = ROLES[role]; $('#me-av').textContent = R.av; $('#me-name').textContent = R.name; $('#me-role').textContent = R.email;
+    const R = ROLES[role]; $('#me-av').textContent = R.av; $('#me-name').textContent = R.name; $('#me-role').textContent = R.phone;
     page = 'home'; syncChip(); render(); toast('Вход выполнен: ' + R.name);
   }
   $('#logout').onclick = () => { $('#app').hidden = true; $('#login').hidden = false; step = 1; $('#step1').hidden = false; $('#step2').hidden = true; closeDrawer(); };
@@ -659,7 +666,7 @@ td.r,th.r{text-align:right}
         D.audit.map(a => '<tr style="cursor:default"><td class="mono">' + a[0] + '</td><td><span class="cell2"><b>' + esc(a[1]) + '</b><span>' + esc(a[2]) + '</span></span></td><td>' + esc(a[3]) + '</td><td>' + esc(a[4]) + '</td><td class="muted">' + esc(a[5] || '') + '</td></tr>').join('') + '</tbody></table></div></div>';
     },
     staff() {
-      return '<div class="card"><div class="between"><h2>Сотрудники Zakup.KG</h2><button class="btn sm" id="add-staff">' + ic('i-plus') + 'Пригласить</button></div><div class="tbl-wrap"><table><thead><tr><th>Имя</th><th>Почта</th><th>Роль</th><th>Второй фактор</th><th>Последний вход</th></tr></thead><tbody>' +
+      return '<div class="card"><div class="between"><h2>Сотрудники Zakup.KG</h2><button class="btn sm" id="add-staff">' + ic('i-plus') + 'Добавить</button></div><div class="tbl-wrap"><table><thead><tr><th>Имя</th><th>Телефон</th><th>Роль</th><th>Второй фактор</th><th>Последний вход</th></tr></thead><tbody>' +
         D.staff.map(s => '<tr style="cursor:default"><td class="bold">' + esc(s[0]) + '</td><td>' + esc(s[1]) + '</td><td>' + ROLES[s[2]].name + '</td><td>' + (s[3] === 'приглашён' ? tag('Не настроен', 'amber') : tag('Включён', 'green')) + '</td><td>' + s[3] + '</td></tr>').join('') + '</tbody></table></div></div>';
     }
   };
@@ -704,7 +711,16 @@ td.r,th.r{text-align:right}
     const dc = t.closest('[data-delcat]'); if (dc) { const c = D.cats[+dc.dataset.delcat]; patch(d => { d.cats.splice(+dc.dataset.delcat, 1); }); logAct('Убрал категорию', c); toast('Категория убрана'); render(); return; }
     if (t.closest('#add-cat')) { modal('<h3>Новая категория</h3><input class="inp" id="m-in" placeholder="Например: Заморозка"><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Добавить</button></div>', () => { const v = $('#m-in').value.trim(); if (!v) return false; patch(d => { d.cats.push(v); }); logAct('Добавил категорию', v); toast('Категория добавлена, в приложении она уже есть'); render(); }); return; }
     if (t.closest('#add-reason')) { modal('<h3>Новая причина отказа</h3><input class="inp" id="m-in" placeholder="Например: Нет транспорта"><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Добавить</button></div>', () => { const v = $('#m-in').value.trim(); if (!v) return false; patch(d => { const i = d.reasons.indexOf('Другое'); d.reasons.splice(i < 0 ? d.reasons.length : i, 0, v); }); logAct('Добавил причину отказа', v); toast('Причина добавлена'); render(); }); return; }
-    if (t.closest('#add-staff')) { modal('<h3>Пригласить сотрудника</h3><div class="field"><label>Почта</label><input class="inp" id="m-in" type="email" placeholder="name@zakup.kg"></div><div class="field"><label>Роль</label><select class="inp" id="m-role"><option value="support">Поддержка</option><option value="moder">Модератор</option><option value="dev">Разработчик</option></select></div><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Пригласить</button></div>', () => { const v = $('#m-in').value.trim(); if (!v) return false; const r = $('#m-role').value; patch(d => { d.staff.push([v.split('@')[0], v, r, 'приглашён']); }); logAct('Пригласил сотрудника', v); toast('Приглашение отправлено на ' + v); render(); }); return; }
+    if (t.closest('#add-staff')) {
+      const tmp = Math.random().toString(36).slice(2, 6) + Math.floor(1000 + Math.random() * 9000);
+      modal('<h3>Добавить сотрудника</h3><div class="field"><label for="m-name">Имя</label><input class="inp" id="m-name" placeholder="Например: Айбек Н."></div><div class="field"><label for="m-in">Номер телефона</label><div class="inp phone-inp"><span class="cc">+996</span><input id="m-in" inputmode="numeric" placeholder="500 12 34 56" style="border:none;outline:none;background:none;font:inherit;color:inherit;flex:1;min-width:0"></div></div><div class="field"><label for="m-role">Роль</label><select class="inp" id="m-role"><option value="support">Поддержка</option><option value="moder">Модератор</option><option value="dev">Разработчик</option></select></div><div class="field"><label for="m-pw">Временный пароль</label><input class="inp mono" id="m-pw" value="' + tmp + '"></div><span class="err" id="m-err" hidden>Укажите имя, номер из 9 цифр и пароль от 8 символов</span><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Добавить</button></div>', () => {
+        const nm = $('#m-name').value.trim(), d9 = $('#m-in').value.replace(/\D/g, '');
+        if (!nm || d9.length !== 9 || $('#m-pw').value.trim().length < 8) { $('#m-err').hidden = false; return false; }
+        const ph = '+996 ' + d9.slice(0, 3) + ' ' + d9.slice(3, 5) + ' ' + d9.slice(5, 7) + ' ' + d9.slice(7), r = $('#m-role').value;
+        patch(d => { d.staff.push([nm, ph, r, 'приглашён']); }); logAct('Добавил сотрудника', nm + ', ' + ph); toast('Сотрудник добавлен. Сообщите временный пароль по телефону'); render();
+      });
+      return;
+    }
     if (t.closest('#mk-reset')) { modal('<h3>Сбросить демо-данные?</h3><p class="small muted">Всё вернётся к начальному: заказы, доставщики и каталог в приложении, компании, обращения и журнал в админке. Открытое приложение перезагрузится.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn red" id="m-ok">Сбросить</button></div>', () => { try { localStorage.removeItem(SHARED_KEY); } catch (e) {} sharedRaw = null; pull(); toast('Демо-данные сброшены'); render(); }); return; }
     if (t.closest('#t-close')) { const id = curTicket; patch(d => { const x = d.tickets.find(y => y.id === id); x.st = 'closed'; x.unread = false; }); logAct('Закрыл обращение', '№ ' + id); toast('Обращение закрыто'); render(); return; }
   });

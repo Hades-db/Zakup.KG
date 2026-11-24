@@ -48,16 +48,17 @@ BEGIN NEW.updated_at := now(); RETURN NEW; END $$;
 CREATE TABLE staff (
   id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name          text        NOT NULL,
-  email         text        NOT NULL UNIQUE CHECK (email ~ '^[^@\s]+@[^@\s]+$'),
+  phone         phone_kg    NOT NULL UNIQUE,       -- логин в админку
   role          staff_role  NOT NULL,
-  password_hash text,                          -- NULL, пока приглашение не принято
-  totp_secret   bytea,                         -- второй фактор (приложение-аутентификатор), зашифрован ключом сервера
+  password_hash text        NOT NULL,             -- временный пароль от владельца, сменить при первом входе
+  must_change_password boolean NOT NULL DEFAULT true,
+  totp_secret   bytea,                         -- второй фактор (приложение-аутентификатор), зашифрован ключом сервера; NULL — ещё не настроен
   invited_by    bigint REFERENCES staff(id),
   is_active     boolean     NOT NULL DEFAULT true,
   last_login_at timestamptz,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
-COMMENT ON TABLE staff IS 'Сотрудники Zakup.KG. Вход в админку: почта + пароль + код TOTP. SMS не используется.';
+COMMENT ON TABLE staff IS 'Сотрудники Zakup.KG. Вход в админку: номер телефона + пароль + код TOTP. SMS и почта не используются.';
 
 -- =====================================================================
 -- 2. КОМПАНИИ И ПОЛЬЗОВАТЕЛИ ПРИЛОЖЕНИЯ

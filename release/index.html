@@ -811,7 +811,6 @@ details.fold.first{border-top:none}
       <div class="auth-links"><button type="button" class="linkbtn" data-auth="a-forgot">Забыли пароль?</button><span></span></div>
       <button type="submit" class="btn lg">Войти</button>
       <p class="auth-switch">Нет аккаунта? <button type="button" class="linkbtn" data-auth="a-register">Зарегистрироваться</button></p>
-      <div class="demo-roles"><span class="xs muted">Войти как:</span><button type="button" class="linkbtn xs" data-demo="shop">Магазин</button><button type="button" class="linkbtn xs" data-demo="dist">Поставщик</button><button type="button" class="linkbtn xs" data-demo="courier">Доставщик</button></div>
     </form>
   </section>
 
@@ -1414,11 +1413,11 @@ details.fold.first{border-top:none}
   // Доставщики поставщика (сотрудники). Телефоны в демо — один демо-номер
   let crId = 4;
   const couriers = [
-    { id: 1, name: 'Эрлан Касымов', phone: DEMO_PHONE },
-    { id: 2, name: 'Бекзат Осмонов', phone: DEMO_PHONE },
-    { id: 3, name: 'Улан Токтогулов', phone: DEMO_PHONE }
+    { id: 1, name: 'Эрлан Касымов', phone: '+996 700 00 01 02' },
+    { id: 2, name: 'Бекзат Осмонов', phone: '+996 700 00 01 03' },
+    { id: 3, name: 'Улан Токтогулов', phone: '+996 700 00 01 04' }
   ];
-  const ME_COURIER = 1;   // демо: вход как доставщик — Эрлан Касымов
+  let ME_COURIER = 1;   // доставщик, который вошёл (по номеру телефона)
   const courierOf = o => couriers.find(c => c.id === o.courier);
   const initials = n => n.split(' ').map(w => w[0]).slice(0, 2).join('');
   const shortName = n => { const [a, b] = n.split(' '); return b ? a + ' ' + b[0] + '.' : a; };
@@ -1623,6 +1622,14 @@ details.fold.first{border-top:none}
   }));
   const digits = id => $(id).value.replace(/\D/g, '');
 
+  // Учётные записи: номер телефона → роль и пароль. Пароль меняют пользователь, поставщик (для доставщика) и админка
+  const ACC0 = { '700000111': { pw: 'demo1234', role: 'shop' }, '700000101': { pw: 'demo1234', role: 'dist' },
+    '700000102': { pw: 'demo1234', role: 'courier', cid: 1 }, '700000103': { pw: 'demo1234', role: 'courier', cid: 2 }, '700000104': { pw: 'demo1234', role: 'courier', cid: 3 } };
+  let myPhone = null;
+  const accounts = () => ADM.accounts || ACC0;
+  const ph9of = p => String(p || '').replace(/\D/g, '').slice(-9);
+  const patchAcc = fn => patchShared(d => { d.accounts = d.accounts || JSON.parse(JSON.stringify(ACC0)); fn(d.accounts); });
+  const dropAcc = (a, k) => { Reflect.deleteProperty(a, k); };
   function enter(r, msg) {
     const why = accessProblem(r);
     if (why) { blockedSheet(why); return; }
@@ -1636,12 +1643,14 @@ details.fold.first{border-top:none}
   $('#login-form').addEventListener('submit', e => {
     e.preventDefault();
     if (digits('#login-phone').length !== 9 || !$('#login-pw').value) { toast('Введите номер (9 цифр) и пароль'); return; }
-    const reg = (ADM.companies || []).find(c => c.phone && c.phone.replace(/\D/g, '') === '996' + digits('#login-phone'));
+    const ph9 = digits('#login-phone'), acc = accounts()[ph9];
+    const reg = (ADM.companies || []).find(c => c.phone && c.phone.replace(/\D/g, '') === '996' + ph9);
     if (reg && reg.st === 'pending') { sheet('<span class="h2">Заявка на проверке</span><span class="small muted" style="text-align:center;line-height:1.45">' + esc(reg.name) + '. Вход откроется, когда Zakup.KG подтвердит компанию.</span><button type="button" class="btn lg ghost" data-close>Понятно</button>'); return; }
     if (reg && reg.st === 'rejected') { blockedSheet('Zakup.KG отклонил заявку ' + reg.name + (reg.why ? '. Причина: ' + reg.why : '')); return; }
-    enter(reg ? reg.type : role, 'Добро пожаловать!');
+    if (!acc || acc.pw !== $('#login-pw').value) { toast('Неверный номер или пароль'); return; }
+    if (acc.role === 'courier') ME_COURIER = acc.cid;
+    myPhone = ph9; enter(acc.role, 'Добро пожаловать!');
   });
-  $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, { dist: 'Вход как поставщик', shop: 'Вход как магазин', courier: 'Вход как доставщик' }[b.dataset.demo])));
 
   // Восстановление пароля: заявка уходит в админку, пароль выдаёт администратор
   $('#forgot-form').addEventListener('submit', e => {
@@ -1695,6 +1704,8 @@ details.fold.first{border-top:none}
       d.companies.push({ id, type: regRole, name: nm, inn: digits('#reg-inn'), addr: $('#reg-addr').value.trim(), st: 'pending', reg: today, staff: 1, orders: 0, phone: '+996 ' + $('#reg-phone').value });
       d.regUsers.push({ name: 'Владелец, ' + nm, co: id, r: 'Владелец', phone: '+996 ' + $('#reg-phone').value, last: '—' });
     });
+    const rpw = $('#reg-pw').value, rph = digits('#reg-phone'), rrole = regRole;
+    patchAcc(a => { a[rph] = { pw: rpw, role: rrole, reg: true }; });
     $('#login-phone').value = $('#reg-phone').value; $('#login-pw').value = '';
     ['#reg-name', '#reg-inn', '#reg-addr', '#reg-phone', '#reg-pw'].forEach(k => { $(k).value = ''; }); $('#reg-agree').checked = false;
     go('a-login', 'fade'); toast('Заявка отправлена. Вход откроется после проверки');
@@ -2438,6 +2449,7 @@ details.fold.first{border-top:none}
   // =====================================================================
   const avatars = { dist: null, shop: null, courier: null };
   function renderProfile() {
+    if (role === 'courier') { const me = couriers.find(c => c.id === ME_COURIER); if (me) { PROFILE.courier.name = me.name; PROFILE.courier.av = initials(me.name); } }
     const P0 = PROFILE[role];
     $('#pr-name').textContent = P0.name; $('#pr-sub').textContent = P0.sub; $('#pr-inn').textContent = P0.inn; $('#pr-addr-l').textContent = P0.addrL; $('#pr-addr').textContent = P0.addr;
     $('#avatar').innerHTML = avatars[role] ? '<img alt="" src="' + avatars[role] + '">' : P0.av;
@@ -2532,9 +2544,10 @@ details.fold.first{border-top:none}
   $('#pw-form').addEventListener('submit', e => {
     e.preventDefault();
     const a = $('#pw-old').value, b = $('#pw-new').value, c = $('#pw-new2').value, er = $('#pw-err');
-    const msg = !a ? 'Введите текущий пароль' : b.length < 8 ? 'Новый пароль — не меньше 8 символов' : b !== c ? 'Пароли не совпадают' : '';
+    const me = myPhone && accounts()[myPhone];
+    const msg = !a ? 'Введите текущий пароль' : me && me.pw !== a ? 'Неверный текущий пароль' : b.length < 8 ? 'Новый пароль — не меньше 8 символов' : b !== c ? 'Пароли не совпадают' : '';
     if (msg) { er.textContent = msg; er.hidden = false; return; }
-    er.hidden = true; e.target.reset(); toast('Пароль изменён'); back();
+    er.hidden = true; if (me) patchAcc(x => { x[myPhone].pw = b; }); e.target.reset(); toast('Пароль изменён'); back();
   });
   document.addEventListener('click', e => {
     const b = e.target.closest('.li[data-doc]'); if (!b) return;
@@ -2574,6 +2587,7 @@ details.fold.first{border-top:none}
       '<button type="button" class="btn lg danger" id="cr-del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
     $('#cr-del-yes').onclick = () => {
       orders.forEach(o => { if (crSel.has(o.courier) && o.st === 'work') delete o.courier; });
+      patchAcc(a => couriers.filter(x => crSel.has(x.id)).forEach(x => dropAcc(a, ph9of(x.phone))));
       for (let i = couriers.length - 1; i >= 0; i--) if (crSel.has(couriers[i].id)) couriers.splice(i, 1);
       crSel.clear(); crMode = false; closeSheet(); toast(n === 1 ? 'Доставщик удалён' : 'Доставщики удалены'); renderCouriers(); renderOrders();
     };
@@ -2593,7 +2607,8 @@ details.fold.first{border-top:none}
       const name = $('#cr-name').value.trim().replace(/\s+/g, ' '), d = ph.value.replace(/\D/g, ''), pw = $('#cr-pw').value;
       const err = !name || name.split(' ').length < 2 ? 'Укажите имя и фамилию' : d.length !== 9 ? 'Номер телефона: 9 цифр' : pw.length < 6 ? 'Пароль: не меньше 6 символов' : '';
       if (err) { $('#cr-err').textContent = err; $('#cr-err').hidden = false; return; }
-      couriers.unshift({ id: crId++, name, phone: '+996 ' + ph.value });
+      const nid = crId++; couriers.unshift({ id: nid, name, phone: '+996 ' + ph.value });
+      patchAcc(a => { a[d] = { pw, role: 'courier', cid: nid }; });
       closeSheet(); $('#cr-search').value = ''; renderCouriers();
       toast(shortName(name) + ' добавлен');
     });
@@ -2686,8 +2701,9 @@ details.fold.first{border-top:none}
       const v = vals(), d = ph.value.replace(/\D/g, '');
       const err = !v.name || v.name.split(' ').length < 2 ? 'Укажите имя и фамилию' : d.length !== 9 ? 'Номер телефона: 9 цифр' : v.pw && v.pw.length < 6 ? 'Пароль: не меньше 6 символов' : '';
       if (err) { $('#cq-err').textContent = err; $('#cq-err').hidden = false; return; }
-      const old = c.name, loginChanged = v.phone !== c.phone || !!v.pw;
+      const old = c.name, loginChanged = v.phone !== c.phone || !!v.pw, oldPh = ph9of(c.phone);
       c.name = v.name; c.phone = v.phone;
+      patchAcc(a => { const x = a[oldPh] || { pw: 'demo1234', role: 'courier', cid: c.id }; dropAcc(a, oldPh); if (v.pw) x.pw = v.pw; a[ph9of(v.phone)] = x; });
       // блокировки, сеансы и время входа в админке привязаны к имени — переносим
       patchShared(sd => {
         ['userBlocks', 'kicks', 'userLast', 'accepts'].forEach(k => { const m = sd[k]; if (m && old !== v.name && m[old] !== undefined) { m[v.name] = m[old]; delete m[old]; } });
@@ -2704,7 +2720,7 @@ details.fold.first{border-top:none}
       '<button type="button" class="btn lg danger" id="cq-del-yes">Удалить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
     $('#cq-del-yes').onclick = () => {
       orders.forEach(o => { if (o.courier === c.id && o.st === 'work') delete o.courier; });
-      couriers.splice(couriers.indexOf(c), 1);
+      patchAcc(a => dropAcc(a, ph9of(c.phone))); couriers.splice(couriers.indexOf(c), 1);
       closeSheet(); toast('Доставщик удалён'); renderCouriers(); renderOrders(); back();
     };
   });
@@ -2717,7 +2733,7 @@ details.fold.first{border-top:none}
   // =====================================================================
   const SHARED_KEY = 'zk-shared-v1';
   const prodHidden = {};
-  const ADM = { companies: [], tickets: [], editReqs: [], flags: {}, cats: null, reasons: null, docs: null, userBlocks: {}, kicks: {}, accepts: {} };
+  const ADM = { accounts: null, companies: [], tickets: [], editReqs: [], flags: {}, cats: null, reasons: null, docs: null, userBlocks: {}, kicks: {}, accepts: {} };
   const APP_KEYS = ['orders', 'couriers', 'products', 'others', 'prodHidden', 'notifs', 'oNum', 'crId', 'pid'];
   const localState = () => ({ orders, couriers, products, others, prodHidden, notifs: NOTIFS, oNum, crId, pid });
   let lastKey = {}, sharedRaw = '', loginAt = 0;
@@ -2773,7 +2789,7 @@ details.fold.first{border-top:none}
     if (d.prodHidden) { Object.keys(prodHidden).forEach(k => delete prodHidden[k]); Object.assign(prodHidden, d.prodHidden); }
     if (d.notifs) { NOTIFS.shop = d.notifs.shop || NOTIFS.shop; NOTIFS.dist = d.notifs.dist || NOTIFS.dist; }
     if (d.oNum) oNum = d.oNum; if (d.crId) crId = d.crId; if (d.pid) pid = d.pid;
-    ['companies', 'tickets', 'editReqs'].forEach(k => { ADM[k] = d[k] || []; });
+    ['companies', 'tickets', 'editReqs'].forEach(k => { ADM[k] = d[k] || []; }); ADM.accounts = d.accounts || null;
     applyProfiles(d.profiles || {});
     ['flags', 'userBlocks', 'kicks', 'accepts'].forEach(k => { ADM[k] = d[k] || {}; });
     ADM.cats = d.cats || null; ADM.reasons = d.reasons || null; ADM.docs = d.docs || null;
@@ -2979,7 +2995,7 @@ details.fold.first{border-top:none}
     'Опишите вопрос': 'Суроону жазыңыз', 'Здравствуйте! Вопрос по Zakup.KG': 'Саламатсызбы! Zakup.KG боюнча суроо', 'Здравствуйте! Пишу по заказу в Zakup.KG': 'Саламатсызбы! Zakup.KG’деги буйрутма боюнча жазып жатам',
     'Язык': 'Тил', 'Русский': 'Русча', 'Кыргызча': 'Кыргызча', 'Тема': 'Тема', 'Тема оформления': 'Көрүнүш темасы', 'Светлая': 'Жарык', 'Тёмная': 'Караңгы', 'Сменить пароль': 'Сырсөздү өзгөртүү',
     'Текущий пароль': 'Учурдагы сырсөз', 'Повторите новый пароль': 'Жаңы сырсөздү кайталаңыз', 'Не меньше 8 символов': 'Кеминде 8 белги', 'Сохранить пароль': 'Сырсөздү сактоо', 'Пароль изменён': 'Сырсөз өзгөртүлдү',
-    'Введите текущий пароль': 'Учурдагы сырсөздү киргизиңиз', 'Новый пароль — не меньше 8 символов': 'Жаңы сырсөз — кеминде 8 белги', 'Пароли не совпадают': 'Сырсөздөр дал келбейт',
+    'Введите текущий пароль': 'Учурдагы сырсөздү киргизиңиз', 'Неверный текущий пароль': 'Учурдагы сырсөз туура эмес', 'Неверный номер или пароль': 'Номер же сырсөз туура эмес', 'Новый пароль — не меньше 8 символов': 'Жаңы сырсөз — кеминде 8 белги', 'Пароли не совпадают': 'Сырсөздөр дал келбейт',
     'Условия использования': 'Колдонуу шарттары', 'Публичная оферта': 'Ачык оферта', 'Политика конфиденциальности': 'Купуялуулук саясаты', 'Пользовательское соглашение': 'Колдонуучу келишими',
     'Обновлены правила': 'Эрежелер жаңыртылды', 'Прочитать': 'Окуу', 'Принимаю': 'Кабыл алам', 'Спасибо, правила приняты': 'Рахмат, эрежелер кабыл алынды',
 

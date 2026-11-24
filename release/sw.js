@@ -1,4 +1,4 @@
-const CACHE = 'zakup-fecbfe99e8';
+const CACHE = 'zakup-0a6cfabe54';
 const FILES = ["./", "admin.html", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png", "icons/icon.svg", "index.html", "logo/v1.1.svg", "logo/v1.svg", "manifest.webmanifest", "photos/baton.jpg", "photos/bread.jpg", "photos/butter.jpg", "photos/cookie.jpg", "photos/cookie_choc.jpg", "photos/flour.jpg", "photos/juice.jpg", "photos/juice_cherry.jpg", "photos/juice_orange.jpg", "photos/kefir.jpg", "photos/lemonade.jpg", "photos/milk.jpg", "photos/milk25.jpg", "photos/pryaniki.jpg", "photos/rice.jpg", "photos/ryazhenka.jpg", "photos/smetana.jpg", "photos/sugar.jpg", "photos/tvorog.jpg", "photos/yogurt.jpg", "vendor/html2pdf.bundle.min.js", "vendor/xlsx.full.min.js"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

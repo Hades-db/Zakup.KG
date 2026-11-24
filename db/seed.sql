@@ -1,11 +1,11 @@
 -- =====================================================================
 --  Zakup.KG — демо-данные, как в макете (mvp.html + admin.html)
 --  Телефоны вымышленные (996 700 000 0xx), пароль у всех демо-аккаунтов: demo1234
---  Хэш ниже — заглушка формата argon2id; на сервере хэш считает API.
+--  Хэш ниже — настоящий argon2id пароля demo1234 (только для демо и тестов).
 -- =====================================================================
 BEGIN;
 SET search_path = zakup, public;
-\set pw '''$argon2id$v=19$m=65536,t=3,p=4$ZGVtby1zYWx0$ZGVtby1oYXNoLWRvLW5vdC11c2U'''
+\set pw '''$argon2id$v=19$m=19456,t=2,p=1$vWSe0fEsVGffPaZYILfW7Q$4Isjgsq+eJis0flQhEgaP09sLwqexiMQCAYNHFcBypw'''
 
 -- ---------- Команда ----------
 INSERT INTO staff (name, phone, role, password_hash, must_change_password, totp_secret, last_login_at) VALUES
@@ -141,6 +141,9 @@ INSERT INTO o_src VALUES
   (220, 'Минимаркет «Ала-Тоо»', 'ОсОО «Дистрибьютор»', false, '25 min',   ARRAY[['Сок яблочный','2'],['Сок апельсиновый','1']]),
   (221, 'Магазин «Достук»',     'ОсОО «Дистрибьютор»', true,  '5 min',    ARRAY[['Молоко «Моё» 3,2%','3'],['Кефир 2,5%','2'],['Сметана 20%','12']]);
 
+ALTER TABLE orders DISABLE TRIGGER orders_notify;
+ALTER TABLE order_messages DISABLE TRIGGER messages_notify;
+ALTER TABLE order_ratings DISABLE TRIGGER rating_notify;
 INSERT INTO orders (number, shop_id, created_by, supplier_id, urgent, ship_name, ship_address, ship_district, created_at)
 SELECT s.n, sh.id, u.id, su.id, s.urgent, sh.name, sh.city || ', ' || sh.address, sh.district, now() - s.ago
   FROM o_src s JOIN companies sh ON sh.name = s.shop JOIN companies su ON su.name = s.sup
@@ -189,6 +192,10 @@ SELECT o.id, 5, 'Привезли вовремя', o.created_by FROM orders o WH
 INSERT INTO order_messages (order_id, author_id, body, created_at)
 SELECT o.id, u.id, v.t, now() - v.ago::interval FROM orders o CROSS JOIN (VALUES ('Азамат Т.', 'Привезём после обеда', '3 hours'), ('Айдана М.', 'Хорошо, ждём', '2 hours')) v(who, t, ago)
   JOIN users u ON u.full_name = v.who WHERE o.number = 216;
+
+ALTER TABLE orders ENABLE TRIGGER orders_notify;
+ALTER TABLE order_messages ENABLE TRIGGER messages_notify;
+ALTER TABLE order_ratings ENABLE TRIGGER rating_notify;
 
 -- ---------- Уведомления ----------
 INSERT INTO notifications (user_id, title, sender, icon, order_id, created_at, read_at)

@@ -39,7 +39,7 @@ CREATE DOMAIN phone_kg AS text CHECK (VALUE ~ '^996\d{9}$');
 CREATE DOMAIN som      AS numeric(12,2) CHECK (VALUE >= 0);
 
 -- Общая функция: updated_at = now()
-CREATE FUNCTION touch() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION touch() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN NEW.updated_at := now(); RETURN NEW; END $$;
 
 -- =====================================================================
@@ -113,7 +113,7 @@ CREATE INDEX users_company_idx ON users (company_id, role);
 CREATE TRIGGER users_touch BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION touch();
 
 -- Доставщик бывает только у поставщика, у магазина — только владелец
-CREATE FUNCTION users_role_check() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION users_role_check() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 DECLARE t company_type;
 BEGIN
   SELECT type INTO t FROM companies WHERE id = NEW.company_id;
@@ -182,7 +182,7 @@ CREATE UNIQUE INDEX change_one_open_uq ON company_change_requests (company_id) W
 -- Одобрить / отклонить: данные компании меняются одной транзакцией, пользователю приходит уведомление.
 -- Заказы и накладные ссылаются на компанию по id, поэтому переименование их не ломает;
 -- в уже выданных накладных остаются старые реквизиты (снимок).
-CREATE FUNCTION admin_decide_change(p_staff bigint, p_req bigint, p_approve boolean, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+CREATE FUNCTION admin_decide_change(p_staff bigint, p_req bigint, p_approve boolean, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql SET search_path = zakup, public AS $$
 DECLARE r company_change_requests; cname text;
 BEGIN
   SELECT * INTO r FROM company_change_requests WHERE id = p_req AND status = 'new' FOR UPDATE;
@@ -244,7 +244,7 @@ CREATE INDEX products_barcode_idx  ON products (barcode)     WHERE deleted_at IS
 CREATE INDEX products_search_idx   ON products USING gin (to_tsvector('russian', name));
 CREATE TRIGGER products_touch BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION touch();
 
-CREATE FUNCTION products_supplier_check() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION products_supplier_check() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF (SELECT type FROM companies WHERE id = NEW.supplier_id) <> 'dist' THEN
     RAISE EXCEPTION 'Товары добавляет только поставщик';
@@ -264,7 +264,7 @@ CREATE TABLE product_photos (
 );
 
 -- Проверка «минимум 2 фото» в конце транзакции: товар и фото сохраняются одной транзакцией
-CREATE FUNCTION product_min_photos() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION product_min_photos() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 DECLARE pid bigint;
 BEGIN
   IF TG_TABLE_NAME = 'products' THEN pid := NEW.id; ELSE pid := OLD.product_id; END IF;
@@ -389,11 +389,11 @@ CREATE TABLE feature_flags (
   updated_by  bigint REFERENCES staff(id),
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
-CREATE FUNCTION flag(k text) RETURNS boolean LANGUAGE sql STABLE AS
+CREATE FUNCTION flag(k text) RETURNS boolean LANGUAGE sql STABLE SET search_path = zakup, public AS
   $$ SELECT COALESCE((SELECT enabled FROM feature_flags WHERE key = k), false) $$;
 
 -- Правила заказа: создание
-CREATE FUNCTION orders_before_insert() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION orders_before_insert() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF NOT flag('orders_on') THEN RAISE EXCEPTION 'Приём заказов временно остановлен'; END IF;
   IF NEW.urgent AND NOT flag('urgent_on') THEN RAISE EXCEPTION 'Срочные заказы временно недоступны'; END IF;
@@ -413,7 +413,7 @@ CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW EXECUTE
 --   new  → rejected  поставщик отказал (причина) или админ отменил
 --   work → done      доставщик: по QR или кнопкой, если qr_delivery выключен
 --   work → rejected  только команда Zakup.KG (cancelled_by)
-CREATE FUNCTION orders_before_update() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION orders_before_update() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF NEW.status = OLD.status THEN
     IF OLD.status IN ('done', 'rejected') AND (NEW.courier_id, NEW.delivery_date) IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date) THEN
@@ -522,7 +522,7 @@ CREATE TRIGGER orders_after_status AFTER INSERT OR UPDATE OF status ON orders
   FOR EACH ROW EXECUTE FUNCTION orders_after_status();
 
 -- Отказ по позиции: только пока заказ новый; хотя бы одна позиция должна остаться
-CREATE FUNCTION order_items_out_check() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION order_items_out_check() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF NEW.is_out IS DISTINCT FROM OLD.is_out THEN
     IF (SELECT status FROM orders WHERE id = NEW.order_id) <> 'new' THEN RAISE EXCEPTION 'Позиции меняются только до принятия заказа'; END IF;
@@ -530,7 +530,7 @@ BEGIN
   RETURN NEW;
 END $$;
 CREATE TRIGGER order_items_out_check BEFORE UPDATE OF is_out ON order_items FOR EACH ROW EXECUTE FUNCTION order_items_out_check();
-CREATE FUNCTION orders_need_items() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION orders_need_items() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF NEW.status = 'work' AND OLD.status = 'new' AND NOT EXISTS (SELECT 1 FROM order_items WHERE order_id = NEW.id AND NOT is_out) THEN
     RAISE EXCEPTION 'Нет ни одной позиции: заказ нужно отклонить';
@@ -548,7 +548,7 @@ CREATE TABLE order_ratings (
   created_by bigint   NOT NULL REFERENCES users(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE FUNCTION rating_check() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION rating_check() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   IF (SELECT status FROM orders WHERE id = NEW.order_id) <> 'done' THEN RAISE EXCEPTION 'Оценить можно только доставленный заказ'; END IF;
   RETURN NEW;
@@ -617,8 +617,71 @@ CREATE TABLE notifications (
 );
 CREATE INDEX notifications_unread_idx ON notifications (user_id, created_at DESC) WHERE read_at IS NULL;
 
+-- Уведомление владельцам компании (и, если задан, конкретному пользователю). Вызывается из триггеров
+CREATE FUNCTION notify_company(p_company bigint, p_title text, p_sender text, p_icon text, p_order bigint) RETURNS void
+LANGUAGE sql SECURITY DEFINER SET search_path = zakup, public AS $$
+  INSERT INTO notifications (user_id, title, sender, icon, order_id)
+  SELECT id, p_title, p_sender, p_icon, p_order FROM users WHERE company_id = p_company AND role = 'owner' AND status = 'active'
+$$;
+CREATE FUNCTION notify_user(p_user bigint, p_title text, p_sender text, p_icon text, p_order bigint) RETURNS void
+LANGUAGE sql SECURITY DEFINER SET search_path = zakup, public AS $$
+  INSERT INTO notifications (user_id, title, sender, icon, order_id) SELECT p_user, p_title, p_sender, p_icon, p_order WHERE p_user IS NOT NULL
+$$;
+CREATE FUNCTION order_no(n integer) RETURNS text LANGUAGE sql IMMUTABLE SET search_path = zakup, public AS $$ SELECT lpad(n::text, 4, '0') $$;
+
+CREATE FUNCTION orders_notify() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+DECLARE shop text; sup text; outn int;
+BEGIN
+  SELECT name INTO shop FROM companies WHERE id = NEW.shop_id;
+  SELECT name INTO sup FROM companies WHERE id = NEW.supplier_id;
+  IF TG_OP = 'INSERT' THEN
+    PERFORM notify_company(NEW.supplier_id, CASE WHEN NEW.urgent THEN 'Новый срочный заказ № ' ELSE 'Новый заказ № ' END || order_no(NEW.number), shop, CASE WHEN NEW.urgent THEN 'i-fire' ELSE 'i-doc' END, NEW.id);
+    RETURN NULL;
+  END IF;
+  IF NEW.status IS DISTINCT FROM OLD.status THEN
+    IF NEW.status = 'work' THEN
+      SELECT count(*) INTO outn FROM order_items WHERE order_id = NEW.id AND is_out;
+      PERFORM notify_company(NEW.shop_id, 'Заказ № ' || order_no(NEW.number) || ' принят' || CASE WHEN outn > 0 THEN ' без ' || outn || ' поз.' ELSE '' END || ', поставка ' || to_char(NEW.delivery_date, 'DD.MM'), sup, 'i-check', NEW.id);
+      PERFORM notify_user(NEW.courier_id, 'Вам назначен заказ № ' || order_no(NEW.number), sup, 'i-truck', NEW.id);
+    ELSIF NEW.status = 'rejected' THEN
+      PERFORM notify_company(NEW.shop_id, 'Заказ № ' || order_no(NEW.number) || CASE WHEN NEW.cancelled_by IS NOT NULL THEN ' отменён Zakup.KG: ' ELSE ' отклонён: ' END || NEW.reject_reason, CASE WHEN NEW.cancelled_by IS NOT NULL THEN 'Zakup.KG' ELSE sup END, 'i-x', NEW.id);
+      IF NEW.cancelled_by IS NOT NULL THEN PERFORM notify_company(NEW.supplier_id, 'Заказ № ' || order_no(NEW.number) || ' отменён Zakup.KG: ' || NEW.reject_reason, 'Zakup.KG', 'i-x', NEW.id); END IF;
+    ELSIF NEW.status = 'done' THEN
+      PERFORM notify_company(NEW.shop_id, 'Заказ № ' || order_no(NEW.number) || ' доставлен', sup, 'i-truck', NEW.id);
+      PERFORM notify_company(NEW.supplier_id, 'Заказ № ' || order_no(NEW.number) || ' доставлен', shop, 'i-truck', NEW.id);
+    END IF;
+  ELSIF NEW.status = 'work' AND NEW.courier_id IS DISTINCT FROM OLD.courier_id THEN
+    PERFORM notify_user(NEW.courier_id, 'Вам назначен заказ № ' || order_no(NEW.number), sup, 'i-truck', NEW.id);
+  END IF;
+  IF NEW.paid_at IS NOT NULL AND OLD.paid_at IS NULL THEN
+    PERFORM notify_company(NEW.shop_id, 'Оплата по заказу № ' || order_no(NEW.number) || ' получена', sup, 'i-check', NEW.id);
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER orders_notify AFTER INSERT OR UPDATE OF status, courier_id, paid_at ON orders FOR EACH ROW EXECUTE FUNCTION orders_notify();
+
+CREATE FUNCTION messages_notify() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+DECLARE o orders; me users; cname text;
+BEGIN
+  SELECT * INTO o FROM orders WHERE id = NEW.order_id; SELECT * INTO me FROM users WHERE id = NEW.author_id;
+  SELECT name INTO cname FROM companies WHERE id = me.company_id;
+  PERFORM notify_company(CASE WHEN me.company_id = o.shop_id THEN o.supplier_id ELSE o.shop_id END,
+    'Сообщение по заказу № ' || order_no(o.number) || ': ' || left(NEW.body, 60), cname, 'i-chat', o.id);
+  RETURN NULL;
+END $$;
+CREATE TRIGGER messages_notify AFTER INSERT ON order_messages FOR EACH ROW EXECUTE FUNCTION messages_notify();
+
+CREATE FUNCTION rating_notify() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+DECLARE o orders;
+BEGIN
+  SELECT * INTO o FROM orders WHERE id = NEW.order_id;
+  PERFORM notify_company(o.supplier_id, 'Оценка доставки № ' || order_no(o.number) || ': ' || NEW.stars || ' из 5', o.ship_name, 'i-check', o.id);
+  RETURN NULL;
+END $$;
+CREATE TRIGGER rating_notify AFTER INSERT ON order_ratings FOR EACH ROW EXECUTE FUNCTION rating_notify();
+
 -- Рассылка: строка в notifications каждому активному пользователю выбранной аудитории
-CREATE FUNCTION send_push(p_audience push_audience, p_text text, p_staff bigint) RETURNS bigint LANGUAGE plpgsql AS $$
+CREATE FUNCTION send_push(p_audience push_audience, p_text text, p_staff bigint) RETURNS bigint LANGUAGE plpgsql SET search_path = zakup, public AS $$
 DECLARE cid bigint; n integer;
 BEGIN
   INSERT INTO push_campaigns (audience, text, sent_by) VALUES (p_audience, p_text, p_staff) RETURNING id INTO cid;
@@ -721,7 +784,7 @@ CREATE TABLE audit_log (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX audit_created_idx ON audit_log (created_at DESC);
-CREATE FUNCTION audit_readonly() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE FUNCTION audit_readonly() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN RAISE EXCEPTION 'Журнал действий нельзя изменить или удалить'; END $$;
 CREATE TRIGGER audit_readonly BEFORE UPDATE OR DELETE ON audit_log FOR EACH ROW EXECUTE FUNCTION audit_readonly();
 
@@ -729,14 +792,14 @@ CREATE TRIGGER audit_readonly BEFORE UPDATE OR DELETE ON audit_log FOR EACH ROW 
 -- 10. ДЕЙСТВИЯ АДМИНИСТРАТОРА (вызываются из админ-панели одной транзакцией)
 -- =====================================================================
 -- Завершить сеансы (а также при сбросе пароля и блокировке)
-CREATE FUNCTION kick_user(p_user bigint, p_reason text) RETURNS integer LANGUAGE sql AS $$
+CREATE FUNCTION kick_user(p_user bigint, p_reason text) RETURNS integer LANGUAGE sql SET search_path = zakup, public AS $$
   WITH r AS (UPDATE sessions SET revoked_at = now(), revoke_reason = p_reason
               WHERE user_id = p_user AND revoked_at IS NULL RETURNING 1)
   SELECT count(*)::int FROM r
 $$;
 
 -- Выдать временный пароль: хэш приходит из API (argon2id считается на сервере приложения)
-CREATE FUNCTION admin_set_password(p_staff bigint, p_user bigint, p_hash text, p_request bigint DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+CREATE FUNCTION admin_set_password(p_staff bigint, p_user bigint, p_hash text, p_request bigint DEFAULT NULL) RETURNS void LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
   UPDATE users SET password_hash = p_hash, must_change_password = true WHERE id = p_user;
   PERFORM kick_user(p_user, 'password_reset');
@@ -750,7 +813,7 @@ BEGIN
 END $$;
 
 -- Подтвердить / отклонить / заблокировать / разблокировать компанию
-CREATE FUNCTION admin_set_company_status(p_staff bigint, p_company bigint, p_status company_status, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+CREATE FUNCTION admin_set_company_status(p_staff bigint, p_company bigint, p_status company_status, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql SET search_path = zakup, public AS $$
 DECLARE c companies;
 BEGIN
   UPDATE companies SET status = p_status,
@@ -818,7 +881,7 @@ SELECT o.id, o.supplier_id, lpad(o.number::text, 4, '0') AS number, o.status, o.
   FROM orders o LEFT JOIN users u ON u.id = o.courier_id;
 
 -- Телефоны для поддержки скрыты: +996 500 •• •• 20. Полный номер — отдельный запрос с записью в журнал
-CREATE FUNCTION mask_phone(p text) RETURNS text LANGUAGE sql IMMUTABLE AS
+CREATE FUNCTION mask_phone(p text) RETURNS text LANGUAGE sql IMMUTABLE SET search_path = zakup, public AS
   $$ SELECT '+996 ' || substr(p, 4, 3) || ' •• •• ' || substr(p, 11, 2) $$;
 
 CREATE VIEW admin_users AS
@@ -845,7 +908,7 @@ SELECT
 --  SET LOCAL app.user_id = '<id пользователя из токена>'.
 --  Админка работает под ролью zakup_admin (RLS не применяется).
 -- =====================================================================
-CREATE FUNCTION app_user_id() RETURNS bigint LANGUAGE sql STABLE AS
+CREATE FUNCTION app_user_id() RETURNS bigint LANGUAGE sql STABLE SET search_path = zakup, public AS
   $$ SELECT NULLIF(current_setting('app.user_id', true), '')::bigint $$;
 CREATE FUNCTION app_company_id() RETURNS bigint LANGUAGE sql STABLE SECURITY DEFINER SET search_path = zakup AS
   $$ SELECT company_id FROM users WHERE id = app_user_id() $$;
@@ -855,7 +918,12 @@ CREATE FUNCTION app_role() RETURNS user_role LANGUAGE sql STABLE SECURITY DEFINE
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'zakup_api')   THEN CREATE ROLE zakup_api NOLOGIN; END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'zakup_admin') THEN CREATE ROLE zakup_admin NOLOGIN BYPASSRLS; END IF;
+  -- Роль, под которой подключается сервер (NestJS). Вход, регистрация и сброс пароля идут от её имени,
+  -- запросы пользователя — через SET LOCAL ROLE zakup_api + app.user_id, админки — через SET LOCAL ROLE zakup_admin.
+  -- На сервере: ALTER ROLE zakup_server LOGIN PASSWORD '...';
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'zakup_server') THEN CREATE ROLE zakup_server NOLOGIN BYPASSRLS; END IF;
 END $$;
+GRANT zakup_api, zakup_admin TO zakup_server;
 GRANT USAGE ON SCHEMA zakup TO zakup_api, zakup_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA zakup TO zakup_admin;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA zakup TO zakup_api, zakup_admin;
@@ -882,9 +950,9 @@ ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_ratings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY order_messages_rw ON order_messages FOR ALL TO zakup_api
-  USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner'))))
-  WITH CHECK (author_id = app_user_id());
+CREATE POLICY order_messages_read ON order_messages FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner'))));
+CREATE POLICY order_messages_mark ON order_messages FOR UPDATE TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner')))) WITH CHECK (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner'))));
+CREATE POLICY order_messages_send ON order_messages FOR INSERT TO zakup_api WITH CHECK (author_id = app_user_id() AND EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner'))));
 CREATE POLICY order_ratings_read ON order_ratings FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
 CREATE POLICY order_ratings_shop ON order_ratings FOR INSERT TO zakup_api WITH CHECK (created_by = app_user_id() AND EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.shop_id = app_company_id()));
 ALTER TABLE company_change_requests ENABLE ROW LEVEL SECURITY;
@@ -900,6 +968,8 @@ CREATE POLICY orders_supplier_update ON orders FOR UPDATE TO zakup_api USING (
 CREATE POLICY order_items_read ON order_items FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
 CREATE POLICY order_items_create ON order_items FOR INSERT TO zakup_api WITH CHECK (
   EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.shop_id = app_company_id() AND o.status = 'new'));
+CREATE POLICY order_items_out ON order_items FOR UPDATE TO zakup_api USING (
+  EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.supplier_id = app_company_id() AND app_role() = 'owner' AND o.status = 'new'));
 CREATE POLICY invoices_read ON invoices FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
 CREATE POLICY notifications_own ON notifications FOR ALL TO zakup_api USING (user_id = app_user_id());
 CREATE POLICY cart_own ON cart_items FOR ALL TO zakup_api USING (user_id = app_user_id());

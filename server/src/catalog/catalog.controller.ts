@@ -12,7 +12,9 @@ export class CatalogController {
 
   /** Каталог: только в наличии. С поиском — и товары «Нет в наличии» */
   @Get('catalog')
-  catalog(@Me() me: AuthUser, @Query('q') q?: string, @Query('category') cat?: string, @Query('supplier') sup?: string) {
+  catalog(@Me() me: AuthUser, @Query('q') qq?: any, @Query('category') cc?: any, @Query('supplier') ss?: any) {
+    const one = (v: any) => (Array.isArray(v) ? v[0] : v) == null ? undefined : String(Array.isArray(v) ? v[0] : v);
+    const q = one(qq)?.trim() || undefined, cat = one(cc), sup = one(ss);
     const view = q ? 'catalog_search' : 'catalog';
     return this.db.asUser(me.id, async c => (await c.query(
       `SELECT v.id, v.name, v.volume_value::float AS "volume", v.volume_unit AS unit, v.pack_type AS "packType", v.pack_qty AS "packQty", v.price::float AS price,

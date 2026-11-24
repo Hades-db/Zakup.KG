@@ -139,7 +139,9 @@ CREATE TABLE sessions (
   last_seen_at timestamptz NOT NULL DEFAULT now(),
   expires_at   timestamptz NOT NULL DEFAULT now() + interval '60 days',
   revoked_at   timestamptz,
-  revoke_reason text                              -- 'admin_kick' | 'password_reset' | 'blocked' | 'logout'
+  revoke_reason text,
+  prev_token_hash bytea,                          -- предыдущий refresh: 30 с после обновления не считается кражей
+  rotated_at   timestamptz                              -- 'admin_kick' | 'password_reset' | 'blocked' | 'logout'
 );
 CREATE INDEX sessions_user_active_idx ON sessions (user_id) WHERE revoked_at IS NULL;
 
@@ -357,6 +359,33 @@ CREATE TABLE order_items (
   FOREIGN KEY (product_id, supplier_id) REFERENCES products(id, supplier_id)   -- все позиции — от поставщика заказа
 );
 
+-- Позиция, которую добавляет приложение: снимок товара делает база (цену не подменить), товар должен быть в каталоге
+CREATE FUNCTION order_items_snapshot() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
+DECLARE p products; ok boolean;
+BEGIN
+  IF current_user <> 'zakup_api' THEN RETURN NEW; END IF;     -- демо-данные и админка заполняют сами
+  SELECT * INTO p FROM products WHERE id = NEW.product_id;
+  SELECT p.in_stock AND NOT p.is_draft AND p.hidden_by IS NULL AND p.deleted_at IS NULL AND c.status = 'ok' INTO ok FROM companies c WHERE c.id = p.supplier_id;
+  IF NOT COALESCE(ok, false) THEN RAISE EXCEPTION 'Нет в наличии: %', COALESCE(p.name, 'товар'); END IF;
+  IF p.pack_type <> 'weight' AND NEW.qty <> trunc(NEW.qty) THEN RAISE EXCEPTION 'Количество — целое число'; END IF;
+  NEW.supplier_id := p.supplier_id; NEW.name := p.name; NEW.price := p.price; NEW.pack_qty := p.pack_qty; NEW.is_out := false;
+  NEW.volume := replace(rtrim(rtrim(p.volume_value::text, '0'), '.'), '.', ',') || ' ' || p.volume_unit;
+  NEW.unit := CASE p.pack_type WHEN 'box' THEN 'кор' WHEN 'block' THEN 'бл' WHEN 'weight' THEN 'кг' ELSE 'шт' END;
+  NEW.photo_path := (SELECT path FROM product_photos WHERE product_id = p.id ORDER BY position LIMIT 1);
+  RETURN NEW;
+END $$;
+CREATE TRIGGER order_items_snapshot BEFORE INSERT ON order_items FOR EACH ROW EXECUTE FUNCTION order_items_snapshot();
+
+-- Корзина: дробное количество — только у весовых
+CREATE FUNCTION cart_items_check() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
+BEGIN
+  IF (SELECT pack_type FROM products WHERE id = NEW.product_id) <> 'weight' AND NEW.qty <> trunc(NEW.qty) THEN
+    RAISE EXCEPTION 'Количество — целое число';
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER cart_items_check BEFORE INSERT OR UPDATE ON cart_items FOR EACH ROW EXECUTE FUNCTION cart_items_check();
+
 -- Позиции заказа: поставщик позиции = поставщик заказа; пересчёт суммы
 CREATE FUNCTION order_items_sync() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
 DECLARE oid bigint := COALESCE(NEW.order_id, OLD.order_id);
@@ -407,6 +436,8 @@ BEGIN
   IF (SELECT status FROM companies WHERE id = NEW.shop_id) <> 'ok' THEN RAISE EXCEPTION 'Магазин не может оформлять заказы'; END IF;
   IF (SELECT status FROM companies WHERE id = NEW.supplier_id) <> 'ok' THEN RAISE EXCEPTION 'Поставщик сейчас не принимает заказы'; END IF;
   IF NEW.status <> 'new' THEN RAISE EXCEPTION 'Новый заказ создаётся в статусе new'; END IF;
+  -- снимок адреса берём из карточки магазина, а не из запроса
+  SELECT name, city || ', ' || address, district INTO NEW.ship_name, NEW.ship_address, NEW.ship_district FROM companies WHERE id = NEW.shop_id;
   RETURN NEW;
 END $$;
 CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW EXECUTE FUNCTION orders_before_insert();
@@ -418,6 +449,12 @@ CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW EXECUTE
 --   work → rejected  только команда Zakup.KG (cancelled_by)
 CREATE FUNCTION orders_before_update() RETURNS trigger LANGUAGE plpgsql SET search_path = zakup, public AS $$
 BEGIN
+  -- доставщик через приложение может только закрыть доставку: не оплату, не дату, не передачу заказа
+  IF current_user = 'zakup_api' AND app_role() = 'courier'
+     AND (NEW.paid_at, NEW.paid_marked_by, NEW.courier_id, NEW.delivery_date, NEW.urgent, NEW.reject_reason)
+         IS DISTINCT FROM (OLD.paid_at, OLD.paid_marked_by, OLD.courier_id, OLD.delivery_date, OLD.urgent, OLD.reject_reason) THEN
+    RAISE EXCEPTION 'Доставщик отмечает только доставку';
+  END IF;
   IF NEW.status = OLD.status THEN
     IF OLD.status IN ('done', 'rejected') AND (NEW.courier_id, NEW.delivery_date, NEW.delivered_by, NEW.delivered_method, NEW.delivered_at, NEW.reject_reason, NEW.cancelled_by, NEW.urgent)
          IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date, OLD.delivered_by, OLD.delivered_method, OLD.delivered_at, OLD.reject_reason, OLD.cancelled_by, OLD.urgent) THEN
@@ -672,6 +709,9 @@ BEGIN
     END IF;
   ELSIF NEW.status = 'work' AND NEW.courier_id IS DISTINCT FROM OLD.courier_id THEN
     PERFORM notify_user(NEW.courier_id, 'Вам назначен заказ № ' || order_no(NEW.number), sup, 'i-truck', NEW.id);
+    UPDATE invoices SET courier_name = (SELECT full_name FROM users WHERE id = NEW.courier_id) WHERE order_id = NEW.id;
+    INSERT INTO order_events (order_id, status, title, by_user)
+    VALUES (NEW.id, 'work', 'Доставщик: ' || (SELECT full_name FROM users WHERE id = NEW.courier_id), NULLIF(current_setting('app.user_id', true), '')::bigint);
   END IF;
   IF NEW.paid_at IS NOT NULL AND OLD.paid_at IS NULL THEN
     PERFORM notify_company(NEW.shop_id, 'Оплата по заказу № ' || order_no(NEW.number) || ' получена', sup, 'i-check', NEW.id);
@@ -948,9 +988,26 @@ GRANT USAGE ON SCHEMA zakup TO zakup_api, zakup_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA zakup TO zakup_admin;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA zakup TO zakup_api, zakup_admin;
 GRANT SELECT ON categories, reject_reasons, feature_flags, documents, document_versions, current_documents,
-                catalog, catalog_search, price_compare, companies, product_photos TO zakup_api;
-GRANT SELECT, INSERT, UPDATE ON orders, order_items, products, cart_items, notifications,
-                support_tickets, ticket_messages, document_acceptances, users TO zakup_api;
+                catalog, catalog_search, price_compare, product_photos TO zakup_api;
+-- Чужие компании: без телефона, ИНН и служебных полей (их видит только сам владелец — через сервер)
+GRANT SELECT (id, type, name, city, address, district, logo_path, status, created_at) ON companies TO zakup_api;
+-- Пользователи: без хэша пароля; менять можно только имя, телефон и язык (пароль, роль, статус — только сервер и админка)
+GRANT SELECT (id, company_id, role, full_name, phone, status, lang, created_by, last_login_at, created_at) ON users TO zakup_api;
+GRANT INSERT (company_id, role, full_name, phone, password_hash, created_by) ON users TO zakup_api;
+GRANT UPDATE (full_name, phone, lang) ON users TO zakup_api;
+-- Заказ: сумма, номер, адрес, QR и отметки Zakup.KG — не меняются приложением
+GRANT SELECT ON orders TO zakup_api;
+GRANT INSERT (shop_id, created_by, supplier_id, urgent, ship_name, ship_address, ship_district) ON orders TO zakup_api;
+GRANT UPDATE (status, urgent, delivery_date, courier_id, reject_reason, delivered_by, delivered_method, paid_at, paid_marked_by) ON orders TO zakup_api;
+GRANT SELECT, INSERT ON order_items TO zakup_api;
+-- Товар: популярность, скрытие модератором и поставщик — не меняются приложением
+GRANT SELECT ON products TO zakup_api;
+GRANT INSERT (supplier_id, category_id, name, volume_value, volume_unit, pack_type, pack_qty, price, barcode, description, returnable, in_stock, is_draft) ON products TO zakup_api;
+GRANT UPDATE (category_id, name, volume_value, volume_unit, pack_type, pack_qty, price, barcode, description, returnable, in_stock, is_draft, deleted_at) ON products TO zakup_api;
+GRANT SELECT, INSERT, UPDATE ON cart_items TO zakup_api;
+GRANT SELECT ON notifications TO zakup_api;
+GRANT UPDATE (read_at) ON notifications TO zakup_api;
+GRANT SELECT, INSERT ON support_tickets, ticket_messages, document_acceptances TO zakup_api;
 GRANT DELETE ON cart_items, product_photos TO zakup_api;
 GRANT INSERT ON product_photos, password_reset_requests TO zakup_api;
 GRANT SELECT, INSERT, UPDATE (status) ON company_change_requests TO zakup_api;   -- отправить и отменить свою заявку

@@ -20,7 +20,10 @@ class MessageDto { @IsString() @Length(1, 1000) body: string }
 export class OrdersController {
   constructor(private s: OrdersService) {}
 
-  @Get('orders') list(@Me() me: AuthUser, @Query('status') st?: string, @Query('limit') l?: string, @Query('offset') off?: string) { return this.s.list(me, st, Number(l), Number(off)); }
+  @Get('orders') list(@Me() me: AuthUser, @Query('status') st?: any, @Query('limit') l?: any, @Query('offset') off?: any) {
+    const one = (v: any) => (Array.isArray(v) ? v[0] : v);
+    return this.s.list(me, one(st) == null ? undefined : String(one(st)), Number(one(l)), Number(one(off)));
+  }
   @Get('orders/:n') get(@Me() me: AuthUser, @Param('n') n: string) { return this.s.get(me, n); }
 
   @Roles('shop') @Post('cart/checkout') checkout(@Me() me: AuthUser) { return this.s.checkout(me); }

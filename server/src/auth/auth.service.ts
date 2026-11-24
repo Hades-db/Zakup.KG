@@ -20,7 +20,7 @@ export class AuthService {
   private async issue(c: any, userId: number, device?: string, ip?: string, sid?: string) {
     const refresh = randomBytes(32).toString('base64url');
     if (sid) {
-      await c.query(`UPDATE sessions SET token_hash = $1, last_seen_at = now(), expires_at = now() + ($2 || ' days')::interval WHERE id = $3`, [sha(refresh), String(config.refreshDays), sid]);
+      await c.query(`UPDATE sessions SET prev_token_hash = token_hash, rotated_at = now(), token_hash = $1, last_seen_at = now(), expires_at = now() + ($2 || ' days')::interval WHERE id = $3`, [sha(refresh), String(config.refreshDays), sid]);
     } else {
       sid = (await c.query(`INSERT INTO sessions (user_id, token_hash, device, ip, expires_at) VALUES ($1, $2, $3, $4, now() + ($5 || ' days')::interval) RETURNING id`,
         [userId, sha(refresh), device || null, ip || null, String(config.refreshDays)])).rows[0].id;
@@ -58,8 +58,10 @@ export class AuthService {
     const [sid, raw] = String(token || '').split('.');
     if (!sid || !raw || !/^[0-9a-f-]{36}$/.test(sid)) throw new UnauthorizedException('Сеанс завершён, войдите снова');
     return this.db.system(async c => {
-      const s = (await c.query(`SELECT s.user_id, s.token_hash, s.revoked_at, s.expires_at, l.denied FROM sessions s JOIN login_check l ON l.user_id = s.user_id WHERE s.id = $1 FOR UPDATE OF s`, [sid])).rows[0];
+      const s = (await c.query(`SELECT s.user_id, s.token_hash, s.prev_token_hash, (s.rotated_at > now() - interval '30 seconds') AS fresh, s.revoked_at, s.expires_at, l.denied FROM sessions s JOIN login_check l ON l.user_id = s.user_id WHERE s.id = $1 FOR UPDATE OF s`, [sid])).rows[0];
       if (!s || s.revoked_at || new Date(s.expires_at) < new Date()) return null;
+      // приложение обновило токен дважды подряд (две вкладки, повтор запроса) — просто отказ, без закрытия сеанса
+      if (s.fresh && s.prev_token_hash && sha(raw).equals(s.prev_token_hash)) return null;
       // повторное использование старого refresh — признак кражи: закрываем сеанс (фиксируем, а не откатываем)
       if (!sha(raw).equals(s.token_hash)) { await c.query(`UPDATE sessions SET revoked_at = now(), revoke_reason = 'reuse' WHERE id = $1`, [sid]); return null; }
       if (s.denied) return { denied: s.denied };

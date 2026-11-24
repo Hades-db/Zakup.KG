@@ -5,6 +5,8 @@ import { config } from '../config';
 // bigint и numeric — обычными числами в JSON (id и суммы далеко от 2^53)
 types.setTypeParser(20, v => Number(v));
 types.setTypeParser(1700, v => Number(v));
+// DATE (дата поставки) — строкой «ГГГГ-ММ-ДД»: иначе на сервере в Asia/Bishkek 25.11 превращается в 24.11T18:00Z
+types.setTypeParser(1082, v => v);
 
 export type Tx = PoolClient;
 

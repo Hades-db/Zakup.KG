@@ -54,12 +54,19 @@ describe('вход', () => {
 
   it('без токена — 401', async () => { expect((await http.get('/v1/orders')).status).toBe(401); });
 
-  it('refresh одноразовый: повтор старого закрывает сеанс', async () => {
+  it('refresh одноразовый: повтор сразу — просто отказ, повтор позже — сеанс закрыт', async () => {
     const r = await login(PH.shop);
     const n = await http.post('/v1/auth/refresh').send({ refreshToken: r.refreshToken });
     expect(n.status).toBe(200); expect(n.body.refreshToken).not.toBe(r.refreshToken);
+    // две вкладки обновили токен одновременно: второй получает отказ, но сеанс жив
     expect((await http.post('/v1/auth/refresh').send({ refreshToken: r.refreshToken })).status).toBe(401);
+    const n2 = await http.post('/v1/auth/refresh').send({ refreshToken: n.body.refreshToken });
+    expect(n2.status).toBe(200);
+    // старый токен спустя время — кража: сеанс закрывается
+    sql(`UPDATE zakup.sessions SET rotated_at = now() - interval '1 minute' WHERE id = '${n2.body.refreshToken.split('.')[0]}'`);
     expect((await http.post('/v1/auth/refresh').send({ refreshToken: n.body.refreshToken })).status).toBe(401);
+    expect((await http.post('/v1/auth/refresh').send({ refreshToken: n2.body.refreshToken })).status).toBe(401);
+    expect((await as(n2.body.accessToken).get('/v1/orders')).status).toBe(401);
   });
 
   it('админ завершил сеансы — следующий запрос отклонён', async () => {

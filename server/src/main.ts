@@ -20,6 +20,7 @@ export async function createApp() {
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.getHttpAdapter().getInstance().set('trust proxy', 'loopback');   // за nginx: реальный IP клиента
+  app.enableShutdownHooks();
   return app;
 }
 

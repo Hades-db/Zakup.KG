@@ -1,0 +1,798 @@
+-- =====================================================================
+--  Zakup.KG — схема базы данных (PostgreSQL 16)
+--  B2B-заказы: магазины, поставщики, доставщики + админ-панель команды
+--
+--  Порядок запуска:  psql -f db/schema.sql  →  psql -f db/seed.sql
+--  Время хранится в timestamptz (UTC), показывается в Asia/Bishkek.
+--  Деньги — numeric(12,2) в сомах. Телефоны — 12 цифр: 996XXXXXXXXX.
+--  Файлы (фото, логотипы, PDF накладных) лежат в хранилище, в базе — только путь.
+--  Персональные данные граждан КР: сервер и резервные копии — в КР
+--  (Цифровой кодекс, ст. 31 ч. 5, ст. 89), либо согласие на передачу за рубеж.
+-- =====================================================================
+
+BEGIN;
+
+DROP SCHEMA IF EXISTS zakup CASCADE;
+CREATE SCHEMA zakup;
+SET search_path = zakup, public;
+
+-- ---------------------------------------------------------------------
+-- Справочные типы
+-- ---------------------------------------------------------------------
+CREATE TYPE company_type    AS ENUM ('shop', 'dist');                          -- магазин / поставщик
+CREATE TYPE company_status  AS ENUM ('pending', 'ok', 'rejected', 'blocked');  -- заявка / работает / отклонена / заблокирована
+CREATE TYPE user_role       AS ENUM ('owner', 'courier');                      -- владелец компании / доставщик поставщика
+CREATE TYPE user_status     AS ENUM ('active', 'blocked', 'deleted');
+CREATE TYPE pack_type       AS ENUM ('box', 'block', 'weight', 'piece');       -- коробка / блок / весовой / штучный
+CREATE TYPE volume_unit     AS ENUM ('л', 'мл', 'г', 'кг', 'шт');
+CREATE TYPE order_status    AS ENUM ('new', 'work', 'done', 'rejected');       -- новый / в работе / доставлен / отказ
+CREATE TYPE delivery_method AS ENUM ('qr', 'manual');                          -- по QR / «Отметить доставленным»
+CREATE TYPE staff_role      AS ENUM ('owner', 'support', 'moder', 'dev');
+CREATE TYPE ticket_status   AS ENUM ('open', 'closed');
+CREATE TYPE msg_author      AS ENUM ('user', 'staff');
+CREATE TYPE request_status  AS ENUM ('new', 'done', 'rejected');
+CREATE TYPE data_req_kind   AS ENUM ('export', 'fix', 'consent', 'del');
+CREATE TYPE push_audience   AS ENUM ('all', 'dist', 'shop');
+CREATE TYPE app_lang        AS ENUM ('ru', 'ky');
+
+CREATE DOMAIN phone_kg AS text CHECK (VALUE ~ '^996\d{9}$');
+CREATE DOMAIN som      AS numeric(12,2) CHECK (VALUE >= 0);
+
+-- Общая функция: updated_at = now()
+CREATE FUNCTION touch() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN NEW.updated_at := now(); RETURN NEW; END $$;
+
+-- =====================================================================
+-- 1. КОМАНДА ZAKUP.KG (админ-панель)
+-- =====================================================================
+CREATE TABLE staff (
+  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name          text        NOT NULL,
+  email         text        NOT NULL UNIQUE CHECK (email ~ '^[^@\s]+@[^@\s]+$'),
+  role          staff_role  NOT NULL,
+  password_hash text,                          -- NULL, пока приглашение не принято
+  totp_secret   bytea,                         -- второй фактор (приложение-аутентификатор), зашифрован ключом сервера
+  invited_by    bigint REFERENCES staff(id),
+  is_active     boolean     NOT NULL DEFAULT true,
+  last_login_at timestamptz,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE staff IS 'Сотрудники Zakup.KG. Вход в админку: почта + пароль + код TOTP. SMS не используется.';
+
+-- =====================================================================
+-- 2. КОМПАНИИ И ПОЛЬЗОВАТЕЛИ ПРИЛОЖЕНИЯ
+-- =====================================================================
+CREATE TABLE companies (
+  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  type          company_type   NOT NULL,
+  name          text           NOT NULL CHECK (length(name) BETWEEN 2 AND 120),
+  inn           char(14)       NOT NULL UNIQUE CHECK (inn ~ '^\d{14}$'),   -- ИНН / ПИН
+  city          text           NOT NULL DEFAULT 'г. Бишкек',
+  address       text           NOT NULL,     -- магазин: адрес доставки; поставщик: адрес склада
+  district      text,                        -- «Свердловский р-н»
+  phone         phone_kg       NOT NULL,     -- телефон из заявки, админ звонит по нему для подтверждения
+  logo_path     text,
+  status        company_status NOT NULL DEFAULT 'pending',
+  status_reason text,                        -- причина отказа / блокировки, видна пользователю
+  verified_by   bigint REFERENCES staff(id),
+  verified_at   timestamptz,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now(),
+  CHECK (status NOT IN ('rejected', 'blocked') OR status_reason IS NOT NULL),
+  CHECK (status <> 'ok' OR verified_at IS NOT NULL)
+);
+CREATE INDEX companies_status_idx ON companies (status) WHERE status = 'pending';
+CREATE INDEX companies_name_idx   ON companies USING gin (to_tsvector('russian', name));
+CREATE TRIGGER companies_touch BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION touch();
+COMMENT ON TABLE companies IS 'Регистрация создаёт компанию в статусе pending. Вход открывается только после подтверждения в админке.';
+
+CREATE TABLE users (
+  id                   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  company_id           bigint      NOT NULL REFERENCES companies(id),
+  role                 user_role   NOT NULL,
+  full_name            text        NOT NULL,
+  phone                phone_kg    NOT NULL,     -- логин
+  password_hash        text        NOT NULL,     -- argon2id
+  must_change_password boolean     NOT NULL DEFAULT false,  -- true после временного пароля от администратора
+  status               user_status NOT NULL DEFAULT 'active',
+  block_reason         text,
+  lang                 app_lang    NOT NULL DEFAULT 'ru',
+  created_by           bigint REFERENCES users(id),         -- поставщик, добавивший доставщика
+  last_login_at        timestamptz,
+  deleted_at           timestamptz,
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  updated_at           timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id, company_id),                                   -- для составных ключей (доставщик ↔ поставщик)
+  CHECK (status <> 'blocked' OR block_reason IS NOT NULL),
+  CHECK (status <> 'deleted' OR deleted_at IS NOT NULL)
+);
+-- Один номер — один действующий аккаунт (удалённые номера освобождаются)
+CREATE UNIQUE INDEX users_phone_uq ON users (phone) WHERE status <> 'deleted';
+CREATE INDEX users_company_idx ON users (company_id, role);
+CREATE TRIGGER users_touch BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION touch();
+
+-- Доставщик бывает только у поставщика, у магазина — только владелец
+CREATE FUNCTION users_role_check() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE t company_type;
+BEGIN
+  SELECT type INTO t FROM companies WHERE id = NEW.company_id;
+  IF NEW.role = 'courier' AND t <> 'dist' THEN
+    RAISE EXCEPTION 'Доставщика можно добавить только поставщику';
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER users_role_check BEFORE INSERT OR UPDATE OF role, company_id ON users
+  FOR EACH ROW EXECUTE FUNCTION users_role_check();
+
+-- Сеансы приложения. «Завершить сеансы» и сброс пароля = revoked_at у всех сеансов пользователя
+CREATE TABLE sessions (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      bigint      NOT NULL REFERENCES users(id),
+  token_hash   bytea       NOT NULL UNIQUE,      -- sha256 от refresh-токена; сам токен в базе не хранится
+  device       text,                             -- «iPhone 13, iOS 18»
+  ip           inet,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now(),
+  expires_at   timestamptz NOT NULL DEFAULT now() + interval '60 days',
+  revoked_at   timestamptz,
+  revoke_reason text                              -- 'admin_kick' | 'password_reset' | 'blocked' | 'logout'
+);
+CREATE INDEX sessions_user_active_idx ON sessions (user_id) WHERE revoked_at IS NULL;
+
+-- Заявки «Забыли пароль?». Пароль выдаёт администратор после звонка
+CREATE TABLE password_reset_requests (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  phone       phone_kg       NOT NULL,
+  user_id     bigint REFERENCES users(id),    -- найден по номеру; NULL, если номер не зарегистрирован
+  status      request_status NOT NULL DEFAULT 'new',
+  handled_by  bigint REFERENCES staff(id),
+  handled_at  timestamptz,
+  note        text,                            -- «звонил, подтвердил владелец»
+  ip          inet,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  CHECK (status = 'new' OR (handled_by IS NOT NULL AND handled_at IS NOT NULL))
+);
+CREATE INDEX pwreq_new_idx ON password_reset_requests (created_at) WHERE status = 'new';
+-- Не больше одной открытой заявки на номер (защита от спама)
+CREATE UNIQUE INDEX pwreq_one_open_uq ON password_reset_requests (phone) WHERE status = 'new';
+
+-- =====================================================================
+-- 3. КАТАЛОГ
+-- =====================================================================
+CREATE TABLE categories (
+  id         smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name       text     NOT NULL UNIQUE,
+  sort       smallint NOT NULL DEFAULT 0,
+  is_active  boolean  NOT NULL DEFAULT true    -- удалённая категория скрывается, товары остаются
+);
+
+CREATE TABLE products (
+  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  supplier_id   bigint      NOT NULL REFERENCES companies(id),
+  category_id   smallint    NOT NULL REFERENCES categories(id),
+  name          text        NOT NULL CHECK (length(name) BETWEEN 2 AND 120),
+  volume_value  numeric(10,3) NOT NULL CHECK (volume_value > 0),   -- 1 / 400 / 0.5
+  volume_unit   volume_unit NOT NULL,                              -- л / г
+  pack_type     pack_type   NOT NULL,
+  pack_qty      integer     NOT NULL DEFAULT 1 CHECK (pack_qty >= 1),   -- шт в коробке / блоке
+  price         som       NOT NULL CHECK (price > 0),                 -- за коробку / блок / кг / шт
+  barcode       varchar(14) CHECK (barcode ~ '^\d{8,14}$'),             -- EAN-8/13, ITF-14
+  description   text        CHECK (length(description) <= 2000),
+  returnable    boolean     NOT NULL DEFAULT true,     -- «Обмен и возврат: возможен»
+  in_stock      boolean     NOT NULL DEFAULT true,     -- нет в наличии → только в поиске, не в каталоге
+  hidden_by     bigint REFERENCES staff(id),           -- скрыт модератором
+  hidden_reason text,
+  orders_count  integer     NOT NULL DEFAULT 0,        -- для сортировки «Популярные»
+  deleted_at    timestamptz,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id, supplier_id),
+  CHECK (pack_type IN ('box', 'block') OR pack_qty = 1),
+  CHECK ((hidden_by IS NULL) = (hidden_reason IS NULL))
+);
+-- Один штрихкод — одна карточка у поставщика (у разных поставщиков может совпадать: сравнение цен)
+CREATE UNIQUE INDEX products_barcode_uq ON products (supplier_id, barcode) WHERE deleted_at IS NULL AND barcode IS NOT NULL;
+CREATE INDEX products_supplier_idx ON products (supplier_id) WHERE deleted_at IS NULL;
+CREATE INDEX products_barcode_idx  ON products (barcode)     WHERE deleted_at IS NULL;
+CREATE INDEX products_search_idx   ON products USING gin (to_tsvector('russian', name));
+CREATE TRIGGER products_touch BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION touch();
+
+CREATE FUNCTION products_supplier_check() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (SELECT type FROM companies WHERE id = NEW.supplier_id) <> 'dist' THEN
+    RAISE EXCEPTION 'Товары добавляет только поставщик';
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER products_supplier_check BEFORE INSERT OR UPDATE OF supplier_id ON products
+  FOR EACH ROW EXECUTE FUNCTION products_supplier_check();
+
+-- Фото товара: минимум 2, максимум 5 (5 слотов)
+CREATE TABLE product_photos (
+  product_id bigint   NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  position   smallint NOT NULL CHECK (position BETWEEN 1 AND 5),   -- 1 — обложка
+  path       text     NOT NULL,                                     -- products/123/1.webp
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (product_id, position)
+);
+
+-- Проверка «минимум 2 фото» в конце транзакции: товар и фото сохраняются одной транзакцией
+CREATE FUNCTION product_min_photos() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE pid bigint;
+BEGIN
+  IF TG_TABLE_NAME = 'products' THEN pid := NEW.id; ELSE pid := OLD.product_id; END IF;
+  IF EXISTS (SELECT 1 FROM products WHERE id = pid AND deleted_at IS NULL)
+     AND (SELECT count(*) FROM product_photos WHERE product_id = pid) < 2 THEN
+    RAISE EXCEPTION 'У товара % должно быть минимум 2 фото', pid;
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE CONSTRAINT TRIGGER products_min_photos AFTER INSERT ON products
+  DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION product_min_photos();
+CREATE CONSTRAINT TRIGGER photos_min_photos AFTER DELETE ON product_photos
+  DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION product_min_photos();
+
+-- Корзина магазина хранится на сервере (одна корзина на нескольких устройствах)
+CREATE TABLE cart_items (
+  user_id    bigint  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id bigint  NOT NULL REFERENCES products(id),
+  qty        integer NOT NULL CHECK (qty BETWEEN 1 AND 9999),
+  urgent     boolean NOT NULL DEFAULT false,      -- галочка «СРОЧНО» в карточке и в корзине
+  added_at   timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, product_id)
+);
+
+-- =====================================================================
+-- 4. ЗАКАЗЫ
+-- =====================================================================
+-- Номер заказа сквозной по платформе, показывается как № 0221
+CREATE SEQUENCE order_number_seq START 1;
+
+CREATE TABLE orders (
+  id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  number           integer      NOT NULL UNIQUE DEFAULT nextval('order_number_seq'),
+  shop_id          bigint       NOT NULL REFERENCES companies(id),
+  created_by       bigint       NOT NULL REFERENCES users(id),
+  supplier_id      bigint       NOT NULL REFERENCES companies(id),
+  status           order_status NOT NULL DEFAULT 'new',
+  urgent           boolean      NOT NULL DEFAULT false,   -- магазин выбирает только «Срочно»
+  delivery_date    date,                                  -- дату ставит поставщик при принятии
+  courier_id       bigint,                                -- обязателен для принятия
+  -- снимок адреса доставки на момент заказа (адрес магазина может поменяться)
+  ship_name        text         NOT NULL,
+  ship_address     text         NOT NULL,
+  ship_district    text,
+  total            som        NOT NULL DEFAULT 0,       -- пересчитывается триггером по позициям
+  items_count      smallint     NOT NULL DEFAULT 0,
+  reject_reason    text,
+  cancelled_by     bigint REFERENCES staff(id),           -- отменён командой Zakup.KG
+  qr_token         uuid         NOT NULL UNIQUE DEFAULT gen_random_uuid(),  -- QR-подтверждение доставки
+  accepted_at      timestamptz,
+  delivered_at     timestamptz,
+  delivered_by     bigint REFERENCES users(id),           -- «Доставил» в заказе и накладной
+  delivered_method delivery_method,
+  created_at       timestamptz  NOT NULL DEFAULT now(),
+  updated_at       timestamptz  NOT NULL DEFAULT now(),
+  -- доставщик только из сотрудников этого поставщика
+  FOREIGN KEY (courier_id, supplier_id) REFERENCES users(id, company_id),
+  CHECK (shop_id <> supplier_id),
+  CHECK (status IN ('new', 'rejected') OR (courier_id IS NOT NULL AND delivery_date IS NOT NULL AND accepted_at IS NOT NULL)),
+  CHECK (status <> 'done' OR (delivered_at IS NOT NULL AND delivered_by IS NOT NULL AND delivered_method IS NOT NULL)),
+  CHECK (status <> 'rejected' OR reject_reason IS NOT NULL)
+);
+CREATE INDEX orders_supplier_idx ON orders (supplier_id, status, created_at DESC);
+CREATE INDEX orders_shop_idx     ON orders (shop_id, created_at DESC);
+CREATE INDEX orders_courier_idx  ON orders (courier_id, status) WHERE courier_id IS NOT NULL;
+CREATE INDEX orders_waiting_idx  ON orders (created_at) WHERE status = 'new';   -- «без ответа больше 2 ч»
+CREATE TRIGGER orders_touch BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION touch();
+
+CREATE TABLE order_items (
+  order_id    bigint   NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  line        smallint NOT NULL,
+  product_id  bigint   NOT NULL,
+  supplier_id bigint   NOT NULL,
+  -- снимок товара: цена и название в заказе не меняются, если поставщик изменит карточку
+  name        text     NOT NULL,
+  volume      text     NOT NULL,        -- «1 л», «400 г»
+  unit        text     NOT NULL,        -- кор / бл / кг / шт
+  pack_qty    integer  NOT NULL,
+  photo_path  text,
+  price       som    NOT NULL,
+  qty         numeric(10,3) NOT NULL CHECK (qty > 0),
+  amount      som    GENERATED ALWAYS AS (round(price * qty, 2)) STORED,
+  PRIMARY KEY (order_id, line),
+  FOREIGN KEY (product_id, supplier_id) REFERENCES products(id, supplier_id)   -- все позиции — от поставщика заказа
+);
+
+-- Позиции заказа: поставщик позиции = поставщик заказа; пересчёт суммы
+CREATE FUNCTION order_items_sync() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+DECLARE oid bigint := COALESCE(NEW.order_id, OLD.order_id);
+BEGIN
+  IF TG_OP <> 'DELETE' AND NEW.supplier_id <> (SELECT supplier_id FROM orders WHERE id = NEW.order_id) THEN
+    RAISE EXCEPTION 'Позиция от другого поставщика: корзина делится на заказы по поставщикам';
+  END IF;
+  UPDATE orders SET total = COALESCE((SELECT sum(amount) FROM order_items WHERE order_id = oid), 0),
+                    items_count = (SELECT count(*) FROM order_items WHERE order_id = oid)
+   WHERE id = oid;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER order_items_sync AFTER INSERT OR UPDATE OR DELETE ON order_items
+  FOR EACH ROW EXECUTE FUNCTION order_items_sync();
+
+-- История статусов (лента «История» в заказе админки)
+CREATE TABLE order_events (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id   bigint       NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  status     order_status NOT NULL,
+  title      text         NOT NULL,          -- «Принят, поставка 25.11», «Доставлен по QR»
+  by_user    bigint REFERENCES users(id),
+  by_staff   bigint REFERENCES staff(id),
+  created_at timestamptz  NOT NULL DEFAULT now()
+);
+CREATE INDEX order_events_order_idx ON order_events (order_id, created_at);
+
+-- Флаги функций (переключатели в «Технике»)
+CREATE TABLE feature_flags (
+  key         text PRIMARY KEY,
+  enabled     boolean NOT NULL,
+  title       text    NOT NULL,
+  updated_by  bigint REFERENCES staff(id),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE FUNCTION flag(k text) RETURNS boolean LANGUAGE sql STABLE AS
+  $$ SELECT COALESCE((SELECT enabled FROM feature_flags WHERE key = k), false) $$;
+
+-- Правила заказа: создание
+CREATE FUNCTION orders_before_insert() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT flag('orders_on') THEN RAISE EXCEPTION 'Приём заказов временно остановлен'; END IF;
+  IF NEW.urgent AND NOT flag('urgent_on') THEN RAISE EXCEPTION 'Срочные заказы временно недоступны'; END IF;
+  IF (SELECT type FROM companies WHERE id = NEW.shop_id) <> 'shop'
+     OR (SELECT type FROM companies WHERE id = NEW.supplier_id) <> 'dist' THEN
+    RAISE EXCEPTION 'Заказ оформляет магазин у поставщика';
+  END IF;
+  IF (SELECT status FROM companies WHERE id = NEW.shop_id) <> 'ok' THEN RAISE EXCEPTION 'Магазин не может оформлять заказы'; END IF;
+  IF (SELECT status FROM companies WHERE id = NEW.supplier_id) <> 'ok' THEN RAISE EXCEPTION 'Поставщик сейчас не принимает заказы'; END IF;
+  IF NEW.status <> 'new' THEN RAISE EXCEPTION 'Новый заказ создаётся в статусе new'; END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW EXECUTE FUNCTION orders_before_insert();
+
+-- Правила заказа: переходы статусов
+--   new  → work      поставщик принял: дата + доставщик обязательны, магазин не заблокирован, доставщик активен
+--   new  → rejected  поставщик отказал (причина) или админ отменил
+--   work → done      доставщик: по QR или кнопкой, если qr_delivery выключен
+--   work → rejected  только команда Zakup.KG (cancelled_by)
+CREATE FUNCTION orders_before_update() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.status = OLD.status THEN
+    IF OLD.status IN ('done', 'rejected') AND (NEW.courier_id, NEW.delivery_date) IS DISTINCT FROM (OLD.courier_id, OLD.delivery_date) THEN
+      RAISE EXCEPTION 'Завершённый заказ менять нельзя';
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF NOT ((OLD.status = 'new'  AND NEW.status IN ('work', 'rejected'))
+       OR (OLD.status = 'work' AND NEW.status IN ('done', 'rejected'))) THEN
+    RAISE EXCEPTION 'Нельзя перевести заказ из % в %', OLD.status, NEW.status;
+  END IF;
+  IF NEW.status = 'work' THEN
+    IF (SELECT status FROM companies WHERE id = NEW.shop_id) <> 'ok' THEN
+      RAISE EXCEPTION 'Магазин заблокирован, заказ принять нельзя';
+    END IF;
+    IF (SELECT status FROM users WHERE id = NEW.courier_id) <> 'active' THEN
+      RAISE EXCEPTION 'Доставщик заблокирован';
+    END IF;
+    IF NEW.delivery_date < (now() AT TIME ZONE 'Asia/Bishkek')::date THEN
+      RAISE EXCEPTION 'Дата доставки в прошлом';
+    END IF;
+    NEW.accepted_at := COALESCE(NEW.accepted_at, now());
+  END IF;
+  IF NEW.status = 'done' THEN
+    IF NEW.delivered_by IS DISTINCT FROM NEW.courier_id THEN
+      RAISE EXCEPTION 'Отметить доставку может только назначенный доставщик';
+    END IF;
+    IF NEW.delivered_method = 'manual' AND flag('qr_delivery') THEN
+      RAISE EXCEPTION 'Включена доставка по QR: нужно отсканировать код магазина';
+    END IF;
+    NEW.delivered_at := COALESCE(NEW.delivered_at, now());
+  END IF;
+  IF NEW.status = 'rejected' AND OLD.status = 'work' AND NEW.cancelled_by IS NULL THEN
+    RAISE EXCEPTION 'Принятый заказ отменяет только команда Zakup.KG';
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER orders_before_update BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION orders_before_update();
+
+-- После смены статуса: запись в историю, накладная, счётчик популярности
+CREATE FUNCTION orders_after_status() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO order_events (order_id, status, title, by_user) VALUES (NEW.id, 'new', CASE WHEN NEW.urgent THEN 'Оформлен, срочно' ELSE 'Оформлен' END, NEW.created_by);
+    RETURN NULL;
+  END IF;
+  IF NEW.status = OLD.status THEN RETURN NULL; END IF;
+  INSERT INTO order_events (order_id, status, title, by_user, by_staff) VALUES (
+    NEW.id, NEW.status,
+    CASE NEW.status
+      WHEN 'work' THEN 'Принят, поставка ' || to_char(NEW.delivery_date, 'DD.MM')
+      WHEN 'done' THEN CASE NEW.delivered_method WHEN 'qr' THEN 'Доставлен по QR' ELSE 'Доставлен' END
+      ELSE CASE WHEN NEW.cancelled_by IS NOT NULL THEN 'Отменён Zakup.KG: ' ELSE 'Отказ: ' END || NEW.reject_reason
+    END,
+    CASE NEW.status WHEN 'done' THEN NEW.delivered_by ELSE NULL END,
+    NEW.cancelled_by);
+  IF NEW.status = 'work' THEN PERFORM create_invoice(NEW.id); END IF;
+  IF NEW.status = 'done' THEN
+    UPDATE invoices SET delivered_by_name = (SELECT full_name FROM users WHERE id = NEW.delivered_by) WHERE order_id = NEW.id;
+    UPDATE products p SET orders_count = orders_count + 1 FROM order_items i WHERE i.order_id = NEW.id AND p.id = i.product_id;
+  END IF;
+  RETURN NULL;
+END $$;
+
+-- =====================================================================
+-- 5. НАКЛАДНЫЕ
+-- =====================================================================
+-- Формируется при принятии заказа; реквизиты и позиции фиксируются снимком
+CREATE TABLE invoices (
+  id                bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id          bigint  NOT NULL UNIQUE REFERENCES orders(id),
+  supplier_id       bigint  NOT NULL REFERENCES companies(id),
+  year              smallint NOT NULL,
+  seq               integer NOT NULL,            -- нумерация у каждого поставщика своя, с 1 января
+  number            text    GENERATED ALWAYS AS (year || '-' || lpad(seq::text, 5, '0')) STORED,
+  seller            jsonb   NOT NULL,            -- {name, inn, address, phone}
+  buyer             jsonb   NOT NULL,
+  items             jsonb   NOT NULL,            -- [{name, volume, unit, qty, price, amount}]
+  total             som   NOT NULL,
+  courier_name      text,                        -- «Доставщик»
+  delivered_by_name text,                        -- «Доставил», заполняется при доставке
+  pdf_path          text,                        -- invoices/2026/00042.pdf, PDF собирается фоновой задачей
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (supplier_id, year, seq)
+);
+
+CREATE FUNCTION create_invoice(p_order bigint) RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path = zakup, public AS $$
+DECLARE o orders; s companies; b companies; y smallint := extract(year FROM now() AT TIME ZONE 'Asia/Bishkek'); n integer; iid bigint;
+BEGIN
+  SELECT * INTO o FROM orders WHERE id = p_order;
+  SELECT * INTO s FROM companies WHERE id = o.supplier_id;
+  SELECT * INTO b FROM companies WHERE id = o.shop_id;
+  PERFORM pg_advisory_xact_lock(o.supplier_id::int, y::int);   -- без дыр и дублей в нумерации
+  SELECT COALESCE(max(seq), 0) + 1 INTO n FROM invoices WHERE supplier_id = o.supplier_id AND year = y;
+  INSERT INTO invoices (order_id, supplier_id, year, seq, seller, buyer, items, total, courier_name)
+  VALUES (o.id, o.supplier_id, y, n,
+    jsonb_build_object('name', s.name, 'inn', s.inn, 'address', s.city || ', ' || s.address, 'phone', s.phone),
+    jsonb_build_object('name', o.ship_name, 'inn', b.inn, 'address', o.ship_address),
+    (SELECT jsonb_agg(jsonb_build_object('name', name, 'volume', volume, 'unit', unit, 'qty', qty, 'price', price, 'amount', amount) ORDER BY line) FROM order_items WHERE order_id = o.id),
+    o.total, (SELECT full_name FROM users WHERE id = o.courier_id))
+  RETURNING id INTO iid;
+  RETURN iid;
+END $$;
+
+CREATE TRIGGER orders_after_status AFTER INSERT OR UPDATE OF status ON orders
+  FOR EACH ROW EXECUTE FUNCTION orders_after_status();
+
+-- =====================================================================
+-- 6. УВЕДОМЛЕНИЯ И РАССЫЛКИ
+-- =====================================================================
+CREATE TABLE push_campaigns (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  audience   push_audience NOT NULL,
+  text       text   NOT NULL CHECK (length(text) BETWEEN 3 AND 160),   -- только служебные, без рекламы
+  sent_by    bigint NOT NULL REFERENCES staff(id),
+  recipients integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE notifications (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id     bigint  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title       text    NOT NULL,                -- «Заказ № 0216 принят, поставка 25.11»
+  sender      text    NOT NULL,                -- «ОсОО «Дистрибьютор»» / «Zakup.KG»
+  icon        text    NOT NULL DEFAULT 'i-bell',
+  order_id    bigint REFERENCES orders(id),
+  campaign_id bigint REFERENCES push_campaigns(id),
+  read_at     timestamptz,                     -- «Прочитать все» = read_at у всех непрочитанных
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX notifications_unread_idx ON notifications (user_id, created_at DESC) WHERE read_at IS NULL;
+
+-- Рассылка: строка в notifications каждому активному пользователю выбранной аудитории
+CREATE FUNCTION send_push(p_audience push_audience, p_text text, p_staff bigint) RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE cid bigint; n integer;
+BEGIN
+  INSERT INTO push_campaigns (audience, text, sent_by) VALUES (p_audience, p_text, p_staff) RETURNING id INTO cid;
+  INSERT INTO notifications (user_id, title, sender, icon, campaign_id)
+  SELECT u.id, p_text, 'Zakup.KG', 'i-bell', cid
+    FROM users u JOIN companies c ON c.id = u.company_id
+   WHERE u.status = 'active' AND c.status = 'ok'
+     AND (p_audience = 'all' OR c.type::text = p_audience::text);
+  GET DIAGNOSTICS n = ROW_COUNT;
+  UPDATE push_campaigns SET recipients = n WHERE id = cid;
+  RETURN cid;
+END $$;
+
+-- =====================================================================
+-- 7. ПОДДЕРЖКА И ЗАПРОСЫ ПО ДАННЫМ
+-- =====================================================================
+CREATE TABLE support_tickets (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id     bigint        NOT NULL REFERENCES users(id),
+  company_id  bigint        NOT NULL REFERENCES companies(id),
+  subject     text          NOT NULL,          -- первое сообщение, обрезанное до 80 символов
+  status      ticket_status NOT NULL DEFAULT 'open',
+  assigned_to bigint REFERENCES staff(id),
+  order_id    bigint REFERENCES orders(id),
+  closed_at   timestamptz,
+  created_at  timestamptz   NOT NULL DEFAULT now(),
+  updated_at  timestamptz   NOT NULL DEFAULT now()
+);
+-- У пользователя одно открытое обращение; сообщение после закрытия открывает новое
+CREATE UNIQUE INDEX tickets_one_open_uq ON support_tickets (user_id) WHERE status = 'open';
+CREATE TRIGGER tickets_touch BEFORE UPDATE ON support_tickets FOR EACH ROW EXECUTE FUNCTION touch();
+
+CREATE TABLE ticket_messages (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  ticket_id  bigint     NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  author     msg_author NOT NULL,
+  staff_id   bigint REFERENCES staff(id),
+  body       text       NOT NULL CHECK (length(body) BETWEEN 1 AND 2000),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CHECK ((author = 'staff') = (staff_id IS NOT NULL))
+);
+CREATE INDEX ticket_messages_idx ON ticket_messages (ticket_id, created_at);
+
+-- Запросы субъектов персональных данных (приходят через чат поддержки, почту или звонок)
+CREATE TABLE data_requests (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id     bigint        NOT NULL REFERENCES users(id),
+  kind        data_req_kind NOT NULL,
+  source      text          NOT NULL DEFAULT 'chat' CHECK (source IN ('chat', 'email', 'phone')),
+  ticket_id   bigint REFERENCES support_tickets(id),
+  status      request_status NOT NULL DEFAULT 'new',
+  due_at      timestamptz   NOT NULL DEFAULT now() + interval '10 days',
+  handled_by  bigint REFERENCES staff(id),
+  handled_at  timestamptz,
+  result_path text,                               -- архив выгрузки
+  created_at  timestamptz   NOT NULL DEFAULT now()
+);
+
+-- =====================================================================
+-- 8. ДОКУМЕНТЫ И СОГЛАСИЯ
+-- =====================================================================
+CREATE TABLE documents (
+  code  text PRIMARY KEY,                -- oferta / user_agreement_zakup_kg / privacy
+  title text NOT NULL
+);
+CREATE TABLE document_versions (
+  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  doc_code     text    NOT NULL REFERENCES documents(code),
+  version      text    NOT NULL CHECK (version ~ '^v\d+\.\d+$'),
+  body_path    text    NOT NULL,          -- docs/oferta/v1.3.html
+  published_by bigint REFERENCES staff(id),
+  published_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (doc_code, version)
+);
+CREATE TABLE document_acceptances (
+  user_id     bigint NOT NULL REFERENCES users(id),
+  version_id  bigint NOT NULL REFERENCES document_versions(id),
+  accepted_at timestamptz NOT NULL DEFAULT now(),
+  ip          inet,
+  PRIMARY KEY (user_id, version_id)
+);
+
+-- Действующая версия каждого документа
+CREATE VIEW current_documents AS
+SELECT DISTINCT ON (doc_code) v.id, v.doc_code, d.title, v.version, v.published_at
+  FROM document_versions v JOIN documents d ON d.code = v.doc_code
+ ORDER BY doc_code, published_at DESC;
+
+-- Кому показать окно «Обновлены правила»
+CREATE VIEW users_need_reaccept AS
+SELECT u.id AS user_id, cd.doc_code, cd.title, cd.version
+  FROM users u CROSS JOIN current_documents cd
+ WHERE u.status = 'active'
+   AND NOT EXISTS (SELECT 1 FROM document_acceptances a WHERE a.user_id = u.id AND a.version_id = cd.id);
+
+-- =====================================================================
+-- 9. СПРАВОЧНИКИ, ЖУРНАЛ
+-- =====================================================================
+CREATE TABLE reject_reasons (
+  id        smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  text      text     NOT NULL UNIQUE,
+  sort      smallint NOT NULL DEFAULT 0,     -- «Другое» всегда последней
+  is_active boolean  NOT NULL DEFAULT true
+);
+
+-- Журнал действий сотрудников: только добавление
+CREATE TABLE audit_log (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  staff_id   bigint NOT NULL REFERENCES staff(id),
+  action     text   NOT NULL,         -- «Заблокировал компанию», «Открыл полный телефон», «Выдал новый пароль»
+  object     text   NOT NULL,         -- «Киоск «Мээрим»», «Заказ № 0221»
+  object_ref text,                    -- company:12 / user:5 / order:221
+  reason     text,
+  ip         inet,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX audit_created_idx ON audit_log (created_at DESC);
+CREATE FUNCTION audit_readonly() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN RAISE EXCEPTION 'Журнал действий нельзя изменить или удалить'; END $$;
+CREATE TRIGGER audit_readonly BEFORE UPDATE OR DELETE ON audit_log FOR EACH ROW EXECUTE FUNCTION audit_readonly();
+
+-- =====================================================================
+-- 10. ДЕЙСТВИЯ АДМИНИСТРАТОРА (вызываются из админ-панели одной транзакцией)
+-- =====================================================================
+-- Завершить сеансы (а также при сбросе пароля и блокировке)
+CREATE FUNCTION kick_user(p_user bigint, p_reason text) RETURNS integer LANGUAGE sql AS $$
+  WITH r AS (UPDATE sessions SET revoked_at = now(), revoke_reason = p_reason
+              WHERE user_id = p_user AND revoked_at IS NULL RETURNING 1)
+  SELECT count(*)::int FROM r
+$$;
+
+-- Выдать временный пароль: хэш приходит из API (argon2id считается на сервере приложения)
+CREATE FUNCTION admin_set_password(p_staff bigint, p_user bigint, p_hash text, p_request bigint DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE users SET password_hash = p_hash, must_change_password = true WHERE id = p_user;
+  PERFORM kick_user(p_user, 'password_reset');
+  IF p_request IS NOT NULL THEN
+    UPDATE password_reset_requests SET status = 'done', user_id = p_user, handled_by = p_staff, handled_at = now() WHERE id = p_request;
+  END IF;
+  INSERT INTO audit_log (staff_id, action, object, object_ref, reason)
+  SELECT p_staff, 'Выдал новый пароль', u.full_name || ', ' || c.name, 'user:' || u.id,
+         CASE WHEN p_request IS NULL THEN 'Сброс из карточки пользователя' ELSE 'Заявка из приложения № ' || p_request END
+    FROM users u JOIN companies c ON c.id = u.company_id WHERE u.id = p_user;
+END $$;
+
+-- Подтвердить / отклонить / заблокировать / разблокировать компанию
+CREATE FUNCTION admin_set_company_status(p_staff bigint, p_company bigint, p_status company_status, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE c companies;
+BEGIN
+  UPDATE companies SET status = p_status,
+         status_reason = CASE WHEN p_status IN ('rejected', 'blocked') THEN p_reason END,
+         verified_by = CASE WHEN p_status = 'ok' AND verified_by IS NULL THEN p_staff ELSE verified_by END,
+         verified_at = CASE WHEN p_status = 'ok' AND verified_at IS NULL THEN now() ELSE verified_at END
+   WHERE id = p_company RETURNING * INTO c;
+  IF p_status = 'blocked' THEN   -- кабинет сразу выходит на экран входа
+    PERFORM kick_user(id, 'blocked') FROM users WHERE company_id = p_company;
+  END IF;
+  IF p_status = 'ok' THEN
+    INSERT INTO notifications (user_id, title, sender, icon)
+    SELECT id, 'Компания проверена, можно работать', 'Zakup.KG', 'i-check' FROM users WHERE company_id = p_company AND role = 'owner';
+  END IF;
+  INSERT INTO audit_log (staff_id, action, object, object_ref, reason) VALUES (p_staff,
+    CASE p_status WHEN 'ok' THEN CASE WHEN c.verified_at > now() - interval '1 second' THEN 'Подтвердил компанию' ELSE 'Разблокировал компанию' END
+                  WHEN 'rejected' THEN 'Отклонил заявку' WHEN 'blocked' THEN 'Заблокировал компанию' ELSE 'Изменил статус' END,
+    c.name, 'company:' || c.id, p_reason);
+END $$;
+
+-- =====================================================================
+-- 11. ПРЕДСТАВЛЕНИЯ ДЛЯ API
+-- =====================================================================
+-- Можно ли войти: компания подтверждена, пользователь активен
+CREATE VIEW login_check AS
+SELECT u.id AS user_id, u.phone, u.password_hash, u.role, c.type AS company_type, u.must_change_password,
+       CASE
+         WHEN u.status = 'deleted'  THEN 'Аккаунт удалён'
+         WHEN u.status = 'blocked'  THEN 'Zakup.KG закрыл доступ. Причина: ' || u.block_reason
+         WHEN c.status = 'pending'  THEN 'Заявка на проверке'
+         WHEN c.status = 'rejected' THEN 'Zakup.KG отклонил заявку ' || c.name || '. Причина: ' || c.status_reason
+         WHEN c.status = 'blocked'  THEN 'Zakup.KG закрыл доступ для ' || c.name || '. Причина: ' || c.status_reason
+       END AS denied
+  FROM users u JOIN companies c ON c.id = u.company_id;
+
+-- Каталог магазина: только в наличии, не скрытые, поставщик работает
+CREATE VIEW catalog AS
+SELECT p.*, c.name AS supplier_name, cat.name AS category,
+       (SELECT path FROM product_photos ph WHERE ph.product_id = p.id ORDER BY position LIMIT 1) AS cover
+  FROM products p
+  JOIN companies c    ON c.id = p.supplier_id AND c.status = 'ok'
+  JOIN categories cat ON cat.id = p.category_id AND cat.is_active
+ WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL AND p.in_stock;
+
+-- Поиск: то же, но вместе с товарами «Нет в наличии»
+CREATE VIEW catalog_search AS
+SELECT p.*, c.name AS supplier_name, cat.name AS category
+  FROM products p
+  JOIN companies c    ON c.id = p.supplier_id AND c.status = 'ok'
+  JOIN categories cat ON cat.id = p.category_id
+ WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL;
+
+-- Сравнение цен на один товар (одинаковый штрихкод у разных поставщиков)
+CREATE VIEW price_compare AS
+SELECT barcode, supplier_name, id AS product_id, name, price,
+       rank() OVER (PARTITION BY barcode ORDER BY price) AS price_rank
+  FROM catalog WHERE barcode IS NOT NULL;
+
+-- Карточка заказа в списке поставщика: «3 позиции, 5 мин назад», сумма
+CREATE VIEW supplier_order_cards AS
+SELECT o.id, o.supplier_id, lpad(o.number::text, 4, '0') AS number, o.status, o.urgent,
+       o.ship_name, o.ship_district, o.items_count, o.total, o.delivery_date,
+       u.full_name AS courier_name, o.created_at,
+       (o.status = 'new' AND o.created_at < now() - interval '2 hours') AS overdue
+  FROM orders o LEFT JOIN users u ON u.id = o.courier_id;
+
+-- Телефоны для поддержки скрыты: +996 500 •• •• 20. Полный номер — отдельный запрос с записью в журнал
+CREATE FUNCTION mask_phone(p text) RETURNS text LANGUAGE sql IMMUTABLE AS
+  $$ SELECT '+996 ' || substr(p, 4, 3) || ' •• •• ' || substr(p, 11, 2) $$;
+
+CREATE VIEW admin_users AS
+SELECT u.id, u.full_name, c.name AS company, c.id AS company_id,
+       CASE u.role WHEN 'courier' THEN 'Доставщик' ELSE 'Владелец' END AS role,
+       mask_phone(u.phone) AS phone_masked, u.last_login_at, u.status, u.block_reason
+  FROM users u JOIN companies c ON c.id = u.company_id
+ WHERE u.status <> 'deleted';
+
+-- Цифры для главной админки
+CREATE VIEW admin_dashboard AS
+SELECT
+  (SELECT count(*) FROM companies WHERE status = 'pending')                         AS companies_pending,
+  (SELECT count(*) FROM password_reset_requests WHERE status = 'new')               AS password_requests,
+  (SELECT count(*) FROM support_tickets WHERE status = 'open')                      AS tickets_open,
+  (SELECT count(*) FROM data_requests WHERE status = 'new')                         AS data_requests_new,
+  (SELECT count(*) FROM orders WHERE status = 'new' AND created_at < now() - interval '2 hours') AS orders_overdue,
+  (SELECT count(*) FROM orders WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Bishkek') AT TIME ZONE 'Asia/Bishkek') AS orders_today,
+  (SELECT COALESCE(sum(total), 0) FROM orders WHERE status = 'done' AND delivered_at >= now() - interval '30 days') AS gmv_30d;
+
+-- =====================================================================
+-- 12. ДОСТУП ПО СТРОКАМ (RLS)
+--  API выполняет запросы под ролью zakup_api и в начале транзакции ставит
+--  SET LOCAL app.user_id = '<id пользователя из токена>'.
+--  Админка работает под ролью zakup_admin (RLS не применяется).
+-- =====================================================================
+CREATE FUNCTION app_user_id() RETURNS bigint LANGUAGE sql STABLE AS
+  $$ SELECT NULLIF(current_setting('app.user_id', true), '')::bigint $$;
+CREATE FUNCTION app_company_id() RETURNS bigint LANGUAGE sql STABLE SECURITY DEFINER SET search_path = zakup AS
+  $$ SELECT company_id FROM users WHERE id = app_user_id() $$;
+CREATE FUNCTION app_role() RETURNS user_role LANGUAGE sql STABLE SECURITY DEFINER SET search_path = zakup AS
+  $$ SELECT role FROM users WHERE id = app_user_id() $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'zakup_api')   THEN CREATE ROLE zakup_api NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'zakup_admin') THEN CREATE ROLE zakup_admin NOLOGIN BYPASSRLS; END IF;
+END $$;
+GRANT USAGE ON SCHEMA zakup TO zakup_api, zakup_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA zakup TO zakup_admin;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA zakup TO zakup_api, zakup_admin;
+GRANT SELECT ON categories, reject_reasons, feature_flags, documents, document_versions, current_documents,
+                catalog, catalog_search, price_compare, companies, product_photos TO zakup_api;
+GRANT SELECT, INSERT, UPDATE ON orders, order_items, products, cart_items, notifications,
+                support_tickets, ticket_messages, document_acceptances, users TO zakup_api;
+GRANT DELETE ON cart_items, product_photos TO zakup_api;
+GRANT INSERT ON product_photos, password_reset_requests TO zakup_api;
+GRANT SELECT ON order_events, invoices, supplier_order_cards TO zakup_api;
+-- audit_log, staff, sessions, data_requests — недоступны API приложения
+
+ALTER TABLE orders        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invoices      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cart_items    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
+
+-- Заказ видят: магазин-заказчик, поставщик (владелец), назначенный доставщик
+CREATE POLICY orders_read ON orders FOR SELECT TO zakup_api USING (
+  shop_id = app_company_id()
+  OR (supplier_id = app_company_id() AND app_role() = 'owner')
+  OR courier_id = app_user_id());
+CREATE POLICY orders_shop_create ON orders FOR INSERT TO zakup_api WITH CHECK (shop_id = app_company_id() AND created_by = app_user_id());
+CREATE POLICY orders_supplier_update ON orders FOR UPDATE TO zakup_api USING (
+  (supplier_id = app_company_id() AND app_role() = 'owner') OR courier_id = app_user_id());
+CREATE POLICY order_items_read ON order_items FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
+CREATE POLICY order_items_create ON order_items FOR INSERT TO zakup_api WITH CHECK (
+  EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.shop_id = app_company_id() AND o.status = 'new'));
+CREATE POLICY invoices_read ON invoices FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
+CREATE POLICY notifications_own ON notifications FOR ALL TO zakup_api USING (user_id = app_user_id());
+CREATE POLICY cart_own ON cart_items FOR ALL TO zakup_api USING (user_id = app_user_id());
+-- Товары: читают все (каталог), меняет только владелец-поставщик
+CREATE POLICY products_read  ON products FOR SELECT TO zakup_api USING (true);
+CREATE POLICY products_write ON products FOR INSERT TO zakup_api WITH CHECK (supplier_id = app_company_id() AND app_role() = 'owner');
+CREATE POLICY products_edit  ON products FOR UPDATE TO zakup_api USING (supplier_id = app_company_id() AND app_role() = 'owner' AND hidden_by IS NULL);
+-- Пользователи: себя и сотрудников своей компании (поставщик управляет доставщиками)
+CREATE POLICY users_read ON users FOR SELECT TO zakup_api USING (id = app_user_id() OR company_id = app_company_id());
+CREATE POLICY users_add_courier ON users FOR INSERT TO zakup_api WITH CHECK (company_id = app_company_id() AND role = 'courier' AND app_role() = 'owner');
+CREATE POLICY users_edit ON users FOR UPDATE TO zakup_api USING (id = app_user_id() OR (company_id = app_company_id() AND role = 'courier' AND app_role() = 'owner'));
+CREATE POLICY tickets_own ON support_tickets FOR ALL TO zakup_api USING (user_id = app_user_id());
+
+COMMIT;

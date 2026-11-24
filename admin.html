@@ -412,7 +412,8 @@ td.r,th.r{text-align:right}
       ['22.11.2026 10:15', 'Айбек Н.', 'Поддержка', 'Сбросил пароль', 'Гульнара А., Магазин «Достук»', 'Просьба по телефону'],
       ['21.11.2026 17:40', 'Динара К.', 'Модератор', 'Заблокировал компанию', 'Киоск «Мээрим»', 'ИНН не совпадает с данными налоговой']
     ],
-    userBlocks: { 'Мээрим Д.': 'Компания заблокирована' }, kicks: {}, accepts: {}, userLast: {}, regUsers: [],
+    userBlocks: { 'Мээрим Д.': 'Компания заблокирована' }, kicks: {}, accepts: {}, userLast: {}, regUsers: [], profiles: {},
+    editReqs: [{ id: 1, role: null, co: 'Продукты «Нур»', who: 'Бакыт С.', changes: { addr: ['г. Бишкек, ул. Ахунбаева, 7', 'г. Бишкек, ул. Ахунбаева, 112'] }, date: '23.11.2026, 18:40', st: 'new' }],
     pwReqs: [{ id: 1, phone: '+996 555 •• •• 41', who: 'Нурбек Ж.', date: '23.11.2026, 16:20', st: 'new' }]
   };
   const FLAG_TITLES = [['orders_on', 'Приём заказов'], ['urgent_on', 'Срочные заказы'], ['qr_delivery', 'Доставка по QR'], ['new_catalog', 'Новый каталог (тест)']];
@@ -539,7 +540,7 @@ td.r,th.r{text-align:right}
   const TITLES = {}; NAV.forEach(([, items]) => items.forEach(([k, , t]) => { TITLES[k] = t; }));
   let page = 'home';
   function badge(k) {
-    if (k === 'companies') return companies.filter(c => c.st === 'pending').length;
+    if (k === 'companies') return companies.filter(c => c.st === 'pending').length + (D.editReqs || []).filter(r => r.st === 'new').length;
     if (k === 'tickets') return tickets.filter(t => t.st === 'open').length;
     if (k === 'users') return (D.pwReqs || []).filter(r => r.st === 'new').length;
     if (k === 'data') return dataReqs.filter(d => d.st === 'new').length;
@@ -593,7 +594,12 @@ td.r,th.r{text-align:right}
     companies() {
       const F = [['all', 'Все', () => true], ['pending', 'На проверке', c => c.st === 'pending'], ['dist', 'Поставщики', c => c.type === 'dist'], ['shop', 'Магазины', c => c.type === 'shop'], ['blocked', 'Заблокированы', c => c.st === 'blocked']];
       const qq = q(), list = companies.filter(F.find(f => f[0] === filt.companies)[2]).filter(c => !qq || (c.name + c.inn).toLowerCase().includes(qq));
-      return '<div class="card"><div class="tabs">' + F.map(([k, t, f]) => '<button class="tab' + (k === filt.companies ? ' on' : '') + '" data-f="companies:' + k + '">' + t + '<span class="n">' + companies.filter(f).length + '</span></button>').join('') + '</div>' +
+      const er = (D.editReqs || []).filter(r => r.st === 'new'), FL = { name: 'Название', inn: 'ИНН', addr: 'Адрес', phone: 'Телефон' };
+      return (er.length ? '<div class="card"><div class="between"><h2>Изменение данных</h2></div><div class="list">' +
+        er.map(r => '<div style="align-items:flex-start"><span class="grow cell2"><b>' + esc(r.co) + '</b><span>' + esc(r.who + ', ' + r.date) + '</span>' +
+          Object.keys(r.changes).map(k => '<span class="small" style="color:var(--text)">' + FL[k] + ': <s class="muted">' + esc(r.changes[k][0] || '—') + '</s> → <b>' + esc(r.changes[k][1]) + '</b></span>').join('') +
+          '</span>' + (can('verify') ? '<span class="row"><button class="btn ghost sm" data-erno="' + r.id + '">Отклонить</button><button class="btn sm" data-erok="' + r.id + '">Одобрить</button></span>' : '') + '</div>').join('') + '</div></div>' : '') +
+        '<div class="card"><div class="tabs">' + F.map(([k, t, f]) => '<button class="tab' + (k === filt.companies ? ' on' : '') + '" data-f="companies:' + k + '">' + t + '<span class="n">' + companies.filter(f).length + '</span></button>').join('') + '</div>' +
         '<div class="tbl-wrap"><table><thead><tr><th>Компания</th><th>Тип</th><th>ИНН</th><th>Статус</th><th>Сотрудники</th><th class="r">Заказов</th><th>Регистрация</th></tr></thead><tbody>' +
         (list.length ? list.map(c => '<tr data-co="' + c.id + '"><td><span class="cell2"><b>' + esc(c.name) + '</b><span>' + esc(c.addr) + '</span></span></td><td>' + (c.type === 'dist' ? 'Поставщик' : 'Магазин') + '</td><td class="mono">' + esc(c.inn) + '</td><td>' + coTag(c) + '</td><td>' + c.staff + '</td><td class="r mono">' + c.orders + '</td><td>' + c.reg + '</td></tr>').join('') : '<tr><td colspan="7" class="empty">Ничего не найдено</td></tr>') +
         '</tbody></table></div></div>';
@@ -689,6 +695,8 @@ td.r,th.r{text-align:right}
     const g = t.closest('[data-goto]'); if (g) { const [p, v] = g.dataset.goto.split('-'); filt[p] = v; go(p); return; }
     const co = t.closest('[data-co]'); if (co) { openCompany(+co.dataset.co); return; }
     const o = t.closest('[data-order]'); if (o) { openOrder(o.dataset.order); return; }
+    const eo = t.closest('[data-erok]'); if (eo) { decideEdit(+eo.dataset.erok, true); return; }
+    const en = t.closest('[data-erno]'); if (en) { reasonModal('Отклонить изменения?', 'Отклонить', 'red', v => decideEdit(+en.dataset.erno, false, v)); return; }
     const pq = t.closest('[data-pwreq]'); if (pq) { const r = D.pwReqs.find(x => x.id === +pq.dataset.pwreq); if (r) pwModal(r.who || r.phone, () => { patch(d => { const x = d.pwReqs.find(y => y.id === r.id); if (x) x.st = 'done'; if (r.who) d.kicks[r.who] = Date.now(); }); logAct('Выдал новый пароль', r.phone, 'Заявка из приложения'); render(); }); return; }
     const u = t.closest('[data-user]'); if (u) { openUser(u.dataset.user); return; }
     const tk = t.closest('[data-ticket]'); if (tk) { curTicket = +tk.dataset.ticket; const tt = tickets.find(x => x.id === curTicket); if (tt && tt.unread) patch(d => { const x = d.tickets.find(y => y.id === curTicket); if (x) x.unread = false; }); render(); return; }
@@ -797,6 +805,30 @@ td.r,th.r{text-align:right}
     });
   }
 
+  // Заявка на изменение данных компании: одобрить — данные меняются в админке и в приложении
+  function decideEdit(id, ok, why) {
+    const r0 = (D.editReqs || []).find(x => x.id === id); if (!r0) return;
+    patch(d => {
+      const r = d.editReqs.find(x => x.id === id); r.st = ok ? 'ok' : 'rejected'; if (why) r.why = why;
+      const c = d.companies.find(x => x.name === r.co), ch = r.changes, nv = k => ch[k] ? ch[k][1] : undefined;
+      const role = r.role || appRoleOfCompany(d, r.co);
+      if (ok) {
+        if (c) { if (nv('name')) c.name = nv('name'); if (nv('inn')) c.inn = nv('inn'); if (nv('addr')) c.addr = nv('addr'); if (nv('phone')) c.phone = nv('phone'); }
+        if (role) {
+          d.profiles = d.profiles || {}; d.profiles[role] = Object.assign({}, d.profiles[role], ...Object.keys(ch).map(k => ({ [k]: ch[k][1] })));
+          if (nv('name') && role === 'dist') {
+            const old = r.co, to = nv('name');
+            (d.orders || []).forEach(o => { if (o.sup === old) o.sup = to; }); (d.products || []).forEach(p => { if (p.sup === old) p.sup = to; });
+            ((d.notifs || {}).shop || []).forEach(n => { if (n.s === old) n.s = to; }); d.dist = to;
+          }
+          if (role === 'shop' && d.shops && d.shops.aidana) { if (nv('name')) d.shops.aidana.name = nv('name'); if (nv('addr')) d.shops.aidana.addr = nv('addr').replace(/^г\. Бишкек, /, ''); }
+        }
+      }
+      if (role) notifyApp(d, role, ok ? { t: 'Изменения данных одобрены', ic: 'i-check' } : { t: 'Изменения данных отклонены: ' + why, ic: 'i-x' });
+    });
+    logAct(ok ? 'Одобрил изменение данных' : 'Отклонил изменение данных', r0.co, why || Object.keys(r0.changes).map(k => ({ name: 'название', inn: 'ИНН', addr: 'адрес', phone: 'телефон' })[k]).join(', '));
+    toast(ok ? 'Данные обновлены, приложение уже показывает новые' : 'Изменения отклонены'); render();
+  }
   // Временный пароль: администратор сообщает его пользователю по телефону
   function pwModal(who, done) {
     const gen = () => { const a = 'abcdefghjkmnpqrstuvwxyz', n = '23456789'; let p = ''; for (let i = 0; i < 8; i++) p += (i % 3 === 2 ? n : a)[Math.floor(Math.random() * (i % 3 === 2 ? n : a).length)]; return p; };

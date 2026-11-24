@@ -128,6 +128,8 @@ img{max-width:100%}
 .pill{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .pill.urgent{color:#fff;background:linear-gradient(180deg,#E0483B,#C02E22);box-shadow:0 2px 6px rgba(192,46,34,.3)}
 .pill.new{color:var(--warn);background:var(--warn-bg)}
+#pr-edit-st{margin-left:auto;margin-right:6px}.icon-btn.sm-ic{width:36px;height:36px}
+.chg{display:flex;flex-direction:column;gap:2px;padding:10px 0}.chg + .chg{border-top:1px solid var(--line)}.chg s{color:var(--muted)}
 .pill.work{color:var(--green);background:var(--green-bg)}
 .pill.done{color:var(--muted);background:var(--soft)}
 .pill.in{color:var(--green);background:var(--green-bg)}
@@ -1017,10 +1019,10 @@ details.fold.first{border-top:none}
     </div></header>
     <div class="body">
       <div class="card rise" style="gap:10px">
-        <span class="bold" style="font-size:16px" id="pr-req-h">Реквизиты</span>
+        <div class="between"><span class="bold" style="font-size:16px" id="pr-req-h">Реквизиты</span><span id="pr-edit-st"></span><button type="button" class="icon-btn sm-ic" id="pr-edit" aria-label="Редактировать данные"><svg class="ic"><use href="#i-edit"/></svg></button></div>
         <div class="kv"><span>ИНН</span><span id="pr-inn"></span></div>
         <div class="kv"><span id="pr-addr-l">Адрес склада</span><span id="pr-addr"></span></div>
-        <div class="kv"><span>Телефон</span><span>+996 500 99 16 20</span></div>
+        <div class="kv" id="pr-phone-row"><span>Телефон</span><span id="pr-phone">+996 500 99 16 20</span></div>
       </div>
       <div class="list rise">
         <button class="li" data-support><svg class="ic"><use href="#i-help"/></svg><span class="grow">Служба поддержки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
@@ -1158,6 +1160,7 @@ details.fold.first{border-top:none}
   <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></symbol>
   <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></symbol>
   <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
   <symbol id="i-call" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2z"/></symbol>
   <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></symbol>
@@ -1220,7 +1223,7 @@ details.fold.first{border-top:none}
   const DEMO_PHONE = '+996 500 99 16 20';
 
   // ---------- Участники ----------
-  const DIST = 'ОсОО «Дистрибьютор»';
+  let DIST = 'ОсОО «Дистрибьютор»';
   const SUPS = {
     [DIST]: { details: 'ИНН 02305199010045<br>г. Бишкек, пр. Чуй, 154', days: 1 },
     'ОсОО «Азия Трейд»': { details: 'ИНН 01811201610025<br>г. Бишкек, ул. Ахунбаева, 99', days: 0 },
@@ -2200,9 +2203,51 @@ details.fold.first{border-top:none}
     $('#feed-av').innerHTML = avatars.shop ? '<img alt="" src="' + avatars.shop + '">' : PROFILE.shop.av;
     $('#inv-count').textContent = invOrders().length;
     $('#pr-inn').parentElement.hidden = role === 'courier';
+    $('#pr-phone').textContent = P0.phone || DEMO_PHONE; $('#pr-phone-row').hidden = role === 'courier';
+    $('#pr-edit').hidden = role === 'courier';
+    $('#pr-edit-st').innerHTML = role !== 'courier' && myEditReq() ? '<span class="pill" style="color:var(--amber, #B7791F);background:rgba(240,170,40,.15)">На проверке</span>' : '';
     $('#pr-req-h').textContent = role === 'courier' ? 'Данные' : 'Реквизиты';
     renderNav();
   }
+  // ---------- Изменение данных компании: заявка, одобряет Zakup.KG ----------
+  const EDIT_F = [['name', 'Название'], ['inn', 'ИНН'], ['addr', 'Адрес'], ['phone', 'Телефон']];
+  const myEditReq = () => (ADM.editReqs || []).find(r => r.role === role && r.st === 'new');
+  const phone9 = v => v.replace(/\D/g, '').replace(/^996/, '').slice(0, 9);
+  const phoneFmt = d => '+996 ' + d.slice(0, 3) + ' ' + d.slice(3, 5) + ' ' + d.slice(5, 7) + ' ' + d.slice(7);
+  function openEditData() {
+    const P0 = PROFILE[role], r = myEditReq();
+    if (r) {
+      sheet('<span class="h2">Изменения на проверке</span><div class="card" style="padding:2px 14px;text-align:left">' +
+        Object.keys(r.changes).map(k => '<div class="chg"><span class="xs muted">' + EDIT_F.find(f => f[0] === k)[1] + '</span><s class="small">' + esc(r.changes[k][0]) + '</s><b>' + esc(r.changes[k][1]) + '</b></div>').join('') + '</div>' +
+        '<button type="button" class="btn lg ghost danger-t" id="er-cancel" style="color:var(--red)">Отменить заявку</button><button type="button" class="btn lg ghost" data-close>Закрыть</button>');
+      $('#er-cancel').onclick = () => { patchShared(d => { const x = (d.editReqs || []).find(y => y.id === r.id); if (x) x.st = 'cancelled'; }); closeSheet(); renderProfile(); toast('Заявка отменена'); };
+      return;
+    }
+    const cur = { name: P0.name, inn: P0.inn, addr: P0.addr, phone: P0.phone || DEMO_PHONE };
+    sheet('<span class="h2">Редактировать данные</span><form id="er-form" novalidate style="display:flex;flex-direction:column;gap:10px;width:100%">' +
+      '<label class="inp"><svg class="ic"><use href="#i-store"/></svg><input type="text" id="er-name" placeholder="Название"></label>' +
+      '<label class="inp"><svg class="ic"><use href="#i-doc"/></svg><input type="text" inputmode="numeric" id="er-inn" placeholder="ИНН / ПИН (14 цифр)"></label>' +
+      '<label class="inp"><svg class="ic"><use href="#i-pin"/></svg><input type="text" id="er-addr" placeholder="' + P0.addrL + '"></label>' +
+      '<label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" inputmode="numeric" id="er-phone" placeholder="Номер телефона"></label>' +
+      '<span class="err" id="er-err" hidden style="color:var(--red);font-weight:700;font-size:13px"></span>' +
+      '<button type="submit" class="btn lg" id="er-ok" disabled>Отправить на проверку</button><button type="button" class="btn lg ghost" data-close>Отмена</button></form>');
+    $('#er-name').value = cur.name; $('#er-inn').value = cur.inn; $('#er-addr').value = cur.addr;
+    const ph = $('#er-phone'), fmtPh = () => { const d = phone9(ph.value); ph.value = d.replace(/^(\d{3})(\d{0,2})(\d{0,2})(\d{0,2}).*/, (m, a, b, c, x) => [a, b, c, x].filter(Boolean).join(' ')); };
+    ph.value = phone9(cur.phone); fmtPh();
+    const vals = () => ({ name: $('#er-name').value.trim(), inn: $('#er-inn').value.replace(/\D/g, ''), addr: $('#er-addr').value.trim(), phone: phoneFmt(phone9(ph.value)) });
+    const diff = () => { const v = vals(), c = {}; EDIT_F.forEach(([k]) => { if (v[k] !== cur[k]) c[k] = [cur[k], v[k]]; }); return c; };
+    $('#er-form').addEventListener('input', e => { if (e.target === ph) fmtPh(); if (e.target.id === 'er-inn') e.target.value = e.target.value.replace(/\D/g, '').slice(0, 14); $('#er-ok').disabled = !Object.keys(diff()).length; $('#er-err').hidden = true; });
+    $('#er-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const v = vals(), bad = [];
+      if (v.name.length < 2) bad.push('название'); if (v.inn.length !== 14) bad.push('ИНН из 14 цифр'); if (v.addr.length < 5) bad.push('адрес'); if (phone9(ph.value).length !== 9) bad.push('номер из 9 цифр');
+      if (bad.length) { $('#er-err').textContent = 'Проверьте: ' + bad.join(', '); $('#er-err').hidden = false; return; }
+      const ch = diff(); if (!Object.keys(ch).length) return;
+      patchShared(d => { d.editReqs = d.editReqs || []; d.editReqs.unshift({ id: Math.max(0, ...d.editReqs.map(r => r.id)) + 1, role, co: myCoName(role), who: userName(role), changes: ch, date: new Date().toLocaleDateString('ru-RU') + ', ' + new Date().toTimeString().slice(0, 5), st: 'new' }); });
+      closeSheet(); renderProfile(); toast('Изменения отправлены на проверку');
+    });
+  }
+  $('#pr-edit').addEventListener('click', openEditData);
   $('#avatar-input').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (!f) return; avatars[role] = URL.createObjectURL(f); e.target.value = ''; renderProfile(); toast('Аватар обновлён'); });
   document.addEventListener('click', e => {
     if (e.target.closest('[data-support]')) {
@@ -2400,7 +2445,7 @@ details.fold.first{border-top:none}
   // =====================================================================
   const SHARED_KEY = 'zk-shared-v1';
   const prodHidden = {};
-  const ADM = { companies: [], tickets: [], dataReqs: [], flags: {}, cats: null, reasons: null, docs: null, userBlocks: {}, kicks: {}, accepts: {} };
+  const ADM = { companies: [], tickets: [], dataReqs: [], editReqs: [], flags: {}, cats: null, reasons: null, docs: null, userBlocks: {}, kicks: {}, accepts: {} };
   const APP_KEYS = ['orders', 'couriers', 'products', 'others', 'prodHidden', 'notifs', 'oNum', 'crId', 'pid'];
   const localState = () => ({ orders, couriers, products, others, prodHidden, notifs: NOTIFS, oNum, crId, pid });
   let lastKey = {}, sharedRaw = '', loginAt = 0;
@@ -2428,6 +2473,25 @@ details.fold.first{border-top:none}
     if (ADM.cats && ADM.cats.length) CATS_DIR.splice(0, CATS_DIR.length, ...ADM.cats);
     if (ADM.reasons && ADM.reasons.length) REASONS.splice(0, REASONS.length, ...ADM.reasons);
   }
+  // Одобренные админкой данные компании (название, ИНН, адрес, телефон)
+  function applyProfiles(pr) {
+    const p = pr.dist;
+    if (p) {
+      if (p.name && p.name !== DIST) {
+        const old = DIST; SUPS[p.name] = SUPS[old]; delete SUPS[old];
+        orders.forEach(o => { if (o.sup === old) o.sup = p.name; }); products.forEach(x => { if (x.sup === old) x.sup = p.name; });
+        NOTIFS.shop.forEach(n => { if (n.s === old) n.s = p.name; });
+        DIST = p.name; PROFILE.dist.name = p.name; PROFILE.courier.addr = p.name;
+      }
+      Object.assign(PROFILE.dist, { inn: p.inn || PROFILE.dist.inn, addr: p.addr || PROFILE.dist.addr, phone: p.phone || PROFILE.dist.phone });
+      SUPS[DIST].details = 'ИНН ' + PROFILE.dist.inn + '<br>' + esc(PROFILE.dist.addr);
+    }
+    const sh = pr.shop;
+    if (sh) {
+      Object.assign(PROFILE.shop, { name: sh.name || PROFILE.shop.name, inn: sh.inn || PROFILE.shop.inn, addr: sh.addr || PROFILE.shop.addr, phone: sh.phone || PROFILE.shop.phone });
+      SHOPS[MY_SHOP].name = PROFILE.shop.name; if (sh.addr) SHOPS[MY_SHOP].addr = sh.addr.replace(/^г\. Бишкек, /, '');
+    }
+  }
   function loadShared(d) {
     if (!d || d.v !== 1) return false;
     if (d.orders) orders.splice(0, orders.length, ...d.orders);
@@ -2437,7 +2501,8 @@ details.fold.first{border-top:none}
     if (d.prodHidden) { Object.keys(prodHidden).forEach(k => delete prodHidden[k]); Object.assign(prodHidden, d.prodHidden); }
     if (d.notifs) { NOTIFS.shop = d.notifs.shop || NOTIFS.shop; NOTIFS.dist = d.notifs.dist || NOTIFS.dist; }
     if (d.oNum) oNum = d.oNum; if (d.crId) crId = d.crId; if (d.pid) pid = d.pid;
-    ['companies', 'tickets', 'dataReqs'].forEach(k => { ADM[k] = d[k] || []; });
+    ['companies', 'tickets', 'dataReqs', 'editReqs'].forEach(k => { ADM[k] = d[k] || []; });
+    applyProfiles(d.profiles || {});
     ['flags', 'userBlocks', 'kicks', 'accepts'].forEach(k => { ADM[k] = d[k] || {}; });
     ADM.cats = d.cats || null; ADM.reasons = d.reasons || null; ADM.docs = d.docs || null;
     applyDicts();

@@ -218,6 +218,11 @@ SELECT phone, id, now() - interval '20 hours' FROM users WHERE full_name = 'Ну
 INSERT INTO password_reset_requests (phone, user_id, status, handled_by, handled_at, note, created_at)
 SELECT phone, id, 'done', 2, '2026-11-22 10:15+06', 'Позвонил, подтвердила владелица', '2026-11-22 09:50+06' FROM users WHERE full_name = 'Гульнара А.';
 
+-- ---------- Изменение данных компании ----------
+INSERT INTO company_change_requests (company_id, requested_by, new_address, old_values, created_at)
+SELECT c.id, u.id, 'ул. Ахунбаева, 112, корпус 2', jsonb_build_object('name', c.name, 'inn', c.inn, 'address', c.address, 'phone', c.phone), '2026-11-23 18:40+06'
+  FROM companies c JOIN users u ON u.company_id = c.id AND u.role = 'owner' WHERE c.name = 'Продукты «Нур»';
+
 -- ---------- Запросы по данным ----------
 INSERT INTO data_requests (user_id, kind, source, status, handled_by, handled_at, created_at)
 SELECT u.id, v.k::data_req_kind, v.src, v.st::request_status, CASE WHEN v.st = 'done' THEN 1 END, CASE WHEN v.st = 'done' THEN timestamptz '2026-11-16 12:00+06' END, v.dt::timestamptz

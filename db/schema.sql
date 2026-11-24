@@ -31,6 +31,7 @@ CREATE TYPE staff_role      AS ENUM ('owner', 'support', 'moder', 'dev');
 CREATE TYPE ticket_status   AS ENUM ('open', 'closed');
 CREATE TYPE msg_author      AS ENUM ('user', 'staff');
 CREATE TYPE request_status  AS ENUM ('new', 'done', 'rejected');
+CREATE TYPE change_status   AS ENUM ('new', 'approved', 'rejected', 'cancelled');
 CREATE TYPE data_req_kind   AS ENUM ('export', 'fix', 'consent', 'del');
 CREATE TYPE push_audience   AS ENUM ('all', 'dist', 'shop');
 CREATE TYPE app_lang        AS ENUM ('ru', 'ky');
@@ -156,6 +157,51 @@ CREATE TABLE password_reset_requests (
 CREATE INDEX pwreq_new_idx ON password_reset_requests (created_at) WHERE status = 'new';
 -- Не больше одной открытой заявки на номер (защита от спама)
 CREATE UNIQUE INDEX pwreq_one_open_uq ON password_reset_requests (phone) WHERE status = 'new';
+
+-- Изменение данных компании из профиля приложения. Новые данные действуют после одобрения в админке
+CREATE TABLE company_change_requests (
+  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  company_id   bigint        NOT NULL REFERENCES companies(id),
+  requested_by bigint        NOT NULL REFERENCES users(id),
+  new_name     text CHECK (length(new_name) BETWEEN 2 AND 120),
+  new_inn      char(14) CHECK (new_inn ~ '^\d{14}$'),
+  new_address  text,
+  new_phone    phone_kg,
+  old_values   jsonb         NOT NULL,      -- данные на момент заявки: {name, inn, address, phone}
+  status       change_status NOT NULL DEFAULT 'new',
+  reason       text,                         -- причина отказа, приходит пользователю
+  decided_by   bigint REFERENCES staff(id),
+  decided_at   timestamptz,
+  created_at   timestamptz   NOT NULL DEFAULT now(),
+  CHECK (COALESCE(new_name, new_inn, new_address, new_phone::text) IS NOT NULL),
+  CHECK (status <> 'rejected' OR reason IS NOT NULL),
+  CHECK (status NOT IN ('approved', 'rejected') OR (decided_by IS NOT NULL AND decided_at IS NOT NULL))
+);
+-- Одна открытая заявка на компанию: пока она на проверке, новую отправить нельзя (можно отменить)
+CREATE UNIQUE INDEX change_one_open_uq ON company_change_requests (company_id) WHERE status = 'new';
+
+-- Одобрить / отклонить: данные компании меняются одной транзакцией, пользователю приходит уведомление.
+-- Заказы и накладные ссылаются на компанию по id, поэтому переименование их не ломает;
+-- в уже выданных накладных остаются старые реквизиты (снимок).
+CREATE FUNCTION admin_decide_change(p_staff bigint, p_req bigint, p_approve boolean, p_reason text DEFAULT NULL) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE r company_change_requests; cname text;
+BEGIN
+  SELECT * INTO r FROM company_change_requests WHERE id = p_req AND status = 'new' FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Заявка уже рассмотрена или отменена'; END IF;
+  IF p_approve THEN
+    UPDATE companies SET name = COALESCE(r.new_name, name), inn = COALESCE(r.new_inn, inn),
+                         address = COALESCE(r.new_address, address), phone = COALESCE(r.new_phone, phone)
+     WHERE id = r.company_id;
+  END IF;
+  UPDATE company_change_requests SET status = CASE WHEN p_approve THEN 'approved' ELSE 'rejected' END::change_status,
+         reason = p_reason, decided_by = p_staff, decided_at = now() WHERE id = p_req;
+  INSERT INTO notifications (user_id, title, sender, icon) VALUES (r.requested_by,
+    CASE WHEN p_approve THEN 'Изменения данных одобрены' ELSE 'Изменения данных отклонены: ' || p_reason END, 'Zakup.KG',
+    CASE WHEN p_approve THEN 'i-check' ELSE 'i-x' END);
+  SELECT name INTO cname FROM companies WHERE id = r.company_id;
+  INSERT INTO audit_log (staff_id, action, object, object_ref, reason) VALUES (p_staff,
+    CASE WHEN p_approve THEN 'Одобрил изменение данных' ELSE 'Отклонил изменение данных' END, cname, 'company:' || r.company_id, p_reason);
+END $$;
 
 -- =====================================================================
 -- 3. КАТАЛОГ
@@ -727,6 +773,7 @@ SELECT u.id, u.full_name, c.name AS company, c.id AS company_id,
 CREATE VIEW admin_dashboard AS
 SELECT
   (SELECT count(*) FROM companies WHERE status = 'pending')                         AS companies_pending,
+  (SELECT count(*) FROM company_change_requests WHERE status = 'new')               AS change_requests,
   (SELECT count(*) FROM password_reset_requests WHERE status = 'new')               AS password_requests,
   (SELECT count(*) FROM support_tickets WHERE status = 'open')                      AS tickets_open,
   (SELECT count(*) FROM data_requests WHERE status = 'new')                         AS data_requests_new,
@@ -760,6 +807,7 @@ GRANT SELECT, INSERT, UPDATE ON orders, order_items, products, cart_items, notif
                 support_tickets, ticket_messages, document_acceptances, users TO zakup_api;
 GRANT DELETE ON cart_items, product_photos TO zakup_api;
 GRANT INSERT ON product_photos, password_reset_requests TO zakup_api;
+GRANT SELECT, INSERT, UPDATE (status) ON company_change_requests TO zakup_api;   -- отправить и отменить свою заявку
 GRANT SELECT ON order_events, invoices, supplier_order_cards TO zakup_api;
 -- audit_log, staff, sessions, data_requests — недоступны API приложения
 
@@ -771,6 +819,7 @@ ALTER TABLE cart_items    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE company_change_requests ENABLE ROW LEVEL SECURITY;
 
 -- Заказ видят: магазин-заказчик, поставщик (владелец), назначенный доставщик
 CREATE POLICY orders_read ON orders FOR SELECT TO zakup_api USING (
@@ -794,6 +843,9 @@ CREATE POLICY products_edit  ON products FOR UPDATE TO zakup_api USING (supplier
 CREATE POLICY users_read ON users FOR SELECT TO zakup_api USING (id = app_user_id() OR company_id = app_company_id());
 CREATE POLICY users_add_courier ON users FOR INSERT TO zakup_api WITH CHECK (company_id = app_company_id() AND role = 'courier' AND app_role() = 'owner');
 CREATE POLICY users_edit ON users FOR UPDATE TO zakup_api USING (id = app_user_id() OR (company_id = app_company_id() AND role = 'courier' AND app_role() = 'owner'));
+CREATE POLICY change_own ON company_change_requests FOR SELECT TO zakup_api USING (company_id = app_company_id());
+CREATE POLICY change_create ON company_change_requests FOR INSERT TO zakup_api WITH CHECK (company_id = app_company_id() AND requested_by = app_user_id() AND app_role() = 'owner' AND status = 'new');
+CREATE POLICY change_cancel ON company_change_requests FOR UPDATE TO zakup_api USING (company_id = app_company_id() AND status = 'new') WITH CHECK (status = 'cancelled');
 CREATE POLICY tickets_own ON support_tickets FOR ALL TO zakup_api USING (user_id = app_user_id());
 
 COMMIT;

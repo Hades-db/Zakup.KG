@@ -377,6 +377,7 @@ details.desc textarea:focus{border-color:var(--green)}
 .inp:focus-within{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,128,60,.14)}
 .inp .ic{color:var(--muted);width:20px;height:20px}
 .inp input{flex:1;border:none;background:none;height:100%;font-size:16px;min-width:0;outline:none;padding:0}
+.field .inp input,.field .inp input:focus{border:none;border-radius:0;box-shadow:none;background:none;height:100%;padding:0}
 .inp .cc{font-weight:700;font-size:16px}
 
 /* Шторка, тост, фото крупно */
@@ -856,6 +857,7 @@ details.fold.first{border-top:none}
     <header class="top"><div class="top-row">
       <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
       <span class="h-sub">Доставщик</span>
+      <button type="button" class="icon-btn" id="cq-edit" aria-label="Редактировать данные" style="margin-left:auto"><svg class="ic"><use href="#i-edit"/></svg></button>
     </div></header>
     <div class="body" id="cq-body"></div>
     <div class="bottom-bar"><button type="button" class="btn lg danger" id="cq-del"><svg class="ic"><use href="#i-trash"/></svg>Удалить сотрудника</button></div>
@@ -2424,6 +2426,35 @@ details.fold.first{border-top:none}
   $('#cq-body').addEventListener('click', e => {
     const f = e.target.closest('[data-cqf]'); if (f) { cqF = f.dataset.cqf; renderCourier(); return; }
     const o = e.target.closest('[data-cqo]'); if (o) { openOrder(o.dataset.cqo); go('s-order', 'push'); }
+  });
+  // Поставщик меняет данные доставщика: ФИО, телефон (логин), пароль
+  $('#cq-edit').addEventListener('click', () => {
+    const c = couriers.find(x => x.id === cqId); if (!c) return;
+    sheet('<span class="h2">Данные доставщика</span><form class="sheet-form" id="cq-form" novalidate>' +
+      '<div class="field"><span class="label">ФИО</span><label class="inp"><svg class="ic"><use href="#i-user"/></svg><input id="cq-name" autocomplete="off"></label></div>' +
+      '<div class="field"><span class="label">Телефон</span><label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input id="cq-phone" inputmode="numeric" autocomplete="off"></label></div>' +
+      '<div class="field"><span class="label">Новый пароль</span><label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input id="cq-pw" type="text" autocomplete="off" placeholder="Оставьте пустым, чтобы не менять"></label></div>' +
+      '<span class="sheet-err" id="cq-err" hidden></span>' +
+      '<button type="submit" class="btn lg" id="cq-save" disabled>Сохранить</button><button type="button" class="btn lg ghost" data-close>Отмена</button></form>');
+    const ph = $('#cq-phone'), fmtPh = () => { const d = ph.value.replace(/\D/g, '').replace(/^996(?=\d{9})/, '').slice(0, 9); ph.value = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean).join(' '); };
+    $('#cq-name').value = c.name; ph.value = c.phone.replace(/^\+996\s*/, ''); fmtPh();
+    const vals = () => ({ name: $('#cq-name').value.trim().replace(/\s+/g, ' '), phone: '+996 ' + ph.value, pw: $('#cq-pw').value });
+    $('#cq-form').addEventListener('input', e => { if (e.target === ph) fmtPh(); const v = vals(); $('#cq-save').disabled = v.name === c.name && v.phone === c.phone && !v.pw; $('#cq-err').hidden = true; });
+    $('#cq-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const v = vals(), d = ph.value.replace(/\D/g, '');
+      const err = !v.name || v.name.split(' ').length < 2 ? 'Укажите имя и фамилию' : d.length !== 9 ? 'Номер телефона: 9 цифр' : v.pw && v.pw.length < 6 ? 'Пароль: не меньше 6 символов' : '';
+      if (err) { $('#cq-err').textContent = err; $('#cq-err').hidden = false; return; }
+      const old = c.name, loginChanged = v.phone !== c.phone || !!v.pw;
+      c.name = v.name; c.phone = v.phone;
+      // блокировки, сеансы и время входа в админке привязаны к имени — переносим
+      patchShared(sd => {
+        ['userBlocks', 'kicks', 'userLast', 'accepts'].forEach(k => { const m = sd[k]; if (m && old !== v.name && m[old] !== undefined) { m[v.name] = m[old]; delete m[old]; } });
+        if (loginChanged) { sd.kicks = sd.kicks || {}; sd.kicks[v.name] = Date.now(); }
+      });
+      closeSheet(); renderCourier(); renderCouriers();
+      toast(loginChanged ? 'Сохранено. Доставщик войдёт с новыми данными' : 'Сохранено');
+    });
   });
   $('#cq-del').addEventListener('click', () => {
     const c = couriers.find(x => x.id === cqId), active = orders.filter(o => o.courier === c.id && o.st === 'work').length;

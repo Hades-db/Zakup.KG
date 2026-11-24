@@ -182,6 +182,14 @@ UPDATE order_events e SET created_at = o.created_at FROM orders o WHERE e.order_
 UPDATE order_events e SET created_at = o.accepted_at, title = 'Принят, поставка ' || to_char(o.delivery_date, 'DD.MM') FROM orders o WHERE e.order_id = o.id AND e.status = 'work';
 UPDATE order_events e SET created_at = o.delivered_at FROM orders o WHERE e.order_id = o.id AND e.status = 'done';
 
+-- ---------- Оплата, оценка, чат ----------
+UPDATE orders SET paid_at = delivered_at + interval '2 hours', paid_marked_by = (SELECT id FROM users WHERE full_name = 'Азамат Т.') WHERE number = 214;
+INSERT INTO order_ratings (order_id, stars, comment, created_by)
+SELECT o.id, 5, 'Привезли вовремя', o.created_by FROM orders o WHERE o.number = 213;
+INSERT INTO order_messages (order_id, author_id, body, created_at)
+SELECT o.id, u.id, v.t, now() - v.ago::interval FROM orders o CROSS JOIN (VALUES ('Азамат Т.', 'Привезём после обеда', '3 hours'), ('Айдана М.', 'Хорошо, ждём', '2 hours')) v(who, t, ago)
+  JOIN users u ON u.full_name = v.who WHERE o.number = 216;
+
 -- ---------- Уведомления ----------
 INSERT INTO notifications (user_id, title, sender, icon, order_id, created_at, read_at)
 SELECT u.id, v.t, v.s, v.ic, o.id, now() - v.ago::interval, CASE WHEN v.rd THEN now() END

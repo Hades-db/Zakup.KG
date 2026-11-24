@@ -715,6 +715,18 @@ details.fold.first{border-top:none}
 .msg{max-width:82%;padding:10px 12px;border-radius:16px;background:var(--card);box-shadow:var(--sh-1);font-size:14.5px;line-height:1.4;align-self:flex-start}
 .msg.me{align-self:flex-end;background:var(--green);color:#fff}
 .msg small{display:block;font-size:11px;opacity:.7;margin-top:3px}
+.item.out .bold{text-decoration:line-through;color:var(--muted)}.item.out .i-sum{color:var(--muted)}
+.out-btn{border:1px solid var(--border);background:var(--card);color:var(--muted);font:inherit;font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;flex-shrink:0}
+.out-btn.on{border-color:var(--red);color:var(--red);background:rgba(216,57,44,.08)}
+.pay-row{display:flex;align-items:center;gap:10px}.pay-row .grow{gap:2px}
+.pill.debt{color:#B4231A;background:rgba(216,57,44,.12)}
+.stars{display:flex;gap:6px;justify-content:center}.stars button{border:none;background:none;padding:2px;font-size:32px;line-height:1;color:var(--border);cursor:pointer}.stars button.on{color:#F2A900}
+.stars.sm{justify-content:flex-start;gap:2px}.stars.sm span{font-size:15px;color:var(--border)}.stars.sm span.on{color:#F2A900}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}.kpi{background:var(--card);border-radius:18px;padding:14px;box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:4px}.kpi b{font-size:20px;font-weight:800}
+.rank{display:flex;align-items:center;gap:10px;padding:10px 0}.rank + .rank{border-top:1px solid var(--line)}.rank i{font-style:normal;width:22px;height:22px;border-radius:7px;background:var(--green-bg);color:var(--green);font-size:12px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+.bar-mini{height:6px;border-radius:3px;background:var(--green-bg);overflow:hidden}.bar-mini i{display:block;height:100%;background:var(--green);border-radius:3px}
+.chat-btn{position:relative}.chat-btn .dot-n{position:absolute;top:6px;right:6px}
+.imp-list{display:flex;flex-direction:column;gap:2px;max-height:38vh;overflow:auto;text-align:left}.imp-list div{display:flex;gap:8px;font-size:13.5px;padding:6px 0;border-bottom:1px solid var(--line)}
 .sp-note{text-align:center;font-size:12.5px;color:var(--muted);padding:4px 0}
 .banner-off{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--red-bg);color:var(--red);font-weight:700;font-size:14px}
 .tag-blk{font-size:11.5px;font-weight:800;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:8px}
@@ -829,6 +841,7 @@ details.fold.first{border-top:none}
   <section class="screen" id="s-products" data-tab="products" data-role="dist" hidden>
     <header class="top">
       <div class="top-row"><span class="h1">Товары</span>
+        <button type="button" class="icon-btn" id="p-import" aria-label="Загрузить прайс из Excel" style="margin-left:auto"><svg class="ic"><use href="#i-xls"/></svg></button>
         <button type="button" class="icon-btn view-btn" data-view="products" aria-label="Вид списка"><svg class="ic"><use href="#i-list"/></svg></button>
       </div>
       <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="p-search" type="search" placeholder="Поиск товара" aria-label="Поиск товара"></label>
@@ -871,6 +884,23 @@ details.fold.first{border-top:none}
     </div></header>
     <div class="body" id="sp-body"></div>
     <form class="bottom-bar sp-form" id="sp-form"><input id="sp-text" placeholder="Сообщение" autocomplete="off" aria-label="Сообщение"><button type="submit" class="btn" aria-label="Отправить"><svg class="ic"><use href="#i-next"/></svg></button></form>
+  </section>
+
+  <!-- ===== Долги, отчёт, чат по заказу ===== -->
+  <section class="screen" id="s-debts" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Долги</span></div></header>
+    <div class="body" id="db-body"></div>
+  </section>
+  <section class="screen" id="s-report" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub">Отчёт</span>
+      <button type="button" class="icon-btn" id="rp-xls" aria-label="Скачать Excel" style="margin-left:auto"><svg class="ic"><use href="#i-xls"/></svg></button></div>
+      <div class="chips" id="rp-per" role="tablist" aria-label="Период"></div></header>
+    <div class="body" id="rp-body"></div>
+  </section>
+  <section class="screen" id="s-ochat" hidden>
+    <header class="top"><div class="top-row"><button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="h-sub" id="oc-title">Чат</span></div></header>
+    <div class="body" id="oc-body"></div>
+    <form class="bottom-bar sp-form" id="oc-form"><input id="oc-text" placeholder="Сообщение" autocomplete="off" aria-label="Сообщение"><button type="submit" class="btn" aria-label="Отправить"><svg class="ic"><use href="#i-next"/></svg></button></form>
   </section>
 
   <!-- ===================== ДОСТАВЩИК ===================== -->
@@ -1027,6 +1057,8 @@ details.fold.first{border-top:none}
       </div>
       <div class="list rise">
         <button class="li" data-support><svg class="ic"><use href="#i-help"/></svg><span class="grow">Служба поддержки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="li" data-go="s-debts" id="pr-debts"><svg class="ic"><use href="#i-wallet"/></svg><span class="grow">Долги</span><span class="small muted" id="debt-sum"></span><svg class="ic chev"><use href="#i-next"/></svg></button>
+        <button class="li" data-go="s-report" id="pr-report"><svg class="ic"><use href="#i-chart"/></svg><span class="grow">Отчёт</span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-invoices"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><span class="small muted" id="inv-count"></span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-settings"><svg class="ic"><use href="#i-gear"/></svg><span class="grow">Настройки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-docs"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Договоры и правила</span><svg class="ic chev"><use href="#i-next"/></svg></button>
@@ -1162,6 +1194,10 @@ details.fold.first{border-top:none}
   <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></symbol>
   <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/></symbol>
+  <symbol id="i-xls" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12l5 6M14 12l-5 6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7h16v13H3zM3 7l12-4v4M15 13h4"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
   <symbol id="i-call" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2z"/></symbol>
   <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></symbol>
@@ -1316,6 +1352,22 @@ details.fold.first{border-top:none}
     { n: '0213', sup: DIST, shop: MY_SHOP, ago: '4 дня назад', st: 'done', deliver: -3, accepted: -4, deliveredAt: '15:05', items: [L('sugar', 25), L('juice', 1)] },
     { n: '0212', sup: OTHERS[0], shop: MY_SHOP, ago: '5 дней назад', st: 'done', deliver: -4, accepted: -5, deliveredAt: '09:20', items: [snap(byKeyAny('bread'), 30), snap(byKeyAny('baton'), 20)] }
   ];
+  // История за месяц: для отчёта и долгов (детерминированно)
+  (() => {
+    let seed = 7; const rnd = n => { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); };
+    const shopsK = ['dostuk', 'alatoo', 'nur', 'jibek', 'bereke', 'aigul', MY_SHOP], keys = ['milk', 'kefir', 'smetana', 'butter', 'ryazhenka', 'tvorog', 'juice', 'juice_orange', 'sugar', 'rice', 'cookie'];
+    const RATES = [5, 5, 4, 5, 3, 5, 4, 5];
+    for (let n = 211, k = 0; n >= 190; n--, k++) {
+      const dd = -5 - Math.floor(k * 25 / 22), its = [], cnt = 1 + rnd(3);
+      while (its.length < cnt) { const key = keys[rnd(keys.length)]; if (!its.some(l => l.key === key)) its.push(Object.assign(L(key, 1 + rnd(key === 'sugar' ? 40 : 10)), { key })); }
+      const o = { n: String(n).padStart(4, '0'), sup: DIST, shop: shopsK[rnd(shopsK.length)], ago: -dd + ' дн. назад', st: 'done', deliver: dd, accepted: dd - 1, deliveredAt: (9 + rnd(9)) + ':' + String(rnd(6) * 10).padStart(2, '0'), courier: 1 + rnd(3), items: its.map(l => { delete l.key; return l; }) };
+      if (!(k % 5 === 1 || k === 2)) o.pay = 'paid';
+      if (k % 3 === 0) o.rate = { s: RATES[k % RATES.length], c: k % 6 === 0 ? 'Привезли вовремя' : '' };
+      orders.push(o);
+    }
+    orders.find(o => o.n === '0214').pay = 'paid';
+    orders.find(o => o.n === '0213').rate = { s: 5, c: '' };
+  })();
   // Доставщики поставщика (сотрудники). Телефоны в демо — один демо-номер
   let crId = 4;
   const couriers = [
@@ -1331,7 +1383,7 @@ details.fold.first{border-top:none}
   orders.find(o => o.n === '0214').courier = 1;
   orders.find(o => o.n === '0213').courier = 2;
   const findOrder = n => orders.find(o => o.n === n);
-  const lineSum = l => l.q * l.price;
+  const lineSum = l => l.out ? 0 : l.q * l.price;
   const oSum = o => o.items.reduce((s, l) => s + lineSum(l), 0);
   const qtyText = l => l.q + ' ' + l.unit;
   const summary = o => o.items.slice(0, 2).map(l => l.name + ' × ' + qtyText(l)).join(', ') + (o.items.length > 2 ? ' и ещё ' + (o.items.length - 2) : '');
@@ -1417,7 +1469,7 @@ details.fold.first{border-top:none}
     const t = e.target.closest('[data-tabgo],[data-go],[data-back]');
     if (!t) return;
     if (t.dataset.tabgo) openTab(t.dataset.tabgo);
-    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') invoicesAs(false); if (t.dataset.go === 's-docs') renderDocVers(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
+    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') invoicesAs(false); if (t.dataset.go === 's-debts') renderDebts(); if (t.dataset.go === 's-report') renderReport(); if (t.dataset.go === 's-docs') renderDocVers(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
     else back();
   });
 
@@ -1450,7 +1502,7 @@ details.fold.first{border-top:none}
     e.preventDefault(); e.stopPropagation();
     $('#lb-img').innerHTML = '<img alt="" src="' + esc(z.dataset.zoom) + '">'; $('#lb-name').textContent = z.dataset.zname || ''; $('#lightbox').hidden = false;
   }, true);
-  const zimg = (p, cls) => '<span class="pimg' + (cls ? ' ' + cls : '') + '" data-zoom="' + esc(p.photos ? p.photos[0] : p.photo) + '" data-zname="' + esc(p.name + ', ' + volText(p.vol)) + '"><img alt="" loading="lazy" src="' + esc(p.photos ? p.photos[0] : p.photo) + '"></span>';
+  const zimg = (p, cls) => !(p.photos ? p.photos[0] : p.photo) ? '<span class="pimg' + (cls ? ' ' + cls : '') + '" style="display:grid;place-items:center;color:var(--muted)"><svg class="ic"><use href="#i-camera"/></svg></span>' : '<span class="pimg' + (cls ? ' ' + cls : '') + '" data-zoom="' + esc(p.photos ? p.photos[0] : p.photo) + '" data-zname="' + esc(p.name + ', ' + volText(p.vol)) + '"><img alt="" loading="lazy" src="' + esc(p.photos ? p.photos[0] : p.photo) + '"></span>';
 
   // Только кнопки звонка и WhatsApp (номер не показываем)
   function callBtns(who) {
@@ -1464,9 +1516,29 @@ details.fold.first{border-top:none}
       '<a class="c-btn call" href="tel:+' + d + '" aria-label="Позвонить"><svg class="ic"><use href="#i-call"/></svg></a>' +
       '<a class="c-btn wa" href="https://wa.me/' + d + '?text=' + hi + '" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><use href="#i-wa"/></svg></a></div>';
   }
-  const itemRows = o => o.items.map(l =>
-    '<div class="item">' + zimg(l, 'sm') + '<span class="grow"><span class="bold" style="font-size:14px">' + esc(l.name) + ', ' + esc(l.vol) + '</span><span class="xs muted">' + qtyText(l) + ' × ' + fmt(l.price) + ' с</span></span>' +
-    '<span class="i-sum">' + fmt(lineSum(l)) + ' с</span></div>').join('');
+  // edit — поставщик в новом заказе отмечает позиции, которых нет
+  const itemRows = (o, edit) => o.items.map((l, i) =>
+    '<div class="item' + (l.out ? ' out' : '') + '">' + zimg(l, 'sm') + '<span class="grow"><span class="bold" style="font-size:14px">' + esc(l.name) + ', ' + esc(l.vol) + '</span><span class="xs muted">' + (l.out ? 'Нет в наличии' : qtyText(l) + ' × ' + fmt(l.price) + ' с') + '</span></span>' +
+    (edit ? '<button type="button" class="out-btn' + (l.out ? ' on' : '') + '" data-out="' + i + '" aria-pressed="' + !!l.out + '">' + (l.out ? 'Вернуть' : 'Нет') + '</button>' : '<span class="i-sum">' + fmt(lineSum(l)) + ' с</span>') + '</div>').join('');
+  const liveItems = o => o.items.filter(l => !l.out);
+  const isDebt = o => o.st === 'done' && o.pay !== 'paid';
+  const starsSm = n => '<span class="stars sm" aria-label="Оценка ' + n + ' из 5">' + [1, 2, 3, 4, 5].map(k => '<span class="' + (k <= n ? 'on' : '') + '">★</span>').join('') + '</span>';
+  const chatUnread = (o, side) => (o.chat || []).filter(m => m.w !== side).length - ((o.chatRead || {})[side] || 0);
+  function payBlock(o, edit) {
+    if (o.st !== 'work' && o.st !== 'done') return '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>';
+    const paid = o.pay === 'paid';
+    return '<div class="pay-row"><span class="grow"><span class="small muted">Оплата</span><span class="bold">' + (paid ? 'Оплачен' + (o.paidAt ? ', ' + o.paidAt : '') : o.st === 'done' ? 'Не оплачен' : 'При получении') + '</span></span>' +
+      (paid ? '<span class="pill in">Оплачен</span>' : o.st === 'done' ? '<span class="pill debt">Долг</span>' : '') +
+      (edit ? '<button type="button" class="linkbtn" data-pay>' + (paid ? 'Отменить' : 'Оплачен') + '</button>' : '') + '</div>';
+  }
+  const chatBtn = (o, side) => { const u = chatUnread(o, side); return '<button type="button" class="btn lg ghost chat-btn rise" data-ochat="' + o.n + '"><svg class="ic"><use href="#i-chat"/></svg>Чат по заказу' + (u > 0 ? '<span class="dot-n on">' + u + '</span>' : (o.chat || []).length ? '<span class="xs muted" style="margin-left:4px">' + o.chat.length + '</span>' : '') + '</button>'; };
+  function rateBlock(o, canRate) {
+    if (o.st !== 'done') return '';
+    if (o.rate) return '<div class="card rise" style="gap:6px"><div class="between"><span class="bold" style="font-size:16px">Оценка доставки</span>' + starsSm(o.rate.s) + '</div>' + (o.rate.c ? '<span class="small">' + esc(o.rate.c) + '</span>' : '') + '</div>';
+    if (!canRate) return '';
+    return '<div class="card rise" style="gap:12px;text-align:center"><span class="bold" style="font-size:16px">Оцените доставку</span><div class="stars" id="rt-stars">' + [1, 2, 3, 4, 5].map(k => '<button type="button" data-star="' + k + '" aria-label="' + k + ' из 5">★</button>').join('') + '</div>' +
+      '<input class="rt-in" id="rt-text" placeholder="Комментарий" maxlength="200" style="height:46px;border:1px solid var(--border);border-radius:14px;background:var(--card);padding:0 14px;font:inherit;font-size:15px;outline:none"><button type="button" class="btn lg" id="rt-send" disabled>Отправить</button></div>';
+  }
 
   // =====================================================================
   //                         ЗАСТАВКА И ВХОД
@@ -1627,10 +1699,9 @@ details.fold.first{border-top:none}
     let h = '';
     if (o.st === 'new' && o.urgent != null) h += '<div class="urgent-bar rise"><svg class="ic"><use href="#i-fire"/></svg><span class="grow"><b>СРОЧНО</b><span class="small" style="opacity:.9">Магазин просит привезти ' + dayWord(o.urgent) + ', ' + dmy(day(o.urgent)) + '</span></span></div>';
     h += '<div class="card rise"><div class="between" style="align-items:flex-start;gap:10px"><div class="grow" style="gap:3px"><span style="font-size:18px;font-weight:800">' + s.name + '</span><span class="small muted">' + s.addr + '</span></div>' + callBtns(s.name) + '</div></div>';
-    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + posWord(o.items.length) + '</span></div>' + itemRows(o) +
+    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + posWord(liveItems(o).length) + '</span></div>' + itemRows(o, o.st === 'new') +
       '<div class="divider"></div><div class="total-row"><span class="bold" style="font-size:15px">Итого</span><span class="price">' + fmt(oSum(o)) + ' с</span></div>' +
-      '<div class="between small"><span class="muted">Оплата</span><span class="bold">При получении</span></div>' +
-      '</div>';
+      payBlock(o, true) + '</div>' + chatBtn(o, 'dist') + rateBlock(o, false);
     const bar = $('#od-bar');
     if (o.st === 'new') {
       if (o.urgent != null) {
@@ -1644,9 +1715,8 @@ details.fold.first{border-top:none}
       }
       h += courierBlock(o, 'Доставщик', true);
       if (coBlocked(s.name)) h = '<div class="banner-off rise"><svg class="ic"><use href="#i-lock"/></svg>Магазин заблокирован Zakup.KG, принять заказ нельзя</div>' + h;
-      const ready = pickDay != null && courierOf(o) && !coBlocked(s.name);
-      bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (ready ? '' : ' disabled') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять на ' + dm(day(pickDay))) + '</button></div>' +
-        '';
+      const ready = pickDay != null && courierOf(o) && !coBlocked(s.name) && liveItems(o).length > 0;
+      bar.innerHTML = '<div class="bar-row"><button type="button" class="btn lg ghost" id="od-reject">Отклонить</button><button type="button" class="btn lg" id="od-accept"' + (ready ? '' : ' disabled') + '>' + (pickDay == null ? 'Принять заказ' : 'Принять на ' + dm(day(pickDay))) + '</button></div>';
       bar.hidden = false;
     } else if (o.st === 'work') {
       const c = courierOf(o);
@@ -1665,6 +1735,9 @@ details.fold.first{border-top:none}
     if (hasInvoice(o)) prepareInv($('#od-body .inv'), o);
   }
   $('#od-body').addEventListener('click', e => {
+    const ox = e.target.closest('[data-out]');
+    if (ox) { const l = curOrder.items[+ox.dataset.out]; if (l.out) delete l.out; else l.out = true; if (!liveItems(curOrder).length) toast('Если нет ничего, отклоните заказ'); renderOrder(true); return; }
+    if (e.target.closest('[data-pay]')) { togglePay(curOrder); renderOrder(true); return; }
     const d = e.target.closest('[data-day]');
     if (d) { pickDay = +d.dataset.day; renderOrder(true); return; }
     if (e.target.closest('[data-assign]')) { openAssign(curOrder); return; }
@@ -1723,7 +1796,11 @@ details.fold.first{border-top:none}
       renderOrder(true); renderOrders(); renderCouriers(); renderCOrders();
     });
   }
-  function acceptOrder(o, k) { o.st = 'work'; o.deliver = k; o.accepted = 0; delete o.urgent; notify('Заказ № ' + o.n + ' принят, поставка ' + dm(day(k)), o); }
+  function acceptOrder(o, k) { o.st = 'work'; o.deliver = k; o.accepted = 0; delete o.urgent; const out = o.items.filter(l => l.out).length; notify('Заказ № ' + o.n + ' принят' + (out ? ' без ' + out + ' ' + plural(out, 'позиции', 'позиций', 'позиций') : '') + ', поставка ' + dm(day(k)), o); }
+  function togglePay(o) {
+    if (o.pay === 'paid') { delete o.pay; delete o.paidAt; toast('Оплата отменена'); }
+    else { o.pay = 'paid'; o.paidAt = dm(new Date()); if (o.shop === MY_SHOP) NOTIFS.shop.unshift({ t: 'Оплата по заказу № ' + o.n + ' получена', s: o.sup, ago: 'только что', ic: 'i-check', read: false }); toast('Отмечено: оплачен'); }
+  }
 
   // ---------- Накладная ----------
   function invoiceCard(o) {
@@ -1735,7 +1812,7 @@ details.fold.first{border-top:none}
       '<div class="inv-parties"><div class="inv-party"><span class="xs muted bold">Поставщик</span><span class="bold">' + o.sup + '</span><span class="xs muted">' + sup.details + '</span></div>' +
       '<div class="inv-party"><span class="xs muted bold">Получатель</span><span class="bold">' + s.name + '</span><span class="xs muted">' + s.addr + '</span></div></div>' +
       '<table class="inv-t"><thead><tr><th>№</th><th>Наименование</th><th class="r">Кол-во</th><th class="r">Цена</th><th class="r">Сумма</th></tr></thead><tbody>' +
-      o.items.map((l, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(l.name) + ', ' + esc(l.vol) + '</td><td class="r">' + qtyText(l) + '</td><td class="r">' + fmt(l.price) + '</td><td class="r">' + fmt(lineSum(l)) + '</td></tr>').join('') +
+      liveItems(o).map((l, k) => '<tr><td>' + (k + 1) + '</td><td>' + esc(l.name) + ', ' + esc(l.vol) + '</td><td class="r">' + qtyText(l) + '</td><td class="r">' + fmt(l.price) + '</td><td class="r">' + fmt(lineSum(l)) + '</td></tr>').join('') +
       '<tr class="tot"><td></td><td>Итого</td><td></td><td></td><td class="r">' + fmt(sum) + '</td></tr></tbody></table>' +
       '<div class="inv-sign"><div><span class="xs muted">' + (o.st === 'done' ? 'Доставил' : 'Доставщик') + '</span><span class="small bold">' + (courierOf(o) ? esc(courierOf(o).name) : '—') + '</span><span class="line"></span></div><div><span class="xs muted">Принял</span><span class="small bold">Магазин</span><span class="line"></span></div></div></div>';
   }
@@ -1841,7 +1918,7 @@ details.fold.first{border-top:none}
     const list = products.filter(p => matchQ(p, q));
     const box = $('#p-list'); box.className = 'plist' + (view.products === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(p => {
-      const st = prodHidden[p.id] ? '<span class="pill out">Скрыт модератором</span>' : p.avail ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
+      const st = p.draft ? '<span class="pill work">Добавьте фото</span>' : prodHidden[p.id] ? '<span class="pill out">Скрыт модератором</span>' : p.avail ? '<span class="pill in">В наличии</span>' : '<span class="pill out">Нет в наличии</span>';
       const price = '<span class="p-price">' + fmt(p.price) + ' с <small>/ ' + unitOf(p) + '</small></span>';
       return view.products === 'grid'
         ? '<button type="button" class="pcard rise' + (p.avail ? '' : ' off') + '" data-pid="' + p.id + '">' + zimg(p) + '<span class="grow"><span class="p-name">' + esc(p.name) + '</span><span class="p-vol">' + volText(p.vol) + '</span></span><span class="p-foot">' + st + price + '</span></button>'
@@ -1911,7 +1988,7 @@ details.fold.first{border-top:none}
     if (!(price > 0)) errs.push('укажите цену');
     if (errs.length) { const er = $('#ed-err'); er.textContent = 'Чтобы сохранить: ' + errs.join(', ') + '.'; er.hidden = false; er.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     const data = { name, code, cat, vol: { n: volN, u: ed.unit }, type: ed.type, pack, price, avail: ed.avail, ret: ed.ret, desc: $('#ed-desc').value.trim(), photos: ed.photos.slice() };
-    if (edId) { Object.assign(prod(edId), data); toast('Сохранено'); renderProducts(); back(); }
+    if (edId) { Object.assign(prod(edId), data); delete prod(edId).draft; toast('Сохранено'); renderProducts(); back(); }
     else { products.unshift(Object.assign({ id: ++pid, key: 'new' + pid, sup: DIST, isNew: 1 }, data)); toast('Товар добавлен'); $('#p-search').value = ''; openTab('products'); }
   });
   $('#ed-del').addEventListener('click', () => {
@@ -1970,7 +2047,7 @@ details.fold.first{border-top:none}
     syncFeedView();
     $('#f-filter').innerHTML = FEED_F.map(([k, t]) => '<button type="button" class="chip' + (k === feedF ? ' on' : '') + '" data-ff="' + k + '">' + t + '</button>').join('');
     const q = ($('#f-search').value || '').trim().toLowerCase();
-    let list = listings().filter(p => (p.avail || q) && !prodHidden[p.id] && !coBlocked(p.sup));
+    let list = listings().filter(p => (p.avail || q) && !p.draft && !prodHidden[p.id] && !coBlocked(p.sup));
     if (q) list = list.filter(p => matchQ(p, q));
     else if (feedF === 'new') list = list.filter(p => p.isNew);
     else list = list.filter(p => p.pop).sort((a, b) => a.pop - b.pop).concat(list.filter(p => !p.pop)).slice(0, 8);
@@ -1991,7 +2068,7 @@ details.fold.first{border-top:none}
   function renderCatalog() {
     $('#c-cats').innerHTML = CATS().map(c => '<button type="button" class="chip' + (c === cat ? ' on' : '') + '" data-cat="' + c + '">' + c + '<span class="cnt">' + listings().filter(p => c === 'Все' || p.cat === c).length + '</span></button>').join('');
     const q = ($('#c-search').value || '').trim().toLowerCase();
-    const list = listings().filter(p => (cat === 'Все' || p.cat === cat) && matchQ(p, q) && (p.avail || q) && !prodHidden[p.id] && !coBlocked(p.sup)).sort((a, b) => b.avail - a.avail || a.name.localeCompare(b.name) || a.price - b.price);
+    const list = listings().filter(p => (cat === 'Все' || p.cat === cat) && matchQ(p, q) && (p.avail || q) && !p.draft && !prodHidden[p.id] && !coBlocked(p.sup)).sort((a, b) => b.avail - a.avail || a.name.localeCompare(b.name) || a.price - b.price);
     const box = $('#c-list'); box.className = 'plist' + (view.catalog === 'grid' ? ' grid' : '');
     box.innerHTML = list.length ? list.map(p => shopCard(p, view.catalog === 'grid')).join('') : '<div class="empty"><svg class="ic"><use href="#i-search"/></svg><span>Ничего не найдено</span></div>';
   }
@@ -2142,8 +2219,10 @@ details.fold.first{border-top:none}
     $('#mo-title').textContent = 'Заказ № ' + o.n;
     let h = '<div class="card rise so-card' + (o.st === 'rejected' ? ' rej' : '') + '">' + soHead(o) + '</div>';
     if (o.st === 'rejected') h += '<div class="info-line red rise"><svg class="ic"><use href="#i-x"/></svg>' + (o.byAdmin ? 'Заказ отменён Zakup.KG: ' : 'Поставщик отклонил заказ: ') + esc(o.reason) + '</div>';
-    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + o.items.length + ' поз.</span></div>' + itemRows(o) +
-      '<div class="divider"></div><div class="total-row"><span class="bold">Итого</span><span class="price">' + fmt(oSum(o)) + ' с</span></div></div>';
+    h += '<div class="card rise" style="gap:10px"><div class="between"><span class="bold" style="font-size:16px">Товары</span><span class="xs muted">' + posWord(liveItems(o).length) + '</span></div>' + itemRows(o) +
+      '<div class="divider"></div><div class="total-row"><span class="bold">Итого</span><span class="price">' + fmt(oSum(o)) + ' с</span></div>' + payBlock(o, false) + '</div>';
+    if (o.sup === DIST) h += chatBtn(o, 'shop');
+    h += rateBlock(o, o.sup === DIST || true);
     if (hasInvoice(o)) h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':inv"' + (openSO.has(o.n + ':inv') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-pdf"/></svg>Накладная<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in">' +
       invoiceCard(o) + '<div class="inv-actions"><button type="button" class="btn ghost lg" data-inv="send">Отправить</button><button type="button" class="btn lg" data-inv="save">Сохранить</button></div></div></details></div>';
     if (o.st === 'work') h += '<div class="card rise" style="padding:4px 16px"><details class="fold first" data-fold="' + o.n + ':qr"' + (openSO.has(o.n + ':qr') ? ' open' : '') + '><summary><svg class="ic"><use href="#i-qr"/></svg>QR-подтверждение доставки<svg class="ic chev2"><use href="#i-down"/></svg></summary><div class="fold-in qr-in">' +
@@ -2151,6 +2230,15 @@ details.fold.first{border-top:none}
     $('#mo-body').innerHTML = h;
     const inv = $('#mo-body details[open] .inv'); if (inv) prepareInv(inv, o);
   }
+  $('#mo-body').addEventListener('click', e => {
+    const st = e.target.closest('[data-star]');
+    if (st) { const n = +st.dataset.star; $$('#rt-stars button').forEach(b => b.classList.toggle('on', +b.dataset.star <= n)); $('#rt-stars').dataset.v = n; $('#rt-send').disabled = false; return; }
+    if (e.target.closest('#rt-send')) {
+      const o = curSO; o.rate = { s: +$('#rt-stars').dataset.v, c: $('#rt-text').value.trim() };
+      if (o.sup === DIST) NOTIFS.dist.unshift({ t: 'Оценка доставки № ' + o.n + ': ' + o.rate.s + ' из 5', s: SHOPS[o.shop].name, ago: 'только что', ic: 'i-check', read: false });
+      renderShopOrder(); toast('Спасибо за оценку');
+    }
+  });
   $('#mo-body').addEventListener('toggle', e => {
     const d = e.target.closest && e.target.closest('details[data-fold]'); if (!d) return;
     const key = d.dataset.fold;
@@ -2162,6 +2250,114 @@ details.fold.first{border-top:none}
     if (cur === 'm-order' && curSO) renderShopOrder();
     if (cur === 'm-feed') renderFeed();
     renderNav();
+  }
+
+  // ---------- Чат магазина и поставщика по заказу ----------
+  let chatO = null;
+  document.addEventListener('click', e => { const b = e.target.closest('[data-ochat]'); if (!b) return; chatO = findOrder(b.dataset.ochat); renderOChat(); go('s-ochat', 'push'); });
+  function renderOChat() {
+    const o = chatO; if (!o) return; const side = role === 'shop' ? 'shop' : 'dist';
+    o.chatRead = Object.assign({}, o.chatRead, { [side]: (o.chat || []).filter(m => m.w !== side).length });
+    $('#oc-title').textContent = 'Заказ № ' + o.n + ', ' + (side === 'shop' ? o.sup : SHOPS[o.shop].name);
+    $('#oc-body').innerHTML = '<div class="msgs">' + ((o.chat || []).length ? o.chat.map(m => '<div class="msg' + (m.w === side ? ' me' : '') + '">' + esc(m.t) + '<small>' + m.tm + '</small></div>').join('') : '<span class="sp-note">Сообщений пока нет</span>') + '</div>';
+    setTimeout(() => { const b = $('#oc-body'); b.scrollTop = b.scrollHeight; }, 30);
+  }
+  $('#oc-form').addEventListener('submit', e => {
+    e.preventDefault(); const t = $('#oc-text').value.trim(), o = chatO; if (!t || !o) return;
+    const side = role === 'shop' ? 'shop' : 'dist';
+    (o.chat = o.chat || []).push({ w: side, t, tm: new Date().toTimeString().slice(0, 5) });
+    if (side === 'shop') NOTIFS.dist.unshift({ t: 'Сообщение по заказу № ' + o.n + ': ' + t.slice(0, 60), s: SHOPS[o.shop].name, ago: 'только что', ic: 'i-chat', read: false });
+    else if (o.shop === MY_SHOP) NOTIFS.shop.unshift({ t: 'Сообщение по заказу № ' + o.n + ': ' + t.slice(0, 60), s: o.sup, ago: 'только что', ic: 'i-chat', read: false });
+    $('#oc-text').value = ''; renderOChat();
+  });
+
+  // ---------- Долги ----------
+  function debtGroups() {
+    const list = orders.filter(o => isDebt(o) && (role === 'shop' ? o.shop === MY_SHOP : o.sup === DIST));
+    const g = {}; list.forEach(o => { const k = role === 'shop' ? o.sup : o.shop; (g[k] = g[k] || []).push(o); });
+    return Object.keys(g).map(k => ({ k, name: role === 'shop' ? k : SHOPS[k].name, list: g[k].sort((a, b) => a.deliver - b.deliver), sum: g[k].reduce((a, o) => a + oSum(o), 0) })).sort((a, b) => b.sum - a.sum);
+  }
+  function renderDebts() {
+    const gs = debtGroups(), total = gs.reduce((a, g) => a + g.sum, 0);
+    $('#db-body').innerHTML = '<div class="kpi rise"><span class="small muted">' + (role === 'shop' ? 'Вы должны' : 'Вам должны') + '</span><b>' + fmt(total) + ' с</b></div>' +
+      (gs.length ? gs.map(g => '<div class="card rise" style="gap:4px"><div class="between"><span class="bold" style="font-size:16px">' + esc(g.name) + '</span><span class="bold" style="color:var(--red)">' + fmt(g.sum) + ' с</span></div>' +
+        g.list.map(o => '<div class="pay-row" style="padding:8px 0;border-top:1px solid var(--line)"><span class="grow"><span class="bold small">№ ' + o.n + '</span><span class="xs muted">доставлен ' + dmy(day(o.deliver)) + '</span></span><span class="small bold">' + fmt(oSum(o)) + ' с</span>' +
+          (role === 'dist' ? '<button type="button" class="linkbtn" data-dpay="' + o.n + '">Оплачен</button>' : '') + '</div>').join('') + '</div>').join('')
+        : '<div class="empty"><svg class="ic"><use href="#i-wallet"/></svg><span>Долгов нет</span></div>');
+  }
+  $('#db-body').addEventListener('click', e => { const b = e.target.closest('[data-dpay]'); if (!b) return; togglePay(findOrder(b.dataset.dpay)); renderDebts(); renderProfile(); });
+
+  // ---------- Отчёт поставщика ----------
+  let rpPer = 7;
+  const RP = [[7, '7 дней'], [30, '30 дней'], [0, 'Всё время']];
+  function rpData() {
+    const mine = orders.filter(o => o.sup === DIST), inP = o => !rpPer || o.deliver > -rpPer;
+    const done = mine.filter(o => o.st === 'done' && inP(o)), rej = mine.filter(o => o.st === 'rejected').length;
+    const sum = done.reduce((a, o) => a + oSum(o), 0), prods = {}, shops = {};
+    done.forEach(o => { liveItems(o).forEach(l => { const p = prods[l.name + ', ' + l.vol] = prods[l.name + ', ' + l.vol] || { q: 0, s: 0, u: l.unit }; p.q += l.q; p.s += lineSum(l); }); const sh = shops[o.shop] = shops[o.shop] || { n: 0, s: 0 }; sh.n++; sh.s += oSum(o); });
+    const rated = done.filter(o => o.rate);
+    return { done, sum, rej, avg: done.length ? Math.round(sum / done.length) : 0, debt: mine.filter(isDebt).reduce((a, o) => a + oSum(o), 0), rate: rated.length ? (rated.reduce((a, o) => a + o.rate.s, 0) / rated.length).toFixed(1).replace('.', ',') : '—',
+      prods: Object.entries(prods).sort((a, b) => b[1].s - a[1].s), shops: Object.entries(shops).sort((a, b) => b[1].s - a[1].s) };
+  }
+  function renderReport() {
+    $('#rp-per').innerHTML = RP.map(([k, t]) => '<button type="button" class="chip' + (k === rpPer ? ' on' : '') + '" data-rp="' + k + '" role="tab" aria-selected="' + (k === rpPer) + '">' + t + '</button>').join('');
+    const r = rpData(), top = (arr, f) => { const mx = arr.length ? arr[0][1].s : 1; return arr.slice(0, 5).map(([k, v], i) => '<div class="rank"><i>' + (i + 1) + '</i><span class="grow" style="gap:5px"><span class="between small"><b>' + esc(f(k)) + '</b><span class="bold">' + fmt(v.s) + ' с</span></span><span class="bar-mini"><i style="width:' + Math.max(4, v.s / mx * 100) + '%"></i></span></span></div>').join('') || '<span class="small muted">Нет данных</span>'; };
+    $('#rp-body').innerHTML = '<div class="kpis rise"><div class="kpi"><span class="small muted">Выручка</span><b>' + fmt(r.sum) + ' с</b></div><div class="kpi"><span class="small muted">Доставлено</span><b>' + r.done.length + '</b></div>' +
+      '<div class="kpi"><span class="small muted">Средний чек</span><b>' + fmt(r.avg) + ' с</b></div><div class="kpi"><span class="small muted">Оценка</span><b>' + r.rate + '</b></div>' +
+      '<div class="kpi"><span class="small muted">Долг магазинов</span><b style="color:var(--red)">' + fmt(r.debt) + ' с</b></div><div class="kpi"><span class="small muted">Отказов</span><b>' + r.rej + '</b></div></div>' +
+      '<div class="card rise" style="gap:2px"><span class="bold" style="font-size:16px;padding-bottom:4px">Лучшие товары</span>' + top(r.prods, k => k) + '</div>' +
+      '<div class="card rise" style="gap:2px"><span class="bold" style="font-size:16px;padding-bottom:4px">Лучшие магазины</span>' + top(r.shops, k => SHOPS[k].name) + '</div>';
+  }
+  $('#rp-per').addEventListener('click', e => { const b = e.target.closest('[data-rp]'); if (b) { rpPer = +b.dataset.rp; renderReport(); } });
+  let xlsLib = null;
+  const loadXlsx = () => xlsLib || (xlsLib = new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'vendor/xlsx.full.min.js'; sc.onload = ok; sc.onerror = () => { xlsLib = null; no(new Error('xlsx')); }; document.head.appendChild(sc); }));
+  $('#rp-xls').addEventListener('click', () => {
+    loadXlsx().then(() => {
+      const r = rpData(), X = window.XLSX, wb = X.utils.book_new();
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Показатель', 'Значение'], ['Период', RP.find(p => p[0] === rpPer)[1]], ['Выручка, с', r.sum], ['Доставлено заказов', r.done.length], ['Средний чек, с', r.avg], ['Долг магазинов, с', r.debt], ['Отказов', r.rej], ['Средняя оценка', r.rate]]), 'Итоги');
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['№', 'Магазин', 'Доставлен', 'Позиций', 'Сумма, с', 'Оплата', 'Доставщик', 'Оценка']].concat(r.done.map(o => [o.n, SHOPS[o.shop].name, dmy(day(o.deliver)), liveItems(o).length, oSum(o), o.pay === 'paid' ? 'оплачен' : 'долг', courierOf(o) ? courierOf(o).name : '', o.rate ? o.rate.s : '']))), 'Заказы');
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Товар', 'Количество', 'Ед.', 'Сумма, с']].concat(r.prods.map(([k, v]) => [k, v.q, v.u, v.s]))), 'Товары');
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Магазин', 'Заказов', 'Сумма, с']].concat(r.shops.map(([k, v]) => [SHOPS[k].name, v.n, v.s]))), 'Магазины');
+      X.writeFile(wb, 'Zakup-report-' + new Date().toISOString().slice(0, 10) + '.xlsx'); toast('Отчёт скачан');
+    }).catch(() => toast('Не удалось загрузить модуль Excel'));
+  });
+
+  // ---------- Прайс из Excel ----------
+  const IMP_COLS = ['Название', 'Объём', 'Ед. объёма', 'Фасовка', 'Кол-во в упаковке', 'Цена', 'Категория', 'Штрихкод', 'В наличии'];
+  const PACK_IN = { 'коробка': 'box', 'блок': 'block', 'весовой': 'weight', 'штучный': 'piece' };
+  $('#p-import').addEventListener('click', () => {
+    sheet('<span class="h2">Прайс из Excel</span><button type="button" class="btn lg ghost" id="imp-tpl"><svg class="ic"><use href="#i-down"/></svg>Скачать шаблон</button>' +
+      '<label class="btn lg" style="cursor:pointer"><svg class="ic"><use href="#i-xls"/></svg>Выбрать файл<input type="file" id="imp-file" accept=".xlsx,.xls,.csv" hidden></label><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#imp-tpl').onclick = () => loadXlsx().then(() => { const X = window.XLSX, wb = X.utils.book_new();
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([IMP_COLS].concat(products.slice(0, 3).map(p => [p.name, p.vol.n, p.vol.u, TYPE[p.type].name.toLowerCase(), p.pack, p.price, p.cat, p.code || '', p.avail ? 'да' : 'нет']))), 'Прайс');
+      X.writeFile(wb, 'Zakup-price-template.xlsx'); }).catch(() => toast('Не удалось загрузить модуль Excel'));
+    $('#imp-file').onchange = ev => { const f = ev.target.files[0]; if (!f) return; Promise.all([loadXlsx(), f.arrayBuffer()]).then(([, buf]) => importRows(window.XLSX.utils.sheet_to_json(window.XLSX.read(buf).Sheets[window.XLSX.read(buf).SheetNames[0]], { header: 1, raw: true }))).catch(() => toast('Не удалось прочитать файл')); };
+  });
+  function importRows(rows) {
+    const head = (rows[0] || []).map(x => String(x || '').trim().toLowerCase()), col = n => head.indexOf(n.toLowerCase());
+    if (col('Название') < 0 || col('Цена') < 0) { toast('Нет колонок «Название» и «Цена»'); return; }
+    const upd = [], add = [], bad = [];
+    rows.slice(1).forEach((r, i) => {
+      const g = n => col(n) < 0 ? '' : r[col(n)], name = String(g('Название') || '').trim(); if (!name) return;
+      const price = Math.round(+String(g('Цена')).replace(/\s/g, '').replace(',', '.')), code = String(g('Штрихкод') || '').replace(/\D/g, '');
+      if (!(price > 0)) { bad.push('Строка ' + (i + 2) + ': нет цены'); return; }
+      const avail = !/^(нет|0|false)$/i.test(String(g('В наличии') || 'да').trim());
+      const ex = products.find(p => (code && p.code === code) || (!code && p.name.toLowerCase() === name.toLowerCase()));
+      if (ex) { if (ex.price !== price || ex.avail !== avail) upd.push({ p: ex, price, avail }); return; }
+      const type = PACK_IN[String(g('Фасовка') || '').trim().toLowerCase()] || 'piece', cat = String(g('Категория') || '').trim();
+      add.push({ name, code, price, avail, type, pack: type === 'box' || type === 'block' ? Math.max(1, +g('Кол-во в упаковке') || 1) : 1, cat: CATS_DIR.includes(cat) ? cat : CATS_DIR[0], vol: { n: +String(g('Объём') || 1).replace(',', '.') || 1, u: String(g('Ед. объёма') || 'шт').trim() } });
+    });
+    sheet('<span class="h2">Проверьте прайс</span><div class="imp-list">' +
+      upd.map(u => '<div><span class="grow">' + esc(u.p.name) + '</span><span class="muted">' + fmt(u.p.price) + ' → </span><b>' + fmt(u.price) + ' с</b>' + (u.avail !== u.p.avail ? '<span class="muted">' + (u.avail ? 'в наличии' : 'нет') + '</span>' : '') + '</div>').join('') +
+      add.map(a => '<div><span class="grow">' + esc(a.name) + '</span><span class="pill work">новый</span><b>' + fmt(a.price) + ' с</b></div>').join('') +
+      bad.map(b => '<div style="color:var(--red)">' + esc(b) + '</div>').join('') + (upd.length + add.length + bad.length ? '' : '<div class="muted">Изменений нет</div>') + '</div>' +
+      '<span class="small muted" style="text-align:center">Обновить: ' + upd.length + ', добавить: ' + add.length + '</span>' +
+      '<button type="button" class="btn lg" id="imp-ok"' + (upd.length + add.length ? '' : ' disabled') + '>Применить</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
+    $('#imp-ok').onclick = () => {
+      upd.forEach(u => { u.p.price = u.price; u.p.avail = u.avail; });
+      add.forEach(a => products.unshift({ id: ++pid, key: 'imp' + pid, name: a.name, vol: a.vol, type: a.type, pack: a.pack, price: a.price, cat: a.cat, code: a.code, avail: a.avail, ret: true, desc: '', photos: [], sup: DIST, isNew: 1, draft: true }));
+      closeSheet(); renderProducts(); toast('Прайс загружен: ' + (upd.length + add.length) + ' ' + plural(upd.length + add.length, 'товар', 'товара', 'товаров'));
+    };
   }
 
   // Уведомления магазина
@@ -2205,6 +2401,8 @@ details.fold.first{border-top:none}
     $('#pr-inn').parentElement.hidden = role === 'courier';
     $('#pr-phone').textContent = P0.phone || DEMO_PHONE; $('#pr-phone-row').hidden = role === 'courier';
     $('#pr-edit').hidden = role === 'courier';
+    $('#pr-debts').hidden = role === 'courier'; $('#pr-report').hidden = role !== 'dist';
+    const ds = role === 'courier' ? 0 : debtGroups().reduce((a, g) => a + g.sum, 0); $('#debt-sum').textContent = ds ? fmt(ds) + ' с' : '';
     $('#pr-edit-st').innerHTML = role !== 'courier' && myEditReq() ? '<span class="pill" style="color:var(--amber, #B7791F);background:rgba(240,170,40,.15)">На проверке</span>' : '';
     $('#pr-req-h').textContent = role === 'courier' ? 'Данные' : 'Реквизиты';
     renderNav();
@@ -2568,7 +2766,7 @@ details.fold.first{border-top:none}
     if (loginAt && (ADM.kicks[userName(role)] || 0) > loginAt) { kickOut('Администратор Zakup.KG завершил ваш сеанс. Войдите снова'); return; }
     renderAll();
     if (cur === 's-order') renderOrder(true); else if (cur === 'c-order') renderCOrder(); else if (cur === 's-courier') renderCourier();
-    else if (cur === 's-support') renderSupport(); else if (cur === 's-docs') renderDocVers(); else if (cur === 'm-notifs') renderNotifs();
+    else if (cur === 's-support') renderSupport(); else if (cur === 's-docs') renderDocVers(); else if (cur === 's-ochat') { chatO = chatO && findOrder(chatO.n); renderOChat(); } else if (cur === 's-debts') renderDebts(); else if (cur === 's-report') renderReport(); else if (cur === 'm-notifs') renderNotifs();
     if (myTickets().reduce((a, t) => a + t.msgs.length, 0) > hadReplies && cur !== 's-support') toast('Новый ответ поддержки');
     checkDocs();
   }

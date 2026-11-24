@@ -226,6 +226,7 @@ CREATE TABLE products (
   description   text        CHECK (length(description) <= 2000),
   returnable    boolean     NOT NULL DEFAULT true,     -- «Обмен и возврат: возможен»
   in_stock      boolean     NOT NULL DEFAULT true,     -- нет в наличии → только в поиске, не в каталоге
+  is_draft      boolean     NOT NULL DEFAULT false,    -- загружен из Excel без фото: магазины не видят, пока не добавят 2 фото
   hidden_by     bigint REFERENCES staff(id),           -- скрыт модератором
   hidden_reason text,
   orders_count  integer     NOT NULL DEFAULT 0,        -- для сортировки «Популярные»
@@ -267,13 +268,13 @@ CREATE FUNCTION product_min_photos() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE pid bigint;
 BEGIN
   IF TG_TABLE_NAME = 'products' THEN pid := NEW.id; ELSE pid := OLD.product_id; END IF;
-  IF EXISTS (SELECT 1 FROM products WHERE id = pid AND deleted_at IS NULL)
+  IF EXISTS (SELECT 1 FROM products WHERE id = pid AND deleted_at IS NULL AND NOT is_draft)
      AND (SELECT count(*) FROM product_photos WHERE product_id = pid) < 2 THEN
     RAISE EXCEPTION 'У товара % должно быть минимум 2 фото', pid;
   END IF;
   RETURN NULL;
 END $$;
-CREATE CONSTRAINT TRIGGER products_min_photos AFTER INSERT ON products
+CREATE CONSTRAINT TRIGGER products_min_photos AFTER INSERT OR UPDATE OF is_draft ON products
   DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION product_min_photos();
 CREATE CONSTRAINT TRIGGER photos_min_photos AFTER DELETE ON product_photos
   DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION product_min_photos();
@@ -317,6 +318,8 @@ CREATE TABLE orders (
   delivered_at     timestamptz,
   delivered_by     bigint REFERENCES users(id),           -- «Доставил» в заказе и накладной
   delivered_method delivery_method,
+  paid_at          timestamptz,                           -- поставщик отметил оплату; доставлен и не оплачен = долг
+  paid_marked_by   bigint REFERENCES users(id),
   created_at       timestamptz  NOT NULL DEFAULT now(),
   updated_at       timestamptz  NOT NULL DEFAULT now(),
   -- доставщик только из сотрудников этого поставщика
@@ -345,7 +348,8 @@ CREATE TABLE order_items (
   photo_path  text,
   price       som    NOT NULL,
   qty         numeric(10,3) NOT NULL CHECK (qty > 0),
-  amount      som    GENERATED ALWAYS AS (round(price * qty, 2)) STORED,
+  is_out      boolean  NOT NULL DEFAULT false,   -- поставщик отказал по позиции при принятии
+  amount      som    GENERATED ALWAYS AS (CASE WHEN is_out THEN 0 ELSE round(price * qty, 2) END) STORED,
   PRIMARY KEY (order_id, line),
   FOREIGN KEY (product_id, supplier_id) REFERENCES products(id, supplier_id)   -- все позиции — от поставщика заказа
 );
@@ -516,6 +520,77 @@ END $$;
 
 CREATE TRIGGER orders_after_status AFTER INSERT OR UPDATE OF status ON orders
   FOR EACH ROW EXECUTE FUNCTION orders_after_status();
+
+-- Отказ по позиции: только пока заказ новый; хотя бы одна позиция должна остаться
+CREATE FUNCTION order_items_out_check() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.is_out IS DISTINCT FROM OLD.is_out THEN
+    IF (SELECT status FROM orders WHERE id = NEW.order_id) <> 'new' THEN RAISE EXCEPTION 'Позиции меняются только до принятия заказа'; END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER order_items_out_check BEFORE UPDATE OF is_out ON order_items FOR EACH ROW EXECUTE FUNCTION order_items_out_check();
+CREATE FUNCTION orders_need_items() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.status = 'work' AND OLD.status = 'new' AND NOT EXISTS (SELECT 1 FROM order_items WHERE order_id = NEW.id AND NOT is_out) THEN
+    RAISE EXCEPTION 'Нет ни одной позиции: заказ нужно отклонить';
+  END IF;
+  IF NEW.paid_at IS NOT NULL AND NEW.status NOT IN ('work', 'done') THEN RAISE EXCEPTION 'Оплату отмечают у принятого заказа'; END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER orders_need_items BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION orders_need_items();
+
+-- Оценка доставки: магазин, один раз, только у доставленного заказа
+CREATE TABLE order_ratings (
+  order_id   bigint   PRIMARY KEY REFERENCES orders(id),
+  stars      smallint NOT NULL CHECK (stars BETWEEN 1 AND 5),
+  comment    text     CHECK (length(comment) <= 200),
+  created_by bigint   NOT NULL REFERENCES users(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE FUNCTION rating_check() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (SELECT status FROM orders WHERE id = NEW.order_id) <> 'done' THEN RAISE EXCEPTION 'Оценить можно только доставленный заказ'; END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER rating_check BEFORE INSERT ON order_ratings FOR EACH ROW EXECUTE FUNCTION rating_check();
+
+-- Чат магазина и поставщика по заказу
+CREATE TABLE order_messages (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id   bigint NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  author_id  bigint NOT NULL REFERENCES users(id),
+  body       text   NOT NULL CHECK (length(body) BETWEEN 1 AND 1000),
+  read_at    timestamptz,                       -- прочитано другой стороной
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX order_messages_idx ON order_messages (order_id, created_at);
+
+-- Загрузки прайса из Excel: журнал для поставщика и поддержки
+CREATE TABLE price_imports (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  supplier_id bigint  NOT NULL REFERENCES companies(id),
+  user_id     bigint  NOT NULL REFERENCES users(id),
+  file_path   text    NOT NULL,          -- imports/2026/11/abc.xlsx
+  updated     integer NOT NULL DEFAULT 0,
+  added       integer NOT NULL DEFAULT 0,
+  errors      jsonb   NOT NULL DEFAULT '[]',   -- [{"row": 6, "error": "нет цены"}]
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- Долги: доставленные и не оплаченные заказы
+CREATE VIEW debts AS
+SELECT o.supplier_id, o.shop_id, count(*) AS orders, sum(o.total) AS amount, min(o.delivered_at) AS oldest
+  FROM orders o WHERE o.status = 'done' AND o.paid_at IS NULL
+ GROUP BY o.supplier_id, o.shop_id;
+
+-- Отчёт поставщика по дням (выручка считается по дате доставки)
+CREATE VIEW supplier_daily AS
+SELECT o.supplier_id, (o.delivered_at AT TIME ZONE 'Asia/Bishkek')::date AS day, count(*) AS orders, sum(o.total) AS revenue,
+       round(avg(r.stars), 1) AS rating
+  FROM orders o LEFT JOIN order_ratings r ON r.order_id = o.id
+ WHERE o.status = 'done'
+ GROUP BY o.supplier_id, (o.delivered_at AT TIME ZONE 'Asia/Bishkek')::date;
 
 -- =====================================================================
 -- 6. УВЕДОМЛЕНИЯ И РАССЫЛКИ
@@ -718,7 +793,7 @@ SELECT p.*, c.name AS supplier_name, cat.name AS category,
   FROM products p
   JOIN companies c    ON c.id = p.supplier_id AND c.status = 'ok'
   JOIN categories cat ON cat.id = p.category_id AND cat.is_active
- WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL AND p.in_stock;
+ WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL AND p.in_stock AND NOT p.is_draft;
 
 -- Поиск: то же, но вместе с товарами «Нет в наличии»
 CREATE VIEW catalog_search AS
@@ -726,7 +801,7 @@ SELECT p.*, c.name AS supplier_name, cat.name AS category
   FROM products p
   JOIN companies c    ON c.id = p.supplier_id AND c.status = 'ok'
   JOIN categories cat ON cat.id = p.category_id
- WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL;
+ WHERE p.deleted_at IS NULL AND p.hidden_by IS NULL AND NOT p.is_draft;
 
 -- Сравнение цен на один товар (одинаковый штрихкод у разных поставщиков)
 CREATE VIEW price_compare AS
@@ -791,7 +866,10 @@ GRANT SELECT, INSERT, UPDATE ON orders, order_items, products, cart_items, notif
 GRANT DELETE ON cart_items, product_photos TO zakup_api;
 GRANT INSERT ON product_photos, password_reset_requests TO zakup_api;
 GRANT SELECT, INSERT, UPDATE (status) ON company_change_requests TO zakup_api;   -- отправить и отменить свою заявку
-GRANT SELECT ON order_events, invoices, supplier_order_cards TO zakup_api;
+GRANT SELECT ON order_events, invoices, supplier_order_cards, debts, supplier_daily TO zakup_api;
+GRANT SELECT, INSERT ON order_ratings, order_messages, price_imports TO zakup_api;
+GRANT UPDATE (read_at) ON order_messages TO zakup_api;
+GRANT UPDATE (is_out) ON order_items TO zakup_api;
 -- audit_log, staff, sessions — недоступны API приложения
 
 ALTER TABLE orders        ENABLE ROW LEVEL SECURITY;
@@ -802,6 +880,13 @@ ALTER TABLE cart_items    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_ratings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY order_messages_rw ON order_messages FOR ALL TO zakup_api
+  USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND (o.shop_id = app_company_id() OR (o.supplier_id = app_company_id() AND app_role() = 'owner'))))
+  WITH CHECK (author_id = app_user_id());
+CREATE POLICY order_ratings_read ON order_ratings FOR SELECT TO zakup_api USING (EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id));
+CREATE POLICY order_ratings_shop ON order_ratings FOR INSERT TO zakup_api WITH CHECK (created_by = app_user_id() AND EXISTS (SELECT 1 FROM orders o WHERE o.id = order_id AND o.shop_id = app_company_id()));
 ALTER TABLE company_change_requests ENABLE ROW LEVEL SECURITY;
 
 -- Заказ видят: магазин-заказчик, поставщик (владелец), назначенный доставщик

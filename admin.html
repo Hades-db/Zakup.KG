@@ -465,10 +465,10 @@ td.r,th.r{text-align:right}
     orders = src.map(o => {
       const sh = o.shopName ? { name: o.shopName } : ((d.shops || {})[o.shop] || { name: o.shop });
       const x = {
-        n: o.n, shop: coIdByName(sh.name), sup: coIdByName(o.sup), sum: o.items.reduce((a, l) => a + l.q * l.price, 0), st: o.st,
+        n: o.n, shop: coIdByName(sh.name), sup: coIdByName(o.sup), sum: o.items.reduce((a, l) => a + (l.out ? 0 : l.q * l.price), 0), st: o.st, pay: o.pay, paidAt: o.paidAt, rate: o.rate, chat: o.chat || [],
         urgent: o.urgent != null && o.st === 'new', ago: o.ago, wait: o.st === 'new' ? waitMin(o.ago) : 0,
         deliver: o.deliver != null && o.st !== 'new' ? dayStr(o.deliver) : '', deliveredAt: o.deliveredAt, reason: o.reason, byAdmin: o.byAdmin,
-        courierName: cName(o.courier), items: o.items.map(l => [l.name + ', ' + l.vol, l.q + ' ' + l.unit, l.q * l.price])
+        courierName: cName(o.courier), items: o.items.map(l => [l.name + ', ' + l.vol, l.out ? 'нет в наличии' : l.q + ' ' + l.unit, l.out ? 0 : l.q * l.price, l.out])
       };
       x.hist = [['Магазин отправил заказ', x.ago, 'ok']];
       if (x.st === 'work' || x.st === 'done') x.hist.push(['Поставщик принял, поставка ' + x.deliver + (x.courierName ? ', доставщик ' + x.courierName : ''), x.ago, 'ok']);
@@ -610,8 +610,8 @@ td.r,th.r{text-align:right}
       const F = [['all', 'Все', () => true], ['new', 'Новые', o => o.st === 'new'], ['late', 'Без ответа больше 2 ч', o => o.st === 'new' && o.wait >= 120], ['work', 'В работе', o => o.st === 'work'], ['done', 'Доставлены', o => o.st === 'done'], ['rejected', 'Отказы', o => o.st === 'rejected']];
       const qq = q(), list = orders.filter(F.find(f => f[0] === filt.orders)[2]).filter(o => !qq || (o.n + coName(o.shop) + coName(o.sup)).toLowerCase().includes(qq));
       return '<div class="card"><div class="tabs">' + F.map(([k, t, f]) => '<button class="tab' + (k === filt.orders ? ' on' : '') + '" data-f="orders:' + k + '">' + t + '<span class="n">' + orders.filter(f).length + '</span></button>').join('') + '</div>' +
-        '<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Статус</th><th>Доставщик</th><th>Поставка</th><th>Создан</th><th class="r">Сумма</th></tr></thead><tbody>' +
-        (list.length ? list.map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + stTag(o) + '</td><td>' + (o.courierName ? esc(o.courierName) : '<span class="muted">—</span>') + '</td><td>' + (o.deliver || '<span class="muted">не назначена</span>') + '</td><td>' + o.ago + '</td><td class="r mono bold">' + fmt(o.sum) + ' с</td></tr>').join('') : '<tr><td colspan="8" class="empty">Ничего не найдено</td></tr>') +
+        '<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Статус</th><th>Доставщик</th><th>Поставка</th><th>Оплата</th><th>Оценка</th><th class="r">Сумма</th></tr></thead><tbody>' +
+        (list.length ? list.map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + stTag(o) + '</td><td>' + (o.courierName ? esc(o.courierName) : '<span class="muted">—</span>') + '</td><td>' + (o.deliver || '<span class="muted">не назначена</span>') + '</td><td>' + payTag(o) + '</td><td>' + (o.rate ? '<span class="mono">★ ' + o.rate.s + '</span>' : '<span class="muted">—</span>') + '</td><td class="r mono bold">' + fmt(o.sum) + ' с</td></tr>').join('') : '<tr><td colspan="8" class="empty">Ничего не найдено</td></tr>') +
         '</tbody></table></div></div>';
     },
     tickets() {
@@ -751,6 +751,8 @@ td.r,th.r{text-align:right}
     const c = companies.find(x => x.id === id), emp = users.filter(u => u.co === id), appRole = appRoleOfCompany(D, c.name);
     const head = '<h3>' + esc(c.name) + '</h3><div class="row" style="margin-top:6px">' + coTag(c) + tag(c.type === 'dist' ? 'Поставщик' : 'Магазин', 'blue') + (appRole ? tag('демо-кабинет в приложении', '') : '') + '</div>';
     let body = '<div class="sec"><h4>Реквизиты</h4><div class="kv"><span>ИНН</span><span class="mono">' + esc(c.inn) + '</span><span>Адрес</span><span>' + esc(c.addr) + '</span><span>Телефон</span><span class="mono">' + (can('seeFull') ? (c.phone || PHONE) : MASK) + '</span><span>Регистрация</span><span>' + c.reg + '</span><span>Заказов</span><span>' + c.orders + '</span></div></div>' +
+      (() => { const os = orders.filter(o => (c.type === 'dist' ? o.sup : o.shop) === c.id), r = os.filter(o => o.rate), debt = os.filter(o => o.st === 'done' && o.pay !== 'paid').reduce((x, o) => x + o.sum, 0);
+        return os.length ? '<div class="sec"><h4>Работа</h4><div class="kv"><span>Заказов</span><span>' + os.length + '</span><span>Долг ' + (c.type === 'dist' ? 'магазинов' : 'поставщикам') + '</span><span>' + fmt(debt) + ' с</span>' + (c.type === 'dist' ? '<span>Оценка доставки</span><span>' + (r.length ? '★ ' + (r.reduce((x, o) => x + o.rate.s, 0) / r.length).toFixed(1).replace('.', ',') + ' (' + r.length + ')' : '—') + '</span>' : '') + '</div></div>' : ''; })() +
       (c.st === 'blocked' && c.why ? '<div class="lock" style="background:var(--red-bg);color:var(--red)">' + ic('i-lock') + 'Заблокирована: ' + esc(c.why) + '</div>' : '') +
       (appRole && c.st === 'blocked' ? '<div class="lock">' + ic('i-lock') + 'Вход в кабинет ' + (appRole === 'shop' ? 'магазина' : 'поставщика и его доставщиков') + ' в приложении закрыт</div>' : '') +
       '<div class="sec"><h4>Сотрудники</h4>' + (emp.length ? '<div class="list">' + emp.map(u => '<div><span class="grow cell2"><b>' + esc(u.name) + '</b><span>' + u.r + ', вход ' + esc(u.last) + '</span></span>' + (u.st === 'blocked' ? tag('Заблокирован', 'red') : '') + '</div>').join('') + '</div>' : '<span class="muted small">Нет данных</span>') + '</div>';
@@ -771,11 +773,14 @@ td.r,th.r{text-align:right}
     const b4 = $('#d-unblock'); if (b4) b4.onclick = () => reasonModal('Разблокировать компанию?', 'Разблокировать', '', v => setSt('ok', '', 'Разблокировал компанию', 'Компания разблокирована', { t: 'Доступ к Zakup.KG восстановлен', ic: 'i-check' }));
   }
 
+  const payTag = o => o.st !== 'done' ? '<span class="muted">—</span>' : o.pay === 'paid' ? tag('Оплачен', 'green') : tag('Долг', 'red');
   function openOrder(n) {
     const o = orders.find(x => x.n === n); if (!o) { closeDrawer(); return; }
     const head = '<h3>Заказ № ' + o.n + '</h3><div class="row" style="margin-top:6px">' + stTag(o) + '</div>';
     const body = '<div class="sec"><h4>Стороны</h4><div class="kv"><span>Магазин</span><span><button class="linkbtn" data-co2="' + o.shop + '">' + esc(coName(o.shop)) + '</button></span><span>Поставщик</span><span><button class="linkbtn" data-co2="' + o.sup + '">' + esc(coName(o.sup)) + '</button></span><span>Создан</span><span>' + o.ago + '</span><span>Поставка</span><span>' + (o.deliver || 'не назначена') + '</span>' + (o.courierName ? '<span>' + (o.st === 'done' ? 'Доставил' : 'Доставщик') + '</span><span>' + esc(o.courierName) + '</span>' : '') + '</div></div>' +
-      '<div class="sec"><h4>Товары</h4><div class="list">' + o.items.map(([nm, q2, s]) => '<div><span class="grow cell2"><b>' + esc(nm) + '</b><span>' + q2 + '</span></span><span class="mono bold">' + fmt(s) + ' с</span></div>').join('') + '<div><span class="grow bold">Итого</span><span class="mono bold">' + fmt(o.sum) + ' с</span></div></div></div>' +
+      '<div class="sec"><h4>Товары</h4><div class="list">' + o.items.map(([nm, q2, s, out]) => '<div' + (out ? ' style="opacity:.55"' : '') + '><span class="grow cell2"><b' + (out ? ' style="text-decoration:line-through"' : '') + '>' + esc(nm) + '</b><span>' + q2 + '</span></span><span class="mono bold">' + fmt(s) + ' с</span></div>').join('') + '<div><span class="grow bold">Итого</span><span class="mono bold">' + fmt(o.sum) + ' с</span></div></div></div>' +
+      (o.st === 'done' ? '<div class="sec"><h4>Оплата и оценка</h4><div class="kv"><span>Оплата</span><span>' + payTag(o) + (o.paidAt ? ' ' + o.paidAt : '') + '</span><span>Оценка магазина</span><span>' + (o.rate ? '★ ' + o.rate.s + ' из 5' + (o.rate.c ? ', «' + esc(o.rate.c) + '»' : '') : '<span class="muted">нет</span>') + '</span></div></div>' : '') +
+      (o.chat.length ? '<div class="sec"><h4>Чат магазина и поставщика</h4><div class="list">' + o.chat.map(m => '<div><span class="grow cell2"><b>' + (m.w === 'shop' ? 'Магазин' : 'Поставщик') + ', ' + m.tm + '</b><span style="color:var(--text)">' + esc(m.t) + '</span></span></div>').join('') + '</div></div>' : '') +
       '<div class="sec"><h4>История</h4><div class="timeline">' + o.hist.map(([t, w, k]) => '<div class="tl"><span class="dot' + (k === 'red' ? ' red' : '') + '"></span><div class="cell2"><b>' + esc(t) + '</b><span>' + esc(w) + '</span></div></div>').join('') + (o.st === 'new' ? '<div class="tl"><span class="dot grey"></span><div class="cell2"><b>Ждём ответа поставщика</b><span>' + o.ago + '</span></div></div>' : '') + '</div></div>';
     let foot = '<button class="btn ghost" id="d-call">Связаться с поставщиком</button>';
     if ((o.st === 'new' || o.st === 'work') && can('orderStatus') && live()) foot += '<button class="btn red ghost" id="d-cancel">Отменить заказ</button>';

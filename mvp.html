@@ -713,12 +713,6 @@ details.fold.first{border-top:none}
 .msg.me{align-self:flex-end;background:var(--green);color:#fff}
 .msg small{display:block;font-size:11px;opacity:.7;margin-top:3px}
 .sp-note{text-align:center;font-size:12.5px;color:var(--muted);padding:4px 0}
-.md-act{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border:none;background:none;font:inherit;font-size:15px;font-weight:600;color:var(--text)}
-.md-act + .md-act{border-top:1px solid var(--line)}
-.md-act .ic{color:var(--muted)}
-.md-act.red{color:var(--red)} .md-act.red .ic{color:var(--red)}
-.md-req{display:flex;align-items:center;gap:10px;padding:12px 14px}
-.md-req + .md-req{border-top:1px solid var(--line)}
 .banner-off{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--red-bg);color:var(--red);font-weight:700;font-size:14px}
 .tag-blk{font-size:11.5px;font-weight:800;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:8px}
 </style>
@@ -763,38 +757,15 @@ details.fold.first{border-top:none}
     </form>
   </section>
 
-  <!-- Восстановление пароля: номер → код → новый пароль -->
+  <!-- Восстановление пароля: заявка администратору -->
   <section class="screen" id="a-forgot" hidden>
     <form class="body auth" id="forgot-form" novalidate>
       <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-login" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Восстановление пароля</span></div>
       <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
-      <p class="auth-p">Пожалуйста, введите номер телефона — мы отправим SMS-код для восстановления аккаунта</p>
+      <p class="auth-p">Новый пароль выдаст администратор Zakup.KG</p>
       <label class="inp"><svg class="ic"><use href="#i-phone"/></svg><span class="cc">+996</span><input type="text" inputmode="numeric" placeholder="Номер телефона" data-phone id="forgot-phone"></label>
-      <button type="submit" class="btn lg">Получить SMS-код</button>
+      <button type="submit" class="btn lg">Отправить заявку</button>
       <button type="button" class="linkbtn" data-auth="a-login" style="align-self:center">Вернуться ко входу</button>
-    </form>
-  </section>
-  <section class="screen" id="a-code" hidden>
-    <form class="body auth" id="code-form" novalidate>
-      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-forgot" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Подтверждение номера</span></div>
-      <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
-      <p class="auth-p">Введите 4-значный код, отправленный на номер <b id="code-phone" style="color:var(--text)"></b></p>
-      <div class="code" id="code"><input inputmode="numeric" maxlength="1" aria-label="Цифра 1"><input inputmode="numeric" maxlength="1" aria-label="Цифра 2"><input inputmode="numeric" maxlength="1" aria-label="Цифра 3"><input inputmode="numeric" maxlength="1" aria-label="Цифра 4"></div>
-      <p class="xs muted" style="text-align:center;margin:0">Демо: подойдёт любой код</p>
-      <button type="button" class="linkbtn" id="resend" style="align-self:center">Отправить код повторно</button>
-      <button type="submit" class="btn lg" id="code-ok" disabled>Подтвердить номер</button>
-      <button type="button" class="linkbtn" data-auth="a-login" style="align-self:center">Вернуться ко входу</button>
-    </form>
-  </section>
-  <section class="screen" id="a-newpw" hidden>
-    <form class="body auth" id="newpw-form" novalidate>
-      <div class="auth-top"><button type="button" class="icon-btn" data-auth="a-login" aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button><span class="t">Создание нового пароля</span></div>
-      <div class="auth-logo"><span class="logo-plate" style="width:72px;height:72px"><svg><use href="#logo-mark"/></svg></span></div>
-      <p class="auth-p">Пожалуйста, установите новый надёжный пароль для вашей учётной записи Zakup.KG</p>
-      <label class="inp"><svg class="ic"><use href="#i-lock"/></svg><input type="password" placeholder="Новый пароль" data-pw id="np-pw" autocomplete="new-password"><button type="button" class="eye" data-eye aria-label="Показать пароль" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg></button></label>
-      <div class="strength" id="np-str"><i></i><i></i><i></i><i></i></div>
-      <span class="str-l" id="np-str-l">Минимум 8 символов, цифры и буквы</span>
-      <button type="submit" class="btn lg" id="np-ok" disabled>Применить и войти</button>
     </form>
   </section>
 
@@ -897,15 +868,6 @@ details.fold.first{border-top:none}
     </div></header>
     <div class="body" id="sp-body"></div>
     <form class="bottom-bar sp-form" id="sp-form"><input id="sp-text" placeholder="Сообщение" autocomplete="off" aria-label="Сообщение"><button type="submit" class="btn" aria-label="Отправить"><svg class="ic"><use href="#i-next"/></svg></button></form>
-  </section>
-
-  <!-- ===== Мои данные: запросы по персональным данным (Цифровой кодекс КР) ===== -->
-  <section class="screen" id="s-mydata" hidden>
-    <header class="top"><div class="top-row">
-      <button class="icon-btn" data-back aria-label="Назад"><svg class="ic"><use href="#i-back"/></svg></button>
-      <span class="h-sub">Мои данные</span>
-    </div></header>
-    <div class="body" id="md-body"></div>
   </section>
 
   <!-- ===================== ДОСТАВЩИК ===================== -->
@@ -1064,7 +1026,6 @@ details.fold.first{border-top:none}
         <button class="li" data-support><svg class="ic"><use href="#i-help"/></svg><span class="grow">Служба поддержки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-invoices"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Накладные</span><span class="small muted" id="inv-count"></span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-settings"><svg class="ic"><use href="#i-gear"/></svg><span class="grow">Настройки</span><svg class="ic chev"><use href="#i-next"/></svg></button>
-        <button class="li" data-go="s-mydata"><svg class="ic"><use href="#i-lock"/></svg><span class="grow">Мои данные</span><svg class="ic chev"><use href="#i-next"/></svg></button>
         <button class="li" data-go="s-docs"><svg class="ic"><use href="#i-doc"/></svg><span class="grow">Договоры и правила</span><svg class="ic chev"><use href="#i-next"/></svg></button>
       </div>
       <div class="list rise"><button class="li red" data-logout><svg class="ic" style="color:var(--red)"><use href="#i-logout"/></svg><span class="grow">Выйти</span></button></div>
@@ -1452,7 +1413,7 @@ details.fold.first{border-top:none}
     const t = e.target.closest('[data-tabgo],[data-go],[data-back]');
     if (!t) return;
     if (t.dataset.tabgo) openTab(t.dataset.tabgo);
-    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') invoicesAs(false); if (t.dataset.go === 's-mydata') renderMyData(); if (t.dataset.go === 's-docs') renderDocVers(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
+    else if (t.dataset.go) { if (t.dataset.go === 's-invoices') invoicesAs(false); if (t.dataset.go === 's-docs') renderDocVers(); if (t.dataset.go === 'm-notifs') renderNotifs(); go(t.dataset.go, 'push'); }
     else back();
   });
 
@@ -1554,51 +1515,22 @@ details.fold.first{border-top:none}
   $('#login-form').addEventListener('submit', e => {
     e.preventDefault();
     if (digits('#login-phone').length !== 9 || !$('#login-pw').value) { toast('Введите номер (9 цифр) и пароль'); return; }
-    enter(role, 'Добро пожаловать!');
+    const reg = (ADM.companies || []).find(c => c.phone && c.phone.replace(/\D/g, '') === '996' + digits('#login-phone'));
+    if (reg && reg.st === 'pending') { sheet('<span class="h2">Заявка на проверке</span><span class="small muted" style="text-align:center;line-height:1.45">' + esc(reg.name) + '. Вход откроется, когда Zakup.KG подтвердит компанию.</span><button type="button" class="btn lg ghost" data-close>Понятно</button>'); return; }
+    if (reg && reg.st === 'rejected') { blockedSheet('Zakup.KG отклонил заявку ' + reg.name + (reg.why ? '. Причина: ' + reg.why : '')); return; }
+    enter(reg ? reg.type : role, 'Добро пожаловать!');
   });
   $$('[data-demo]').forEach(b => b.addEventListener('click', () => enter(b.dataset.demo, { dist: 'Вход как поставщик (демо)', shop: 'Вход как магазин (демо)', courier: 'Вход как доставщик (демо)' }[b.dataset.demo])));
 
-  // Восстановление пароля
-  let resendT = null;
-  function startResend() {
-    let s = 60; const b = $('#resend'); b.disabled = true; clearInterval(resendT);
-    const tick = () => { b.textContent = s > 0 ? 'Отправить повторно через ' + s + ' с' : 'Отправить код повторно'; b.disabled = s > 0; s--; if (s < -1) clearInterval(resendT); };
-    tick(); resendT = setInterval(tick, 1000);
-  }
+  // Восстановление пароля: заявка уходит в админку, пароль выдаёт администратор
   $('#forgot-form').addEventListener('submit', e => {
     e.preventDefault();
     const d = digits('#forgot-phone');
     if (d.length !== 9) { toast('Введите номер телефона: 9 цифр'); return; }
-    $('#code-phone').textContent = '+996 ' + d.slice(0, 3) + ' **** ' + d.slice(7);
-    $$('#code input').forEach(i => { i.value = ''; }); $('#code-ok').disabled = true;
-    go('a-code', 'push'); startResend(); setTimeout(() => $('#code input').focus(), 400);
-    toast('SMS-код отправлен (демо)');
+    const ph = '+996 ' + d.slice(0, 3) + ' ' + d.slice(3, 5) + ' ' + d.slice(5, 7) + ' ' + d.slice(7);
+    patchShared(x => { x.pwReqs = x.pwReqs || []; x.pwReqs.unshift({ id: Math.max(0, ...x.pwReqs.map(r => r.id)) + 1, phone: ph, date: new Date().toLocaleDateString('ru-RU') + ', ' + new Date().toTimeString().slice(0, 5), st: 'new' }); });
+    $('#forgot-phone').value = ''; go('a-login', 'fade'); toast('Заявка отправлена, администратор свяжется с вами');
   });
-  $('#resend').addEventListener('click', () => { startResend(); toast('Код отправлен повторно'); });
-  const codeInputs = $$('#code input');
-  codeInputs.forEach((i, k) => {
-    i.addEventListener('input', () => {
-      i.value = i.value.replace(/\D/g, '').slice(-1);
-      if (i.value && codeInputs[k + 1]) codeInputs[k + 1].focus();
-      $('#code-ok').disabled = codeInputs.some(x => !x.value);
-    });
-    i.addEventListener('keydown', ev => { if (ev.key === 'Backspace' && !i.value && codeInputs[k - 1]) codeInputs[k - 1].focus(); });
-  });
-  $('#code-form').addEventListener('submit', e => { e.preventDefault(); clearInterval(resendT); $('#np-pw').value = ''; pwStrength(); go('a-newpw', 'push'); });
-  function pwStrength() {
-    const v = $('#np-pw').value;
-    let s = 0;
-    if (v.length >= 8) s++;
-    if (/\d/.test(v) && /[a-zа-я]/i.test(v)) s++;
-    if (/[A-ZА-Я]/.test(v) && /[a-zа-я]/.test(v)) s++;
-    if (v.length >= 12 || /[^\w\s]/.test(v)) s++;
-    if (v.length < 8) s = Math.min(s, 1);
-    $('#np-str').className = 'strength' + (v ? ' s' + Math.max(1, s) : '');
-    $('#np-str-l').textContent = !v ? 'Минимум 8 символов, цифры и буквы' : ['Слабый пароль', 'Слабый пароль', 'Средний пароль', 'Хороший пароль', 'Надёжный пароль'][s];
-    $('#np-ok').disabled = v.length < 8;
-  }
-  $('#np-pw').addEventListener('input', pwStrength);
-  $('#newpw-form').addEventListener('submit', e => { e.preventDefault(); go('a-login', 'fade'); toast('Пароль изменён — войдите с новым паролем'); });
 
   // Регистрация
   let regRole = 'shop';
@@ -1640,9 +1572,11 @@ details.fold.first{border-top:none}
       d.companies = d.companies || []; d.regUsers = d.regUsers || [];
       const id = Math.max(100, ...d.companies.map(c => c.id)) + 1;
       d.companies.push({ id, type: regRole, name: nm, inn: digits('#reg-inn'), addr: $('#reg-addr').value.trim(), st: 'pending', reg: today, staff: 1, orders: 0, phone: '+996 ' + $('#reg-phone').value });
-      d.regUsers.push({ name: 'Владелец, ' + nm, co: id, r: 'Владелец', last: 'сегодня, ' + new Date().toTimeString().slice(0, 5) });
+      d.regUsers.push({ name: 'Владелец, ' + nm, co: id, r: 'Владелец', phone: '+996 ' + $('#reg-phone').value, last: '—' });
     });
-    enter(regRole, 'Заявка отправлена на проверку. Пока покажем демо-кабинет');
+    $('#login-phone').value = $('#reg-phone').value; $('#login-pw').value = '';
+    ['#reg-name', '#reg-inn', '#reg-addr', '#reg-phone', '#reg-pw'].forEach(k => { $(k).value = ''; }); $('#reg-agree').checked = false;
+    go('a-login', 'fade'); toast('Заявка отправлена. Вход откроется после проверки');
   });
 
   // =====================================================================
@@ -2540,7 +2474,7 @@ details.fold.first{border-top:none}
     if (loginAt && (ADM.kicks[userName(role)] || 0) > loginAt) { kickOut('Администратор Zakup.KG завершил ваш сеанс. Войдите снова'); return; }
     renderAll();
     if (cur === 's-order') renderOrder(true); else if (cur === 'c-order') renderCOrder(); else if (cur === 's-courier') renderCourier();
-    else if (cur === 's-support') renderSupport(); else if (cur === 's-mydata') renderMyData(); else if (cur === 's-docs') renderDocVers(); else if (cur === 'm-notifs') renderNotifs();
+    else if (cur === 's-support') renderSupport(); else if (cur === 's-docs') renderDocVers(); else if (cur === 'm-notifs') renderNotifs();
     if (myTickets().reduce((a, t) => a + t.msgs.length, 0) > hadReplies && cur !== 's-support') toast('Новый ответ поддержки');
     checkDocs();
   }
@@ -2576,30 +2510,6 @@ details.fold.first{border-top:none}
       }
     });
     $('#sp-text').value = ''; renderSupport();
-  });
-
-  // ---------- Мои данные ----------
-  const KIND = { export: 'Выгрузка моих данных', consent: 'Отзыв согласия на хранение за рубежом', del: 'Удаление аккаунта', fix: 'Исправление данных' };
-  function renderMyData() {
-    const mine = ADM.dataReqs.filter(r => r.who === userName(role));
-    $('#md-body').innerHTML = '<div class="card rise" style="padding:0">' +
-      '<button type="button" class="md-act" data-md="export"><svg class="ic"><use href="#i-pdf"/></svg><span class="grow">Запросить выгрузку моих данных</span></button>' +
-      '<button type="button" class="md-act" data-md="consent"><svg class="ic"><use href="#i-lock"/></svg><span class="grow">Отозвать согласие на хранение за рубежом</span></button>' +
-      '<button type="button" class="md-act red" data-md="del"><svg class="ic"><use href="#i-trash"/></svg><span class="grow">Удалить аккаунт</span></button></div>' +
-      '<span class="bold" style="font-size:16px;padding:4px 2px 0">Мои запросы</span>' +
-      (mine.length ? '<div class="card rise" style="padding:0">' + mine.map(r => '<div class="md-req"><span class="grow" style="gap:2px"><b style="font-size:14px">№ ' + r.id + ', ' + KIND[r.kind] + '</b><span class="xs muted">' + r.date + '</span></span>' + (r.st === 'done' ? '<span class="pill in">Выполнен</span>' : '<span class="pill work">На рассмотрении</span>') + '</div>').join('') + '</div>'
-        : '<span class="small muted" style="padding:0 2px">Запросов пока нет</span>');
-  }
-  $('#md-body').addEventListener('click', e => {
-    const b = e.target.closest('[data-md]'); if (!b) return;
-    const kind = b.dataset.md;
-    sheet('<span class="h2">' + KIND[kind] + '?</span><span class="small muted" style="text-align:center;line-height:1.45">Запрос уйдёт в Zakup.KG. Ответим в течение 10 дней, результат появится здесь и в уведомлениях.</span>' +
-      '<button type="button" class="btn lg' + (kind === 'del' ? ' danger' : '') + '" id="md-yes">Отправить запрос</button><button type="button" class="btn lg ghost" data-close>Отмена</button>');
-    $('#md-yes').onclick = () => {
-      const who = userName(role), coName = myCoName(role);
-      patchShared(d => { d.dataReqs = d.dataReqs || []; d.companies = d.companies || []; d.dataReqs.unshift({ id: Math.max(7, ...d.dataReqs.map(r => r.id)) + 1, who, role, co: (d.companies.find(c => c.name === coName) || {}).id || null, coName, kind, date: new Date().toLocaleDateString('ru-RU'), st: 'new' }); });
-      closeSheet(); renderMyData(); toast('Запрос отправлен');
-    };
   });
 
   // ---------- Документы: версии и повторное согласие ----------

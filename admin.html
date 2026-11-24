@@ -401,7 +401,7 @@ td.r,th.r{text-align:right}
       { id: 5, who: 'Самат О.', co: 2, kind: 'consent', date: '15.11.2026', st: 'done' }
     ],
     pushes: [['Обновление приложения: новые фильтры заказов', 'Все', '18.11.2026']],
-    flags: { orders_on: true, urgent_on: true, qr_delivery: true, sms_login: false, new_catalog: false },
+    flags: { orders_on: true, urgent_on: true, qr_delivery: true, new_catalog: false },
     cats: ['Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'],
     reasons: ['Нет в наличии', 'Загруженность доставки', 'Другое'],
     docs: [['Публичная оферта', 'v1.2', '01.11.2026'], ['Пользовательское соглашение', 'v1.1', '01.11.2026'], ['Политика конфиденциальности', 'v1.3', '15.11.2026']],
@@ -410,9 +410,10 @@ td.r,th.r{text-align:right}
       ['22.11.2026 10:15', 'Айбек Н.', 'Поддержка', 'Сбросил пароль', 'Гульнара А., Магазин «Достук»', 'Просьба по телефону'],
       ['21.11.2026 17:40', 'Динара К.', 'Модератор', 'Заблокировал компанию', 'Киоск «Мээрим»', 'ИНН не совпадает с данными налоговой']
     ],
-    userBlocks: { 'Мээрим Д.': 'Компания заблокирована' }, kicks: {}, accepts: {}, userLast: {}, regUsers: []
+    userBlocks: { 'Мээрим Д.': 'Компания заблокирована' }, kicks: {}, accepts: {}, userLast: {}, regUsers: [],
+    pwReqs: [{ id: 1, phone: '+996 555 •• •• 41', who: 'Нурбек Ж.', date: '23.11.2026, 16:20', st: 'new' }]
   };
-  const FLAG_TITLES = [['orders_on', 'Приём заказов'], ['urgent_on', 'Срочные заказы'], ['qr_delivery', 'Доставка по QR'], ['sms_login', 'Вход по SMS (скоро)'], ['new_catalog', 'Новый каталог (тест)']];
+  const FLAG_TITLES = [['orders_on', 'Приём заказов'], ['urgent_on', 'Срочные заказы'], ['qr_delivery', 'Доставка по QR'], ['new_catalog', 'Новый каталог (тест)']];
   const DOC_KEYS = { 'Публичная оферта': 'oferta', 'Пользовательское соглашение': 'user_agreement_zakup_kg', 'Политика конфиденциальности': 'privacy' };
 
   // Если приложение ещё не открывали — заказы и каталог показываем из этих демо-данных
@@ -533,6 +534,7 @@ td.r,th.r{text-align:right}
   function badge(k) {
     if (k === 'companies') return companies.filter(c => c.st === 'pending').length;
     if (k === 'tickets') return tickets.filter(t => t.st === 'open').length;
+    if (k === 'users') return (D.pwReqs || []).filter(r => r.st === 'new').length;
     if (k === 'data') return dataReqs.filter(d => d.st === 'new').length;
     if (k === 'orders') return orders.filter(o => o.st === 'new' && o.wait >= 120).length;
     return 0;
@@ -591,7 +593,10 @@ td.r,th.r{text-align:right}
     },
     users() {
       const qq = q(), list = users.filter(u => !qq || (u.name + coName(u.co)).toLowerCase().includes(qq));
-      return '<div class="card"><div class="between"><h2>Пользователи приложения</h2><span class="xs muted">телефоны скрыты, полный номер открывается по кнопке и пишется в журнал</span></div>' +
+      const pr = (D.pwReqs || []).filter(r => r.st === 'new');
+      return (pr.length ? '<div class="card"><div class="between"><h2>Заявки на сброс пароля</h2><span class="xs muted">позвоните, проверьте, что это владелец номера, и выдайте временный пароль</span></div><div class="list">' +
+        pr.map(r => '<div><span class="grow cell2"><b class="mono">' + esc(r.phone) + '</b><span>' + esc((r.who ? r.who + ', ' : '') + r.date) + '</span></span><button class="btn sm" data-pwreq="' + r.id + '">Выдать пароль</button></div>').join('') + '</div></div>' : '') +
+        '<div class="card"><div class="between"><h2>Пользователи приложения</h2><span class="xs muted">телефоны скрыты, полный номер открывается по кнопке и пишется в журнал</span></div>' +
         '<div class="tbl-wrap"><table><thead><tr><th>Имя</th><th>Компания</th><th>Роль</th><th>Телефон</th><th>Последний вход</th><th>Статус</th></tr></thead><tbody>' +
         list.map(u => '<tr data-user="' + u.id + '"><td class="bold">' + esc(u.name) + appTag(u) + '</td><td>' + esc(coName(u.co)) + '</td><td>' + u.r + '</td><td class="mono">' + (shown.has(u.id) ? PHONE : MASK) + '</td><td>' + esc(u.last) + '</td><td>' + (u.st === 'ok' ? tag('Активен', 'green') : tag('Заблокирован', 'red')) + '</td></tr>').join('') +
         '</tbody></table></div></div>';
@@ -642,12 +647,11 @@ td.r,th.r{text-align:right}
     tech() {
       return '<div class="svc"><div><span class="row bold"><span class="sdot"></span>Сервер API</span><span class="xs muted">v0.4.2, работает 6 дней</span></div>' +
         '<div><span class="row bold"><span class="sdot' + (live() ? '' : ' warn') + '"></span>Приложение</span><span class="xs muted">' + (live() ? 'связано, заказов: ' + orders.length : 'ещё не открывали') + '</span></div>' +
-        '<div><span class="row bold"><span class="sdot warn"></span>SMS-шлюз</span><span class="xs muted">3 недоставленных за час</span></div>' +
         '<div><span class="row bold"><span class="sdot"></span>Пуш-уведомления</span><span class="xs muted">FCM, доставлено 99%</span></div></div>' +
         '<div class="grid2"><div class="card"><h2>Функции приложения</h2><span class="xs muted">Меняются в приложении сразу</span><div class="list">' + FLAG_TITLES.map(([k, t]) => '<div><span class="grow cell2"><b>' + t + '</b><span class="mono">' + k + '</span></span><button class="switch" role="switch" data-flag="' + k + '" aria-checked="' + !!D.flags[k] + '"' + (can('flags') ? '' : ' disabled') + ' aria-label="' + t + '"></button></div>').join('') + '</div></div>' +
         '<div class="card"><div class="between"><h2>Последние события</h2><span class="row"><button class="btn ghost sm" id="mk-reset">Сбросить демо-данные</button></span></div><div class="log">' +
         D.audit.slice(0, 6).map(a => '<span>' + esc(a[0].slice(-5)) + ' INFO admin.' + esc(a[3]) + ' ' + esc(a[4]) + '</span>').join('') +
-        '<span class="w">10:52:03 WARN sms.send timeout provider=local to=+996 500 •• •• 20</span><span class="e">09:12:55 ERROR invoice.pdf render_timeout n=0214 retry=1 ok</span>' +
+        '<span class="e">09:12:55 ERROR invoice.pdf render_timeout n=0214 retry=1 ok</span>' +
         '</div></div></div>';
     },
     audit() {
@@ -678,6 +682,7 @@ td.r,th.r{text-align:right}
     const g = t.closest('[data-goto]'); if (g) { const [p, v] = g.dataset.goto.split('-'); filt[p] = v; go(p); return; }
     const co = t.closest('[data-co]'); if (co) { openCompany(+co.dataset.co); return; }
     const o = t.closest('[data-order]'); if (o) { openOrder(o.dataset.order); return; }
+    const pq = t.closest('[data-pwreq]'); if (pq) { const r = D.pwReqs.find(x => x.id === +pq.dataset.pwreq); if (r) pwModal(r.who || r.phone, () => { patch(d => { const x = d.pwReqs.find(y => y.id === r.id); if (x) x.st = 'done'; if (r.who) d.kicks[r.who] = Date.now(); }); logAct('Выдал новый пароль', r.phone, 'Заявка из приложения'); render(); }); return; }
     const u = t.closest('[data-user]'); if (u) { openUser(u.dataset.user); return; }
     const tk = t.closest('[data-ticket]'); if (tk) { curTicket = +tk.dataset.ticket; const tt = tickets.find(x => x.id === curTicket); if (tt && tt.unread) patch(d => { const x = d.tickets.find(y => y.id === curTicket); if (x) x.unread = false; }); render(); return; }
     const dr = t.closest('[data-dreq]'); if (dr) { openDataReq(+dr.dataset.dreq); return; }
@@ -741,7 +746,7 @@ td.r,th.r{text-align:right}
       (c.st === 'blocked' && c.why ? '<div class="lock" style="background:var(--red-bg);color:var(--red)">' + ic('i-lock') + 'Заблокирована: ' + esc(c.why) + '</div>' : '') +
       (appRole && c.st === 'blocked' ? '<div class="lock">' + ic('i-lock') + 'Вход в кабинет ' + (appRole === 'shop' ? 'магазина' : 'поставщика и его доставщиков') + ' в приложении закрыт</div>' : '') +
       '<div class="sec"><h4>Сотрудники</h4>' + (emp.length ? '<div class="list">' + emp.map(u => '<div><span class="grow cell2"><b>' + esc(u.name) + '</b><span>' + u.r + ', вход ' + esc(u.last) + '</span></span>' + (u.st === 'blocked' ? tag('Заблокирован', 'red') : '') + '</div>').join('') + '</div>' : '<span class="muted small">Нет данных</span>') + '</div>';
-    if (c.st === 'pending') body += '<div class="sec"><h4>Проверка</h4><div class="list"><div>' + ic('i-check', ' style="color:var(--green)"') + '<span class="grow">ИНН из 14 цифр, проверить в базе налоговой</span></div><div>' + ic('i-check', ' style="color:var(--green)"') + '<span class="grow">Телефон подтверждён по SMS</span></div><div>' + ic('i-eye', ' style="color:var(--amber)"') + '<span class="grow">Адрес проверить по звонку</span></div></div></div>';
+    if (c.st === 'pending') body += '<div class="sec"><h4>Проверка</h4><div class="list"><div>' + ic('i-check', ' style="color:var(--green)"') + '<span class="grow">ИНН из 14 цифр, проверить в базе налоговой</span></div><div>' + ic('i-check', ' style="color:var(--green)"') + '<span class="grow">Позвонить по телефону ' + esc(c.phone || '') + ', подтвердить заявку и адрес</span></div></div></div>';
     let foot = '';
     if (can('verify') && c.st === 'pending') foot += '<button class="btn" id="d-verify">' + ic('i-check') + 'Подтвердить</button><button class="btn red ghost" id="d-reject">Отклонить</button>';
     if (can('block') && c.st === 'ok') foot += '<button class="btn red ghost" id="d-block">Заблокировать</button>';
@@ -776,6 +781,12 @@ td.r,th.r{text-align:right}
     });
   }
 
+  // Временный пароль: администратор сообщает его пользователю по телефону
+  function pwModal(who, done) {
+    const gen = () => { const a = 'abcdefghjkmnpqrstuvwxyz', n = '23456789'; let p = ''; for (let i = 0; i < 8; i++) p += (i % 3 === 2 ? n : a)[Math.floor(Math.random() * (i % 3 === 2 ? n : a).length)]; return p; };
+    modal('<h3>Новый пароль</h3><span class="small muted">' + esc(who) + '</span><div class="field"><label for="m-in">Временный пароль</label><input class="inp mono" id="m-in" value="' + gen() + '"></div><span class="err" id="m-err" hidden>Минимум 8 символов</span><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn" id="m-ok">Сохранить</button></div>',
+      () => { if ($('#m-in').value.trim().length < 8) { $('#m-err').hidden = false; return false; } done(); toast('Пароль сохранён, сеанс в приложении завершён. Сообщите пароль по телефону'); });
+  }
   function openUser(id) {
     const u = users.find(x => x.id === id); if (!u) { closeDrawer(); return; }
     const acc = D.accepts[u.name];
@@ -785,7 +796,7 @@ td.r,th.r{text-align:right}
     let foot = can('resetPw') ? '<button class="btn ghost" id="u-reset">Сбросить пароль</button><button class="btn ghost" id="u-sess">Завершить сеансы</button>' + (u.st === 'ok' ? '<button class="btn red ghost" id="u-block">Заблокировать</button>' : '<button class="btn ghost" id="u-unblock">Разблокировать</button>') : noAccess('Поддержка или Владелец');
     drawer(head, body, foot, 'user:' + id);
     const s = $('#u-show'); if (s) s.onclick = () => { shown.add(u.id); logAct('Открыл полный телефон', u.name + ', ' + coName(u.co)); toast('Номер показан, действие записано в журнал'); render(); openUser(id); };
-    const r = $('#u-reset'); if (r) r.onclick = () => { patch(d => { d.kicks[u.name] = Date.now(); }); logAct('Сбросил пароль', u.name); toast('Ссылка для нового пароля отправлена по SMS, сеанс в приложении завершён'); };
+    const r = $('#u-reset'); if (r) r.onclick = () => pwModal(u.name, () => { patch(d => { d.kicks[u.name] = Date.now(); }); logAct('Сбросил пароль', u.name); });
     const se = $('#u-sess'); if (se) se.onclick = () => { patch(d => { d.kicks[u.name] = Date.now(); }); logAct('Завершил сеансы', u.name); toast(u.app ? 'Сеанс завершён, приложение вышло на экран входа' : 'Все сеансы завершены'); };
     const bl = $('#u-block'); if (bl) bl.onclick = () => reasonModal('Заблокировать пользователя?', 'Заблокировать', 'red', v => { patch(d => { d.userBlocks[u.name] = v; }); logAct('Заблокировал пользователя', u.name, v); toast(u.app ? 'Пользователь заблокирован, вход в приложение закрыт' : 'Пользователь заблокирован'); render(); openUser(id); });
     const ub = $('#u-unblock'); if (ub) ub.onclick = () => { patch(d => { delete d.userBlocks[u.name]; }); logAct('Разблокировал пользователя', u.name); toast('Пользователь разблокирован'); render(); openUser(id); };

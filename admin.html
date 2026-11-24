@@ -346,13 +346,13 @@ td.r,th.r{text-align:right}
   };
   const ACCESS = {
     home: ['owner', 'support', 'moder', 'dev'], companies: ['owner', 'support', 'moder'], users: ['owner', 'support'],
-    orders: ['owner', 'support'], tickets: ['owner', 'support'], data: ['owner', 'support'],
+    orders: ['owner', 'support'], tickets: ['owner', 'support'],
     catalog: ['owner', 'moder'], dicts: ['owner', 'moder'], push: ['owner'],
     tech: ['owner', 'dev'], audit: ['owner'], staff: ['owner']
   };
   const CAN = {
     verify: ['owner', 'moder'], block: ['owner', 'moder'], resetPw: ['owner', 'support'], orderStatus: ['owner'],
-    reply: ['owner', 'support'], dataDelete: ['owner'], dataExport: ['owner', 'support'], hideProduct: ['owner', 'moder'],
+    reply: ['owner', 'support'], hideProduct: ['owner', 'moder'],
     flags: ['owner', 'dev'], seeFull: ['owner', 'support']
   };
   let role = 'owner';
@@ -397,13 +397,8 @@ td.r,th.r{text-align:right}
       { id: 39, co: 7, who: 'Нурбек Ж.', role: 'shop-other', subj: 'Поставщик не отвечает по заказу', st: 'open', time: 'вчера', msgs: [['Заказ 0220 висит без ответа, а нам нужно к обеду.', 'u', 'вчера, 18:10']] },
       { id: 38, co: 8, who: 'Гульнара А.', role: 'shop-other', subj: 'Ошибка в накладной', st: 'closed', time: '20.11', msgs: [['В накладной неправильный адрес магазина.', 'u', '20.11, 12:00'], ['Исправили реквизиты, новая накладная уже в заказе.', 'me', '20.11, 12:40']] }
     ],
-    dataReqs: [
-      { id: 7, who: 'Мээрим Д.', co: 12, kind: 'del', date: '21.11.2026', st: 'new' },
-      { id: 6, who: 'Айгерим Б.', co: 3, kind: 'export', date: '20.11.2026', st: 'new' },
-      { id: 5, who: 'Самат О.', co: 2, kind: 'consent', date: '15.11.2026', st: 'done' }
-    ],
     pushes: [['Обновление приложения: новые фильтры заказов', 'Все', '18.11.2026']],
-    flags: { orders_on: true, urgent_on: true, qr_delivery: true, new_catalog: false },
+    flags: { orders_on: true, urgent_on: true, qr_delivery: true },
     cats: ['Молочка', 'Хлеб', 'Напитки', 'Бакалея', 'Сладости'],
     reasons: ['Нет в наличии', 'Загруженность доставки', 'Другое'],
     docs: [['Публичная оферта', 'v1.2', '01.11.2026'], ['Пользовательское соглашение', 'v1.1', '01.11.2026'], ['Политика конфиденциальности', 'v1.3', '15.11.2026']],
@@ -416,7 +411,7 @@ td.r,th.r{text-align:right}
     editReqs: [{ id: 1, role: null, co: 'Продукты «Нур»', who: 'Бакыт С.', changes: { addr: ['г. Бишкек, ул. Ахунбаева, 7', 'г. Бишкек, ул. Ахунбаева, 112'] }, date: '23.11.2026, 18:40', st: 'new' }],
     pwReqs: [{ id: 1, phone: '+996 555 •• •• 41', who: 'Нурбек Ж.', date: '23.11.2026, 16:20', st: 'new' }]
   };
-  const FLAG_TITLES = [['orders_on', 'Приём заказов'], ['urgent_on', 'Срочные заказы'], ['qr_delivery', 'Доставка по QR'], ['new_catalog', 'Новый каталог (тест)']];
+  const FLAG_TITLES = [['orders_on', 'Приём заказов'], ['urgent_on', 'Срочные заказы'], ['qr_delivery', 'Доставка по QR']];
   const DOC_KEYS = { 'Публичная оферта': 'oferta', 'Пользовательское соглашение': 'user_agreement_zakup_kg', 'Политика конфиденциальности': 'privacy' };
 
   // Если приложение ещё не открывали — заказы и каталог показываем из этих демо-данных
@@ -456,7 +451,7 @@ td.r,th.r{text-align:right}
   const appRoleOfCompany = (d, name) => name === ((d.shops || {}).aidana || {}).name ? 'shop' : name === d.dist ? 'dist' : null;
 
   // ---------- Представление общих данных для экранов админки ----------
-  let companies = [], users = [], orders = [], tickets = [], dataReqs = [], products = [], couriers = [];
+  let companies = [], users = [], orders = [], tickets = [], products = [], couriers = [];
   const coName = id => (companies.find(c => c.id === id) || {}).name || '';
   const coIdByName = name => (companies.find(c => c.name === name) || {}).id;
   const dayStr = k => { const d = new Date(); d.setDate(d.getDate() + k); return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0'); };
@@ -489,7 +484,6 @@ td.r,th.r{text-align:right}
     users.forEach(u => { u.st = d.userBlocks[u.name] ? 'blocked' : 'ok'; if (d.userLast[u.name]) u.last = d.userLast[u.name]; });
     companies.forEach(c => { const n = users.filter(u => u.co === c.id).length; if (n) c.staff = n; });
     tickets = d.tickets.map(t => Object.assign({}, t, { co: t.co || coIdByName(t.coName) }));
-    dataReqs = d.dataReqs.map(r => Object.assign({}, r, { co: r.co || coIdByName(r.coName) }));
     const all = (d.products || []).concat(d.others || []);
     products = all.length ? all.map(p => ({ id: p.id, name: p.name + (p.vol ? ', ' + String(p.vol.n).replace('.', ',') + ' ' + p.vol.u : ''), sup: coIdByName(p.sup), price: p.price, photos: (p.photos || []).length, avail: p.avail, hidden: !!(d.prodHidden || {})[p.id] })) : [];
     syncChip();
@@ -533,7 +527,7 @@ td.r,th.r{text-align:right}
 
   // ---------- Навигация ----------
   const NAV = [
-    ['Работа', [['home', 'i-home', 'Главная'], ['companies', 'i-building', 'Компании'], ['users', 'i-users', 'Пользователи'], ['orders', 'i-doc', 'Заказы'], ['tickets', 'i-chat', 'Обращения'], ['data', 'i-shield', 'Запросы по данным']]],
+    ['Работа', [['home', 'i-home', 'Главная'], ['companies', 'i-building', 'Компании'], ['users', 'i-users', 'Пользователи'], ['orders', 'i-doc', 'Заказы'], ['tickets', 'i-chat', 'Обращения']]],
     ['После пилота', [['catalog', 'i-box', 'Каталог'], ['dicts', 'i-list', 'Справочники'], ['push', 'i-bell', 'Рассылки']]],
     ['Система', [['tech', 'i-cpu', 'Техника'], ['audit', 'i-history', 'Журнал действий'], ['staff', 'i-key', 'Сотрудники']]]
   ];
@@ -543,7 +537,6 @@ td.r,th.r{text-align:right}
     if (k === 'companies') return companies.filter(c => c.st === 'pending').length + (D.editReqs || []).filter(r => r.st === 'new').length;
     if (k === 'tickets') return tickets.filter(t => t.st === 'open').length;
     if (k === 'users') return (D.pwReqs || []).filter(r => r.st === 'new').length;
-    if (k === 'data') return dataReqs.filter(d => d.st === 'new').length;
     if (k === 'orders') return orders.filter(o => o.st === 'new' && o.wait >= 120).length;
     return 0;
   }
@@ -558,7 +551,6 @@ td.r,th.r{text-align:right}
 
   // ---------- Помощники ----------
   const ST = { new: ['Новый', 'blue'], work: ['В работе', 'amber'], done: ['Доставлен', 'green'], rejected: ['Отказ', 'red'] };
-  const KIND = { del: 'Удаление данных', export: 'Выгрузка данных', consent: 'Отзыв согласия', fix: 'Исправление данных' };
   const tag = (t, c, i) => '<span class="tag ' + (c || '') + '">' + (i ? ic(i) : '') + esc(t) + '</span>';
   const coTag = c => c.st === 'ok' ? tag('Проверена', 'green') : c.st === 'pending' ? tag('На проверке', 'amber') : tag('Заблокирована', 'red');
   const stTag = o => tag(ST[o.st][0], ST[o.st][1]) + (o.urgent ? ' ' + tag('Срочно', 'red', 'i-fire') : '');
@@ -588,7 +580,7 @@ td.r,th.r{text-align:right}
         '<div class="card"><div class="between"><h2>Ждут проверки</h2><button class="linkbtn" data-goto="companies-pending">Все</button></div>' +
         (pend.length ? '<div class="list">' + pend.map(c => '<div style="cursor:pointer" data-co="' + c.id + '"><span class="grow cell2"><b>' + esc(c.name) + '</b><span>' + (c.type === 'dist' ? 'Поставщик' : 'Магазин') + ', ' + c.reg + '</span></span>' + tag('На проверке', 'amber') + '</div>').join('') + '</div>' : '<span class="muted small">Новых заявок нет</span>') + '</div></div>' +
         '<div class="card"><div class="between"><h2>Новые заказы</h2><span class="xs muted">ждут ответа поставщика</span></div><div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Ждёт</th><th class="r">Сумма</th></tr></thead><tbody>' +
-        (orders.filter(o => o.st === 'new').sort((a, b) => b.wait - a.wait).map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + (o.urgent ? ' ' + tag('Срочно', 'red', 'i-fire') : '') + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + (o.wait >= 120 ? '<b style="color:var(--red)">' + o.ago + '</b>' : o.ago) + '</td><td class="r mono bold">' + fmt(o.sum) + ' сом</td></tr>').join('') || '<tr><td colspan="5" class="empty">Новых заказов нет</td></tr>') +
+        (orders.filter(o => o.st === 'new').sort((a, b) => b.wait - a.wait).map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + (o.urgent ? ' ' + tag('Срочно', 'red', 'i-fire') : '') + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + (o.wait >= 120 ? '<b style="color:var(--red)">' + o.ago + '</b>' : o.ago) + '</td><td class="r mono bold">' + fmt(o.sum) + ' с</td></tr>').join('') || '<tr><td colspan="5" class="empty">Новых заказов нет</td></tr>') +
         '</tbody></table></div></div>';
     },
     companies() {
@@ -619,7 +611,7 @@ td.r,th.r{text-align:right}
       const qq = q(), list = orders.filter(F.find(f => f[0] === filt.orders)[2]).filter(o => !qq || (o.n + coName(o.shop) + coName(o.sup)).toLowerCase().includes(qq));
       return '<div class="card"><div class="tabs">' + F.map(([k, t, f]) => '<button class="tab' + (k === filt.orders ? ' on' : '') + '" data-f="orders:' + k + '">' + t + '<span class="n">' + orders.filter(f).length + '</span></button>').join('') + '</div>' +
         '<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Магазин</th><th>Поставщик</th><th>Статус</th><th>Доставщик</th><th>Поставка</th><th>Создан</th><th class="r">Сумма</th></tr></thead><tbody>' +
-        (list.length ? list.map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + stTag(o) + '</td><td>' + (o.courierName ? esc(o.courierName) : '<span class="muted">—</span>') + '</td><td>' + (o.deliver || '<span class="muted">не назначена</span>') + '</td><td>' + o.ago + '</td><td class="r mono bold">' + fmt(o.sum) + ' сом</td></tr>').join('') : '<tr><td colspan="8" class="empty">Ничего не найдено</td></tr>') +
+        (list.length ? list.map(o => '<tr data-order="' + o.n + '"><td class="bold">' + o.n + '</td><td>' + esc(coName(o.shop)) + '</td><td>' + esc(coName(o.sup)) + '</td><td>' + stTag(o) + '</td><td>' + (o.courierName ? esc(o.courierName) : '<span class="muted">—</span>') + '</td><td>' + (o.deliver || '<span class="muted">не назначена</span>') + '</td><td>' + o.ago + '</td><td class="r mono bold">' + fmt(o.sum) + ' с</td></tr>').join('') : '<tr><td colspan="8" class="empty">Ничего не найдено</td></tr>') +
         '</tbody></table></div></div>';
     },
     tickets() {
@@ -632,17 +624,10 @@ td.r,th.r{text-align:right}
         '<div class="msgs" id="msgs">' + cur.msgs.map(([t, w, tm]) => '<div class="msg' + (w === 'me' ? ' me' : '') + '">' + esc(t) + '<small>' + (w === 'me' ? 'Поддержка, ' : '') + tm + '</small></div>').join('') + '</div>' +
         (cur.st === 'open' ? (can('reply') ? '<form class="reply" id="t-reply"><input class="inp" id="t-text" placeholder="Ответ пользователю"><button class="btn" type="submit">Отправить</button></form>' : '<div class="reply">' + noAccess('Поддержка или Владелец') + '</div>') : '') + '</div></div>';
     },
-    data() {
-      const list = dataReqs.filter(d => filt.data === 'all' || d.st === filt.data);
-      return '<div class="card"><div class="between"><div class="tabs"><button class="tab' + (filt.data === 'new' ? ' on' : '') + '" data-f="data:new">Новые<span class="n">' + dataReqs.filter(d => d.st === 'new').length + '</span></button><button class="tab' + (filt.data === 'all' ? ' on' : '') + '" data-f="data:all">Все<span class="n">' + dataReqs.length + '</span></button></div><span class="xs muted">Цифровой кодекс КР, ст. 73, 79, 83</span></div>' +
-        '<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Кто</th><th>Запрос</th><th>Дата</th><th>Статус</th><th class="r"></th></tr></thead><tbody>' +
-        (list.length ? list.map(d => '<tr data-dreq="' + d.id + '"><td class="bold">' + d.id + '</td><td><span class="cell2"><b>' + esc(d.who) + '</b><span>' + esc(coName(d.co) || d.coName || '') + '</span></span></td><td>' + KIND[d.kind] + '</td><td>' + d.date + '</td><td>' + (d.st === 'new' ? tag('Новый', 'amber') : tag('Выполнен', 'green')) + '</td><td class="r"><button class="btn ghost sm">Открыть</button></td></tr>').join('') : '<tr><td colspan="6" class="empty">Новых запросов нет</td></tr>') +
-        '</tbody></table></div></div>';
-    },
     catalog() {
       if (!products.length) return '<div class="card"><span class="empty">Каталог появится, когда приложение откроют на этом сайте</span></div>';
       return '<div class="card"><div class="between"><h2>Товары поставщиков</h2><span class="xs muted">выключенный товар магазины не видят</span></div><div class="tbl-wrap"><table><thead><tr><th>Товар</th><th>Поставщик</th><th class="r">Цена</th><th>Фото</th><th>Проверка</th><th>Показ</th></tr></thead><tbody>' +
-        products.map(p => '<tr style="cursor:default"><td class="bold">' + esc(p.name) + '</td><td>' + esc(coName(p.sup)) + '</td><td class="r mono">' + fmt(p.price) + ' сом</td><td>' + p.photos + ' из 5</td><td>' + (p.avail === false ? tag('Нет в наличии', '') + ' ' : '') + (p.photos < 2 ? tag('Мало фото', 'amber') : tag('Ок', 'green')) + '</td><td><button class="switch" role="switch" data-hide="' + p.id + '" aria-checked="' + !p.hidden + '"' + (can('hideProduct') ? '' : ' disabled') + ' aria-label="Показывать магазинам"></button></td></tr>').join('') + '</tbody></table></div></div>';
+        products.map(p => '<tr style="cursor:default"><td class="bold">' + esc(p.name) + '</td><td>' + esc(coName(p.sup)) + '</td><td class="r mono">' + fmt(p.price) + ' с</td><td>' + p.photos + ' из 5</td><td>' + (p.avail === false ? tag('Нет в наличии', '') + ' ' : '') + (p.photos < 2 ? tag('Мало фото', 'amber') : tag('Ок', 'green')) + '</td><td><button class="switch" role="switch" data-hide="' + p.id + '" aria-checked="' + !p.hidden + '"' + (can('hideProduct') ? '' : ' disabled') + ' aria-label="Показывать магазинам"></button></td></tr>').join('') + '</tbody></table></div></div>';
     },
     dicts() {
       return '<div class="grid2"><div class="card"><div class="between"><h2>Категории</h2><button class="btn ghost sm" id="add-cat">' + ic('i-plus') + 'Добавить</button></div><span class="xs muted">Видны в каталоге магазина и в карточке товара поставщика</span><div class="list">' + D.cats.map((c, i) => '<div><span class="grow">' + esc(c) + '</span><button class="linkbtn" style="color:var(--red)" data-delcat="' + i + '">Убрать</button></div>').join('') + '</div></div>' +
@@ -700,7 +685,6 @@ td.r,th.r{text-align:right}
     const pq = t.closest('[data-pwreq]'); if (pq) { const r = D.pwReqs.find(x => x.id === +pq.dataset.pwreq); if (r) pwModal(r.who || r.phone, () => { patch(d => { const x = d.pwReqs.find(y => y.id === r.id); if (x) x.st = 'done'; if (r.who) d.kicks[r.who] = Date.now(); }); logAct('Выдал новый пароль', r.phone, 'Заявка из приложения'); render(); }); return; }
     const u = t.closest('[data-user]'); if (u) { openUser(u.dataset.user); return; }
     const tk = t.closest('[data-ticket]'); if (tk) { curTicket = +tk.dataset.ticket; const tt = tickets.find(x => x.id === curTicket); if (tt && tt.unread) patch(d => { const x = d.tickets.find(y => y.id === curTicket); if (x) x.unread = false; }); render(); return; }
-    const dr = t.closest('[data-dreq]'); if (dr) { openDataReq(+dr.dataset.dreq); return; }
     const hp = t.closest('[data-hide]'); if (hp && !hp.disabled) {
       const p = products.find(x => x.id === +hp.dataset.hide), hide = !p.hidden;
       patch(d => { d.prodHidden = d.prodHidden || {}; if (hide) d.prodHidden[p.id] = true; else delete d.prodHidden[p.id]; if (coName(p.sup) === d.dist) notifyApp(d, 'dist', { t: (hide ? 'Товар скрыт модератором: ' : 'Товар снова в каталоге: ') + p.name, ic: hide ? 'i-x' : 'i-check' }); });
@@ -753,7 +737,7 @@ td.r,th.r{text-align:right}
   function closeDrawer() { $('#drawer-root').innerHTML = ''; }
   $('#drawer-root').addEventListener('click', e => { if (e.target.closest('[data-dclose]')) closeDrawer(); const b = e.target.closest('[data-co2]'); if (b) openCompany(+b.dataset.co2); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('#modal-root').innerHTML) $('#modal-root').innerHTML = ''; else closeDrawer(); } });
-  function reopen() { const dr = $('#drawer-root .drawer'); if (!dr || !dr.dataset.key || $('#modal-root').innerHTML) return; const [k, v] = dr.dataset.key.split(':'); ({ co: () => openCompany(+v), order: () => openOrder(v), user: () => openUser(v), dreq: () => openDataReq(+v) })[k](); }
+  function reopen() { const dr = $('#drawer-root .drawer'); if (!dr || !dr.dataset.key || $('#modal-root').innerHTML) return; const [k, v] = dr.dataset.key.split(':'); ({ co: () => openCompany(+v), order: () => openOrder(v), user: () => openUser(v) })[k](); }
 
   function modal(html, onOk) {
     $('#modal-root').innerHTML = '<div class="modal-bg" data-mclose><div class="modal" role="dialog" aria-modal="true">' + html + '</div></div>';
@@ -791,7 +775,7 @@ td.r,th.r{text-align:right}
     const o = orders.find(x => x.n === n); if (!o) { closeDrawer(); return; }
     const head = '<h3>Заказ № ' + o.n + '</h3><div class="row" style="margin-top:6px">' + stTag(o) + '</div>';
     const body = '<div class="sec"><h4>Стороны</h4><div class="kv"><span>Магазин</span><span><button class="linkbtn" data-co2="' + o.shop + '">' + esc(coName(o.shop)) + '</button></span><span>Поставщик</span><span><button class="linkbtn" data-co2="' + o.sup + '">' + esc(coName(o.sup)) + '</button></span><span>Создан</span><span>' + o.ago + '</span><span>Поставка</span><span>' + (o.deliver || 'не назначена') + '</span>' + (o.courierName ? '<span>' + (o.st === 'done' ? 'Доставил' : 'Доставщик') + '</span><span>' + esc(o.courierName) + '</span>' : '') + '</div></div>' +
-      '<div class="sec"><h4>Товары</h4><div class="list">' + o.items.map(([nm, q2, s]) => '<div><span class="grow cell2"><b>' + esc(nm) + '</b><span>' + q2 + '</span></span><span class="mono bold">' + fmt(s) + ' сом</span></div>').join('') + '<div><span class="grow bold">Итого</span><span class="mono bold">' + fmt(o.sum) + ' сом</span></div></div></div>' +
+      '<div class="sec"><h4>Товары</h4><div class="list">' + o.items.map(([nm, q2, s]) => '<div><span class="grow cell2"><b>' + esc(nm) + '</b><span>' + q2 + '</span></span><span class="mono bold">' + fmt(s) + ' с</span></div>').join('') + '<div><span class="grow bold">Итого</span><span class="mono bold">' + fmt(o.sum) + ' с</span></div></div></div>' +
       '<div class="sec"><h4>История</h4><div class="timeline">' + o.hist.map(([t, w, k]) => '<div class="tl"><span class="dot' + (k === 'red' ? ' red' : '') + '"></span><div class="cell2"><b>' + esc(t) + '</b><span>' + esc(w) + '</span></div></div>').join('') + (o.st === 'new' ? '<div class="tl"><span class="dot grey"></span><div class="cell2"><b>Ждём ответа поставщика</b><span>' + o.ago + '</span></div></div>' : '') + '</div></div>';
     let foot = '<button class="btn ghost" id="d-call">Связаться с поставщиком</button>';
     if ((o.st === 'new' || o.st === 'work') && can('orderStatus') && live()) foot += '<button class="btn red ghost" id="d-cancel">Отменить заказ</button>';
@@ -849,31 +833,6 @@ td.r,th.r{text-align:right}
     const se = $('#u-sess'); if (se) se.onclick = () => { patch(d => { d.kicks[u.name] = Date.now(); }); logAct('Завершил сеансы', u.name); toast(u.app ? 'Сеанс завершён, приложение вышло на экран входа' : 'Все сеансы завершены'); };
     const bl = $('#u-block'); if (bl) bl.onclick = () => reasonModal('Заблокировать пользователя?', 'Заблокировать', 'red', v => { patch(d => { d.userBlocks[u.name] = v; }); logAct('Заблокировал пользователя', u.name, v); toast(u.app ? 'Пользователь заблокирован, вход в приложение закрыт' : 'Пользователь заблокирован'); render(); openUser(id); });
     const ub = $('#u-unblock'); if (ub) ub.onclick = () => { patch(d => { delete d.userBlocks[u.name]; }); logAct('Разблокировал пользователя', u.name); toast('Пользователь разблокирован'); render(); openUser(id); };
-  }
-
-  function openDataReq(id) {
-    const d0 = dataReqs.find(x => x.id === id); if (!d0) { closeDrawer(); return; }
-    const head = '<h3>Запрос № ' + d0.id + '</h3><div class="row" style="margin-top:6px">' + tag(KIND[d0.kind], 'blue') + (d0.st === 'new' ? tag('Новый', 'amber') : tag('Выполнен', 'green')) + (d0.role ? tag('из приложения', '') : '') + '</div>';
-    const what = { del: 'Удалим профиль и обезличим имя и телефон в заказах и накладных. Сами заказы останутся для учёта.', export: 'Соберём все данные человека в файл: профиль, заказы, согласия, входы.', consent: 'Остановим передачу данных за рубеж. Если без неё сервис работать не может, предложим удалить профиль.', fix: 'Исправим данные по заявке и сообщим человеку.' }[d0.kind];
-    const body = '<div class="sec"><h4>Заявитель</h4><div class="kv"><span>Имя</span><span>' + esc(d0.who) + '</span><span>Компания</span><span>' + esc(coName(d0.co) || d0.coName || '') + '</span><span>Дата запроса</span><span>' + d0.date + '</span></div></div><div class="sec"><h4>Что сделаем</h4><p class="small">' + what + '</p></div>';
-    let foot = '';
-    if (d0.st === 'new') {
-      if (d0.kind === 'del') foot = can('dataDelete') ? '<button class="btn red" id="r-do">Удалить и обезличить</button>' : noAccess('Владелец');
-      else if (d0.kind === 'export') foot = can('dataExport') ? '<button class="btn" id="r-do">' + ic('i-download') + 'Выгрузить</button>' : noAccess('Поддержка или Владелец');
-      else foot = '<button class="btn" id="r-do">Выполнить</button>';
-    }
-    drawer(head, body, foot, 'dreq:' + id);
-    const b = $('#r-do'); if (b) b.onclick = () => {
-      const fin = () => {
-        patch(d => { const x = d.dataReqs.find(y => y.id === id); x.st = 'done';
-          if (x.role === 'shop' || x.role === 'dist') notifyApp(d, x.role, { t: 'Запрос № ' + x.id + ' выполнен: ' + KIND[x.kind].toLowerCase(), ic: 'i-check' });
-          if (x.kind === 'del') { d.userBlocks[x.who] = 'Аккаунт удалён по запросу пользователя'; d.kicks[x.who] = Date.now(); } });
-        logAct(d0.kind === 'del' ? 'Удалил данные' : d0.kind === 'export' ? 'Выгрузил данные' : 'Выполнил запрос', d0.who + ', запрос № ' + d0.id);
-        toast(d0.kind === 'export' ? 'Файл с данными готов и отправлен заявителю' : 'Запрос выполнен'); render(); openDataReq(id);
-      };
-      if (d0.kind === 'del') modal('<h3>Удалить данные?</h3><p class="small muted">Профиль ' + esc(d0.who) + ' будет удалён, вход в приложение закроется, имя и телефон в заказах заменятся на «Удалённый пользователь». Отменить нельзя.</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" data-mclose>Отмена</button><button class="btn red" id="m-ok">Удалить</button></div>', fin);
-      else fin();
-    };
   }
 
   // ---------- Старт и живое обновление ----------

@@ -32,7 +32,6 @@ CREATE TYPE ticket_status   AS ENUM ('open', 'closed');
 CREATE TYPE msg_author      AS ENUM ('user', 'staff');
 CREATE TYPE request_status  AS ENUM ('new', 'done', 'rejected');
 CREATE TYPE change_status   AS ENUM ('new', 'approved', 'rejected', 'cancelled');
-CREATE TYPE data_req_kind   AS ENUM ('export', 'fix', 'consent', 'del');
 CREATE TYPE push_audience   AS ENUM ('all', 'dist', 'shop');
 CREATE TYPE app_lang        AS ENUM ('ru', 'ky');
 
@@ -559,7 +558,7 @@ BEGIN
 END $$;
 
 -- =====================================================================
--- 7. ПОДДЕРЖКА И ЗАПРОСЫ ПО ДАННЫМ
+-- 7. ПОДДЕРЖКА
 -- =====================================================================
 CREATE TABLE support_tickets (
   id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -587,21 +586,6 @@ CREATE TABLE ticket_messages (
   CHECK ((author = 'staff') = (staff_id IS NOT NULL))
 );
 CREATE INDEX ticket_messages_idx ON ticket_messages (ticket_id, created_at);
-
--- Запросы субъектов персональных данных (приходят через чат поддержки, почту или звонок)
-CREATE TABLE data_requests (
-  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  user_id     bigint        NOT NULL REFERENCES users(id),
-  kind        data_req_kind NOT NULL,
-  source      text          NOT NULL DEFAULT 'chat' CHECK (source IN ('chat', 'email', 'phone')),
-  ticket_id   bigint REFERENCES support_tickets(id),
-  status      request_status NOT NULL DEFAULT 'new',
-  due_at      timestamptz   NOT NULL DEFAULT now() + interval '10 days',
-  handled_by  bigint REFERENCES staff(id),
-  handled_at  timestamptz,
-  result_path text,                               -- архив выгрузки
-  created_at  timestamptz   NOT NULL DEFAULT now()
-);
 
 -- =====================================================================
 -- 8. ДОКУМЕНТЫ И СОГЛАСИЯ
@@ -776,7 +760,6 @@ SELECT
   (SELECT count(*) FROM company_change_requests WHERE status = 'new')               AS change_requests,
   (SELECT count(*) FROM password_reset_requests WHERE status = 'new')               AS password_requests,
   (SELECT count(*) FROM support_tickets WHERE status = 'open')                      AS tickets_open,
-  (SELECT count(*) FROM data_requests WHERE status = 'new')                         AS data_requests_new,
   (SELECT count(*) FROM orders WHERE status = 'new' AND created_at < now() - interval '2 hours') AS orders_overdue,
   (SELECT count(*) FROM orders WHERE created_at >= date_trunc('day', now() AT TIME ZONE 'Asia/Bishkek') AT TIME ZONE 'Asia/Bishkek') AS orders_today,
   (SELECT COALESCE(sum(total), 0) FROM orders WHERE status = 'done' AND delivered_at >= now() - interval '30 days') AS gmv_30d;
@@ -809,7 +792,7 @@ GRANT DELETE ON cart_items, product_photos TO zakup_api;
 GRANT INSERT ON product_photos, password_reset_requests TO zakup_api;
 GRANT SELECT, INSERT, UPDATE (status) ON company_change_requests TO zakup_api;   -- отправить и отменить свою заявку
 GRANT SELECT ON order_events, invoices, supplier_order_cards TO zakup_api;
--- audit_log, staff, sessions, data_requests — недоступны API приложения
+-- audit_log, staff, sessions — недоступны API приложения
 
 ALTER TABLE orders        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items   ENABLE ROW LEVEL SECURITY;

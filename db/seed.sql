@@ -18,8 +18,7 @@ INSERT INTO staff (name, phone, role, password_hash, must_change_password, totp_
 INSERT INTO feature_flags (key, enabled, title) VALUES
   ('orders_on',   true,  'Приём заказов'),
   ('urgent_on',   true,  'Срочные заказы'),
-  ('qr_delivery', true,  'Доставка по QR'),
-  ('new_catalog', false, 'Новый каталог (тест)');
+  ('qr_delivery', true,  'Доставка по QR');
 
 INSERT INTO categories (name, sort) VALUES ('Молочка', 1), ('Хлеб', 2), ('Напитки', 3), ('Бакалея', 4), ('Сладости', 5);
 INSERT INTO reject_reasons (text, sort) VALUES ('Нет в наличии', 1), ('Загруженность доставки', 2), ('Другое', 99);
@@ -222,14 +221,6 @@ SELECT phone, id, 'done', 2, '2026-11-22 10:15+06', 'Позвонил, подт�
 INSERT INTO company_change_requests (company_id, requested_by, new_address, old_values, created_at)
 SELECT c.id, u.id, 'ул. Ахунбаева, 112, корпус 2', jsonb_build_object('name', c.name, 'inn', c.inn, 'address', c.address, 'phone', c.phone), '2026-11-23 18:40+06'
   FROM companies c JOIN users u ON u.company_id = c.id AND u.role = 'owner' WHERE c.name = 'Продукты «Нур»';
-
--- ---------- Запросы по данным ----------
-INSERT INTO data_requests (user_id, kind, source, status, handled_by, handled_at, created_at)
-SELECT u.id, v.k::data_req_kind, v.src, v.st::request_status, CASE WHEN v.st = 'done' THEN 1 END, CASE WHEN v.st = 'done' THEN timestamptz '2026-11-16 12:00+06' END, v.dt::timestamptz
-  FROM (VALUES ('Мээрим Д.', 'del', 'email', 'new', '2026-11-21 10:00+06'),
-               ('Айгерим Б.', 'export', 'chat', 'new', '2026-11-20 15:00+06'),
-               ('Самат О.', 'consent', 'phone', 'done', '2026-11-15 11:00+06')) v(who, k, src, st, dt)
-  JOIN users u ON u.full_name = v.who;
 
 -- ---------- Журнал ----------
 INSERT INTO audit_log (staff_id, action, object, object_ref, reason, created_at) VALUES
